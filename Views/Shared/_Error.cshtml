@@ -1,0 +1,21 @@
+@model System.Web.Mvc.HandleErrorInfo
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="text-center mt-5">
+    <h1 class="text-danger">Error</h1>
+    <h2 class="text-danger">Ocurrió un error al procesar su solicitud.</h2>
+
+    @if (Model != null && HttpContext.Current.IsDebuggingEnabled)
+    {
+        <div class="alert alert-danger mt-4 text-start">
+            <strong>Controlador:</strong> @Model.ControllerName <br />
+            <strong>Acción:</strong> @Model.ActionName <br />
+            <strong>Excepción:</strong> @Model.Exception.Message
+        </div>
+    }
+
+    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-primary-custom mt-3">Volver al Dashboard</a>
+</div>

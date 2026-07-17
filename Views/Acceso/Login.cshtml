@@ -1,0 +1,40 @@
+@model CRMSistema.Models.ViewModels.LoginViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutLoginAdmin.cshtml";
+    ViewBag.Title = "Acceso Administradores";
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="login-error">@Model.Error</div>
+}
+
+@using (Html.BeginForm("Login", "Acceso", FormMethod.Post, new { @class = "login-form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Usuario, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Usuario, new { @class = "form-input", placeholder = "Ingresa tu usuario", autofocus = "autofocus" })
+        @Html.ValidationMessageFor(m => m.Usuario, "", new { @class = "field-validation-error" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Password, new { @class = "form-label" })
+        @Html.PasswordFor(m => m.Password, new { @class = "form-input", placeholder = "••••••••" })
+        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
+    </div>
+
+    <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+        @Html.CheckBoxFor(m => m.Recordarme)
+        @Html.LabelFor(m => m.Recordarme, new { @class = "form-label", style = "margin-bottom:0;" })
+    </div>
+
+    <button type="submit" class="btn btn-primary-custom btn-lg-custom w-100" style="justify-content:center; margin-top:8px;">
+        Iniciar sesi&oacute;n
+    </button>
+
+    <p class="text-muted text-xs mt-4" style="text-align:center; font-size:11px;">
+        Admin: admin / admin123 | Vendedor: vendedor / venta123
+    </p>
+}

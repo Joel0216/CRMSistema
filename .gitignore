@@ -1,0 +1,13 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+packages/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Archivos de entorno
+.env
+.env.local

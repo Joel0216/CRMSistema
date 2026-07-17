@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - CRM Sistema</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @Styles.Render("~/Content/css")
+    @RenderSection("styles", required: false)
+</head>
+<body class="modal-open" style="overflow: auto;">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div style="font-size: 20px; font-weight: bold; color: white; padding: 10px;">Ciclo Ambiental</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div>
+                    <div class="nav-section-title">PRINCIPAL</div>
+                    <a href="@Url.Action("Index", "Dashboard")" class="nav-link @(ViewBag.ActiveMenu == "Dashboard" ? "active" : "")">
+                        Dashboard
+                    </a>
+                </div>
+                <div>
+                    <div class="nav-section-title">PROSPECTOS</div>
+                    <a href="@Url.Action("Index", "Prospectos")" class="nav-link @(ViewBag.ActiveMenu == "Prospectos" ? "active" : "")">
+                        Prospectos
+                    </a>
+                    <a href="@Url.Action("Index", "Cotizador")" class="nav-link @(ViewBag.ActiveMenu == "Cotizador" ? "active" : "")">
+                        Cotizador
+                    </a>
+                    <a href="@Url.Action("Index", "Contratos")" class="nav-link @(ViewBag.ActiveMenu == "Contratos" ? "active" : "")">
+                        Contratos
+                    </a>
+                    @* TODO: Implementar controlador ContratosAutorizados cuando se requiera.
+                    <a href="@Url.Action("Index", "ContratosAutorizados")" class="nav-link @(ViewBag.ActiveMenu == "ContratosAutorizados" ? "active" : "")">
+                        Contratos Autorizados
+                    </a>
+                    *@
+                    <a href="@Url.Action("Index", "Manifiestos")" class="nav-link @(ViewBag.ActiveMenu == "Manifiestos" ? "active" : "")">
+                        Manifiestos
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar">
+                        @((User.Identity?.Name ?? "U").Substring(0, 1).ToUpper())
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="user-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            @(User.Identity?.Name ?? "Usuario")
+                        </div>
+                        <div class="user-rol">admin</div>
+                    </div>
+                    @using (Html.BeginForm("Logout", "Acceso", FormMethod.Post, new { style = "margin:0" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white; border: none; font-size: 12px; padding: 5px 10px; border-radius: 6px;" title="Cerrar sesi&oacute;n">Salir</button>
+                    }
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-dot"></div>
+                <span class="topbar-title">@ViewBag.Title</span>
+            </div>
+            <div class="content-body">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('btnToggleSidebar');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+
+            if (btn && sidebar) {
+                btn.addEventListener('click', function () {
+                    sidebar.classList.add('sidebar-open');
+                    if (overlay) overlay.classList.add('active');
+                });
+            }
+
+            if (overlay && sidebar) {
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('sidebar-open');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
+
+    @Scripts.Render("~/bundles/jquery")
+    <!-- Bootstrap 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @Scripts.Render("~/bundles/site")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

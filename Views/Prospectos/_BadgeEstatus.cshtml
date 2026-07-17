@@ -1,0 +1,17 @@
+@model string
+@{
+    var estatus = Model ?? "Sin estatus";
+    var clase = "badge-nuevo";
+    switch (estatus.ToLower())
+    {
+        case "nuevo": clase = "badge-nuevo"; break;
+        case "en seguimiento": clase = "badge-seguimiento"; break;
+        case "cotizado": clase = "badge-cotizado"; break;
+        case "adeudo": clase = "badge-adeudo"; break;
+        case "inactivo": clase = "badge-inactivo"; break;
+        case "rechazado": clase = "badge-rechazado"; break;
+        case "aprobado": clase = "badge-aprobado"; break;
+        default: clase = "badge-nuevo"; break;
+    }
+}
+<span class="badge-custom @clase">@estatus</span>

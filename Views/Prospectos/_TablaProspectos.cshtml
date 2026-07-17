@@ -1,0 +1,91 @@
+@model List<CRMSistema.Models.ViewModels.ProspectoViewModel>
+
+<div class="search-bar">
+    <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="filtroBusqueda" class="form-input" placeholder="Buscar por empresa o contacto..." value="@ViewBag.Filtro">
+    </div>
+    <select id="filtroEstatus" class="form-input" style="width: 190px;">
+        <option value="">Todos los estatus</option>
+    </select>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table id="tablaProspectos" class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Raz&oacute;n Social</th>
+                    <th>Vendedor</th>
+                    <th>RFC</th>
+                    <th>Direcci&oacute;n</th>
+                    <th>Estatus</th>
+                    <th style="text-align:center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var p in Model)
+                    {
+                        <tr data-id="@p.Id">
+                            <td>@p.Id</td>
+                            <td style="font-weight: 600;">@p.Nombre</td>
+                            <td style="text-align: center; color: var(--text2); font-size: 13px;">
+                                @if (!string.IsNullOrEmpty(p.VendedorNombre))
+                                {
+                                    <span style="background: #E3F2FD; color: #1565C0; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">@p.VendedorNombre</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #999; font-size: 12px;">Sin asignar</span>
+                                }
+                            </td>
+                            <td style="color: var(--text3);">@(string.IsNullOrEmpty(p.Rfc) ? "--" : p.Rfc)</td>
+                            <td style="color: var(--text3); font-size: 12px;">
+                                @{
+                                    var partes = new List<string>();
+                                    if (!string.IsNullOrEmpty(p.Calle)) { partes.Add(p.Calle); }
+                                    if (!string.IsNullOrEmpty(p.NumExt)) { partes.Add("#" + p.NumExt); }
+                                    if (!string.IsNullOrEmpty(p.Colonia)) { partes.Add(p.Colonia); }
+                                    if (!string.IsNullOrEmpty(p.Municipio)) { partes.Add(p.Municipio); }
+                                    string dir = partes.Count > 0 ? string.Join(", ", partes) : "--";
+                                }
+                                @dir
+                            </td>
+                            <td>
+                                @{
+                                    string statusClass = "badge-prospecto";
+                                    if (p.Estatus == "Nuevo" || p.Estatus == "Aprobado") { statusClass = "badge-prospecto"; }
+                                    else if (p.Estatus == "Cotizado" || p.Estatus == "En seguimiento") { statusClass = "badge-cotizacion"; }
+                                    else if (p.Estatus == "Inactivo") { statusClass = "badge-cerrado"; }
+                                    else { statusClass = "badge-perdido"; }
+                                }
+                                <span class="badge @statusClass">@p.Estatus</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button type="button" class="btn-custom btn-ghost-custom btn-sm-custom btn-ver-prospecto" data-id="@p.Id" title="Ver">
+                                        <i class="fas fa-eye" style="color: var(--text3);"></i>
+                                    </button>
+                                    <button type="button" class="btn-custom btn-ghost-custom btn-sm-custom btn-notificar-prospecto" data-id="@p.Id" data-nombre="@Html.Raw(p.Nombre)" data-correo="@Html.Raw(p.Email)" title="Notificar">
+                                        <i class="fas fa-envelope" style="color: var(--text3);"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text3);">
+                                @(string.IsNullOrEmpty(ViewBag.Filtro) && string.IsNullOrEmpty(ViewBag.EstatusFiltro) ? "No hay prospectos registrados" : "Sin resultados")
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@model CRMSistema.Models.ViewModels.LoginViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutLoginCliente.cshtml";
+    ViewBag.Title = "Acceso Clientes";
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="login-error">@Model.Error</div>
+}
+
+@using (Html.BeginForm("LoginCliente", "Acceso", FormMethod.Post, new { @class = "login-form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Usuario, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Usuario, new { @class = "form-input", placeholder = "Correo o RFC", autofocus = "autofocus" })
+        @Html.ValidationMessageFor(m => m.Usuario, "", new { @class = "field-validation-error" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Password, new { @class = "form-label" })
+        @Html.PasswordFor(m => m.Password, new { @class = "form-input", placeholder = "Contraseña" })
+        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
+    </div>
+
+    <button type="submit" class="btn btn-primary-custom btn-lg-custom w-100" style="justify-content:center; margin-top:8px; background:#1e3a5f;">
+        Acceder al portal
+    </button>
+
+    <p class="text-muted text-xs mt-4" style="text-align:center; font-size:11px;">
+        Cliente demo: cliente / cliente123
+    </p>
+}

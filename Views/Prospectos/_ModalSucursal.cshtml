@@ -1,0 +1,178 @@
+<div id="modalSucursal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1050;">
+    <div style="background: var(--card); border-radius: 14px; width: 850px; max-width: 95%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden;">
+        <div class="modal-header" style="background: var(--brown-dark); padding: 16px 24px; color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <span class="modal-sucursal-titulo" style="font-weight: 700; font-size: 15px;">AGREGAR SUCURSAL</span>
+            <button type="button" style="background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 6px; padding: 4px 12px; cursor: pointer;" data-cerrar="modalSucursal">Cerrar</button>
+        </div>
+        
+        <div style="padding: 0; overflow-y: auto; flex-grow: 1;">
+            <!-- Tabs Header -->
+            <div style="display: flex; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--border-light); margin-bottom: 24px;">
+                <div class="tab-item-suc active" onclick="showTabSuc('contacto', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">DATOS DE CONTACTO</div>
+                <div class="tab-item-suc" onclick="showTabSuc('direccion', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">DIRECCI&Oacute;N</div>
+                <div class="tab-item-suc" onclick="showTabSuc('fotos', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">FOTOS Y ARCHIVOS</div>
+            </div>
+
+            <div style="padding: 0 24px 24px;">
+                <!-- TAB 1: CONTACTO -->
+                <div id="tab-suc-contacto" class="tab-content-suc" style="display: block;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="sucNombre" class="form-label">Nombre de Sucursal *</label>
+                            <input type="text" id="sucNombre" class="form-input" placeholder="Ej. Sucursal Norte" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucTelefono" class="form-label">Telefono de sucursal *</label>
+                            <input type="tel" id="sucTelefono" class="form-input" placeholder="000 000 0000" oninput="this.value=this.value.replace(/[^0-9]/g,'')" maxlength="10" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucCorreo" class="form-label">Correo electronico *</label>
+                            <input type="email" id="sucCorreo" class="form-input" placeholder="correo@ejemplo.com" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucResponsable" class="form-label">Nombre del responsable *</label>
+                            <input type="text" id="sucResponsable" class="form-input" placeholder="Juan Pérez" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DIRECCIÓN -->
+                <div id="tab-suc-direccion" class="tab-content-suc" style="display: none;">
+                    <div style="margin-bottom: 16px; background: var(--bg2, #F8F9FA); padding: 12px; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text1);">B&uacute;squeda r&aacute;pida en mapa</div>
+                        <input type="text" class="form-input" style="width: 100%;" placeholder="Pega todo junto aqu&iacute;. Ej: C. 60-A 322-por 57 y 59, Mulchechen, 97370 Mérida, Yuc." />
+                        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Si llenas este campo, el mapa lo usar&aacute; como primera opci&oacute;n para encontrar la ubicaci&oacute;n exacta.</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="sucCalle" class="form-label">Calle</label>
+                            <input type="text" id="sucCalle" class="form-input" placeholder="Ej. Av. Paseo de Montejo" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucNumExt" class="form-label">N&uacute;mero Exterior</label>
+                            <input type="text" id="sucNumExt" class="form-input" placeholder="Ej. 100" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucNumInt" class="form-label">N&uacute;mero Interior</label>
+                            <input type="text" id="sucNumInt" class="form-input" placeholder="Ej. Depto 2" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucColonia" class="form-label">Colonia</label>
+                            <input type="text" id="sucColonia" class="form-input" placeholder="Ej. Centro" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucCp" class="form-label">C&oacute;digo Postal *</label>
+                            <input type="text" id="sucCp" class="form-input" placeholder="Ej. 97000" onblur="buscarCP(this.value, 'suc')" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucMunicipio" class="form-label">Municipio / Ciudad</label>
+                            <input type="text" id="sucMunicipio" class="form-input" placeholder="Ej. Mérida" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucEstado" class="form-label">Estado</label>
+                            <input type="text" id="sucEstado" class="form-input" value="Yucatán" placeholder="Ej. Yucatán" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sucConcesionaria" class="form-label">Concesionaria</label>
+                            <input type="text" id="sucConcesionaria" class="form-input" />
+                        </div>
+                        
+                        <div style="grid-column: 1 / -1;">
+                            <label for="sucReferencias" class="form-label">Referencias</label>
+                            <input type="text" id="sucReferencias" class="form-input" placeholder="Ej. Cerca de la plaza x" />
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-custom" style="background: #e2a659; color: white; margin-bottom: 12px; margin-top: 16px; padding: 8px 16px; font-size: 13px;" onclick="verificarDireccion('suc')">
+                        Verificar Direcci&oacute;n
+                    </button>
+
+                    <div id="mapContainer-suc" style="background: var(--bg2, #F8F9FA); border-radius: 8px; height: 240px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 13px; border: 1px solid var(--border-light); flex-direction: column; gap: 8px; overflow: hidden;">
+                        <span id="mapText-suc">Llena la dirección y presiona <strong>Verificar</strong> para usar el mapa interactivo</span>
+                        <iframe id="mapFrame-suc" style="display: none; width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+
+                    <div style="background: var(--bg2, #F8F9FA); padding: 12px; border-radius: 8px; margin-top: 16px; border: 1px solid var(--border-light);">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text1);">Ajuste Manual de Coordenadas</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label for="sucLat" class="form-label">Latitud</label>
+                                <input type="text" id="sucLat" class="form-input" placeholder="Ej: 20.9674" />
+                            </div>
+                            <div class="form-group">
+                                <label for="sucLng" class="form-label">Longitud</label>
+                                <input type="text" id="sucLng" class="form-input" placeholder="Ej: -89.6237" />
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <span style="font-size: 11px; color: var(--text3);">Escribe las coordenadas exactas si el mapa no fue preciso.</span>
+                            <button type="button" class="btn btn-sm btn-primary-custom" style="font-size: 11px; padding: 4px 12px;">Autocompletar Dirección</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: FOTOS -->
+                <div id="tab-suc-fotos" class="tab-content-suc" style="display: none;">
+                    <div style="font-weight: 700; color: var(--brown-dark); border-bottom: 2px solid var(--border); padding-bottom: 4px; margin-bottom: 16px; text-transform: uppercase; font-size: 14px;">
+                        DOCUMENTOS Y FOTOGRAF&Iacute;AS (SUCURSAL)
+                    </div>
+                    <p style="font-size: 13px; color: var(--text2); margin-bottom: 16px;">Sube 3 fotograf&iacute;as para identificar la sucursal.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                        <!-- Foto 1 -->
+                        <div id="sucFotoSlot1" onclick="document.getElementById('sucFotoFile1').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 20px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="sucFotoPlaceholder1"><div style="font-size: 32px; color: #C4A574; margin-bottom: 8px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 13px; color: #5C3819;">Foto 1 - Fachada</div><div style="font-size: 11px; color: #999; margin-top: 4px;">Haz clic para subir.</div></div>
+                            <img id="sucFotoPreview1" src="#" alt="Vista previa" style="display:none;max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;" />
+                            <input type="file" id="sucFotoFile1" accept="image/*" style="display:none;" onchange="previewFoto(this,'sucFotoPreview1','sucFotoPlaceholder1','sucFotoSlot1', 'hdnSucFotoFachada')" />
+                        </div>
+                        <!-- Foto 2 -->
+                        <div id="sucFotoSlot2" onclick="document.getElementById('sucFotoFile2').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 20px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="sucFotoPlaceholder2"><div style="font-size: 32px; color: #C4A574; margin-bottom: 8px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 13px; color: #5C3819;">Foto 2 - Acceso</div><div style="font-size: 11px; color: #999; margin-top: 4px;">Haz clic para subir.</div></div>
+                            <img id="sucFotoPreview2" src="#" alt="Vista previa" style="display:none;max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;" />
+                            <input type="file" id="sucFotoFile2" accept="image/*" style="display:none;" onchange="previewFoto(this,'sucFotoPreview2','sucFotoPlaceholder2','sucFotoSlot2', 'hdnSucFotoAcceso')" />
+                        </div>
+                        <!-- Foto 3 -->
+                        <div id="sucFotoSlot3" onclick="document.getElementById('sucFotoFile3').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 20px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="sucFotoPlaceholder3"><div style="font-size: 32px; color: #C4A574; margin-bottom: 8px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 13px; color: #5C3819;">Foto 3 - Referencia</div><div style="font-size: 11px; color: #999; margin-top: 4px;">Haz clic para subir.</div></div>
+                            <img id="sucFotoPreview3" src="#" alt="Vista previa" style="display:none;max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;" />
+                            <input type="file" id="sucFotoFile3" accept="image/*" style="display:none;" onchange="previewFoto(this,'sucFotoPreview3','sucFotoPlaceholder3','sucFotoSlot3', 'hdnSucFotoReferencia')" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="sucFolio" class="form-label">Folio Catastral</label>
+                        <input type="text" id="sucFolio" class="form-input" placeholder="Escribe tu Folio Catastral" />
+                    </div>
+                    
+                    <p style="font-size: 12px; color: var(--text3); margin-bottom: 8px;">Sube tu documento Catastral:</p>
+                    <div id="sucDocCatastralSlot" onclick="document.getElementById('sucDocCatastralFile').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 24px; text-align: center; background: #FFFAF5; cursor: pointer; position: relative;">
+                        <div id="sucDocCatastralPlaceholder">
+                            <div style="font-size: 32px; margin-bottom: 8px; color: #C4A574;"><i class="fas fa-file-pdf"></i></div>
+                            <div style="font-weight: 700; font-size: 14px; color: #5C3819;">Arrastra tu Folio Catastral aquí</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">o haz click para seleccionar el archivo<br>PDF, JPG o PNG</div>
+                        </div>
+                        <div id="sucDocCatastralNombre" style="display:none; font-size:13px; color:#5C3819; font-weight:600;"><i class="fas fa-check-circle" style="color:#27AE60;margin-right:6px;"></i><span id="sucDocCatastralNombreTexto"></span></div>
+                        <input type="file" id="sucDocCatastralFile" accept="application/pdf,image/*" style="display:none;" onchange="previewDoc(this,'sucDocCatastralNombre','sucDocCatastralPlaceholder','sucDocCatastralNombreTexto','sucDocCatastralSlot', 'hdnSucDocCatastral', 'hdnSucDocCatastralNombre')" />
+                    </div>
+
+                    <!-- Hidden inputs para las Base64 -->
+                    <input type="hidden" id="hdnSucFotoFachada" />
+                    <input type="hidden" id="hdnSucFotoAcceso" />
+                    <input type="hidden" id="hdnSucFotoReferencia" />
+                    <input type="hidden" id="hdnSucDocCatastral" />
+                    <input type="hidden" id="hdnSucDocCatastralNombre" />
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <button type="button" id="btnSucAnterior" class="btn-custom btn-ghost-custom" style="padding: 9px 24px; display: none;" data-nav="-1">Anterior</button>
+            <div></div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" id="btnSucSiguiente" class="btn-custom btn-primary-custom" style="padding: 9px 24px;" data-nav="1">Siguiente</button>
+                <button type="button" class="btn-custom" id="btnGuardarSucursal" style="background: var(--brown-dark); color: white; padding: 10px 48px; display: none;">GUARDAR</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Contratos";
+    ViewBag.ActiveMenu = "Contratos";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title">🤝 Contratos</h2>
+        <p class="section-sub">Gestiona los contratos autorizados y activos.</p>
+    </div>
+    <a href="@Url.Action("Nuevo")" class="btn-custom btn-primary-custom">
+        + Nuevo contrato
+    </a>
+</div>
+
+<div class="search-bar">
+    <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" class="form-input" placeholder="Buscar contrato...">
+    </div>
+    <select class="form-input" style="width: 200px;">
+        <option>Todos los estatus</option>
+        <option>Activo</option>
+        <option>Vencido</option>
+    </select>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>N&Uacute;MERO</th>
+                    <th>FECHA INICIO</th>
+                    <th>CLIENTE</th>
+                    <th>VIGENCIA</th>
+                    <th>SERVICIOS</th>
+                    <th style="text-align: center;">ESTATUS</th>
+                    <th style="text-align: center;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>CON-2023-001</strong></td>
+                    <td>01/01/2023</td>
+                    <td style="font-weight: 600;">Empresa Industrial S.A.</td>
+                    <td>31/12/2023</td>
+                    <td>Recolecci&oacute;n RSU</td>
+                    <td style="text-align: center;"><span class="badge badge-activo">Activo</span></td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <button class="btn-custom btn-ghost-custom btn-sm-custom" title="Ver">👁</button>
+                            <button class="btn-custom btn-ghost-custom btn-sm-custom" title="Descargar PDF">📄</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

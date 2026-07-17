@@ -1,0 +1,957 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Generar cotización";
+    ViewBag.ActiveMenu = "Cotizador";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="section-title mb-0" style="text-transform: uppercase;">Generar Nueva Cotización</h2>
+    </div>
+    <div class="d-flex gap-3">
+        <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha de inicio</label>
+            <input type="date" class="form-input form-control form-control-sm" id="fechaInicio" disabled style="width: 150px;">
+        </div>
+        <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha límite</label>
+            <input type="date" class="form-input form-control form-control-sm" id="fechaLimite" style="width: 150px;">
+        </div>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm align-self-end h-auto mt-auto py-1">
+            <i class="fas fa-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div id="loaderCotizador" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Cargando datos del cliente...</p>
+</div>
+
+<div id="cotizadorContainer" style="display: none;">
+    <!-- INFORMACIÓN DEL CLIENTE (MATRIZ) -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header text-uppercase fw-bold" style="background-color: #f8f9fa;">Información del cliente (Matriz)</div>
+        <div class="card-body" style="padding: 20px;">
+            <div class="row g-3" id="prospectoInfoContainer">
+                <!-- Data will be injected here via JS -->
+            </div>
+            <div class="mt-3 p-3 rounded d-flex align-items-center gap-2" style="background: #E3F2FD; color: #1565C0; font-size: 13px;">
+                <span>ℹ️</span> Selecciona una pestaña para cotizar cada domicilio de servicio. El resumen final consolida todos los subtotales.
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div id="tabsContainer" style="display: flex; gap: 4px; margin-bottom: 20px; overflow-x: auto;">
+        <!-- Tabs will be rendered here -->
+    </div>
+
+    <!-- CONTENIDO DE LA PESTAÑA -->
+    <div class="card mb-4 shadow-sm" style="border-top-left-radius: 0;">
+        <div class="card-header fw-bold" style="color: #E65100; background: transparent; border-bottom: 1px solid #eee;">VERIFICACIÓN DEL DOMICILIO Y DÍAS DE SERVICIO DISPONIBLES</div>
+        <div class="card-body" style="padding: 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
+            <div id="mapaView" style="height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid #CFD8DC; background-color: #e9ecef; z-index: 1;">
+                <!-- Map loads here -->
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label class="form-label" style="font-size: 12px;">Domicilio de Servicio</label>
+                    <input class="form-control form-control-sm" id="activeDomicilio" disabled style="background: #f9f9f9;" />
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="flex-fill">
+                        <label class="form-label" style="font-size: 12px;">Latitud</label>
+                        <input class="form-control form-control-sm" id="activeLat" disabled style="background: #f9f9f9;" />
+                    </div>
+                    <div class="flex-fill">
+                        <label class="form-label" style="font-size: 12px;">Longitud</label>
+                        <input class="form-control form-control-sm" id="activeLng" disabled style="background: #f9f9f9;" />
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 12px;">Adeudo del domicilio</label>
+                    <input class="form-control form-control-sm" value="$0.00" disabled style="background: #E8F5E9; color: #2E7D32; font-weight: 700;" />
+                </div>
+            </div>
+        </div>
+
+        <div class="card-header fw-bold" style="color: #E65100; background: transparent; border-bottom: 1px solid #eee; border-top: 1px solid #eee;">SERVICIOS A COTIZAR</div>
+
+        <div class="card-body" style="padding: 20px; overflow-x: auto;">
+            <table class="table mb-0" style="border: 1px solid #5D4037;">
+                <thead style="background: #F5EFE9; color: #5D4037;">
+                    <tr>
+                        <th style="font-size: 11px; font-weight: 700; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Tipo</th>
+                        <th style="font-size: 11px; font-weight: 700; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Servicio</th>
+                        <th style="font-size: 11px; font-weight: 700; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Detalles del Servicio</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Días</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Precio Unit.</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">% Adicional</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Subtotal</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="serviciosTbody" style="background: #fff; color: #333;">
+                    <!-- JS injected -->
+                </tbody>
+            </table>
+            <button class="btn btn-link mt-3" style="color: #5D4037; font-weight: 700; text-decoration: none; padding: 0;" onclick="openModalServicio()">+ Agregar servicio</button>
+        </div>
+    </div>
+
+    <!-- RESUMEN CONSOLIDADO -->
+    <div class="card mb-4 shadow-sm" style="border: 2px solid #C4A574;">
+        <div class="card-header fw-bold" style="background: #F5EFE9; color: #5D4037;">RESUMEN CONSOLIDADO - TODAS LAS SUCURSALES</div>
+        <div class="card-body" style="padding: 20px;">
+            <div id="resumenTabsContainer" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px;">
+                <!-- JS injected -->
+            </div>
+
+            <div style="border-top: 2px dashed #C4A574; margin-top: 16px; padding-top: 16px; width: 400px; margin-left: auto;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                    <span>Subtotal servicios (todas las sucursales)</span>
+                    <span style="font-weight: 600;" id="subtotalGlobalLbl">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                    <span>IVA (16%)</span>
+                    <span style="font-weight: 600;" id="ivaGlobalLbl">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 20px; font-weight: 800; color: #5D4037;">
+                    <span>TOTAL MENSUAL</span>
+                    <span id="totalGlobalLbl">$0.00</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="guardarBorrador()">Guardar borrador</button>
+                <button class="btn btn-secondary" style="background: #8D6E63; border: none; font-weight: 600;" onclick="descargarPDF()">Descargar PDF</button>
+                <button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="guardarCotizacion()" id="btnGuardar">Enviar al cliente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Servicio -->
+<div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background: #4A2C0A; color: white; border-bottom: none;">
+                <h5 class="modal-title" style="font-size: 14px; text-transform: uppercase;">AGREGAR SERVICIO</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" style="font-size: 12px;">PRODUCTO (Tipo Servicio)</label>
+                        <select class="form-select form-select-sm" id="mdlTipoServicio" onchange="toggleModalFields()">
+                            <option value="RSU">RSU</option>
+                            <option value="RME">RME</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-8 rsu-field">
+                        <label class="form-label" style="font-size: 12px;">TIPO DE RESIDUO</label>
+                        <select class="form-select form-select-sm" id="mdlCodigoControl"></select>
+                    </div>
+
+                    <div class="col-md-4 rme-field" style="display: none;">
+                        <label class="form-label" style="font-size: 12px;">TIPO DE UNIDAD</label>
+                        <select class="form-select form-select-sm" id="mdlTipoUnidad" onchange="updateUnidadInfo()"></select>
+                    </div>
+                    <div class="col-md-4 rme-field" style="display: none;">
+                        <label class="form-label" style="font-size: 12px;">TIPO DE SERVICIO</label>
+                        <select class="form-select form-select-sm" id="mdlTipoCobro">
+                            <option value="">-- Selecciona --</option>
+                            <option value="VIAJE">VIAJE</option>
+                            <option value="PESO">PESO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6 rsu-field">
+                        <label class="form-label" style="font-size: 12px;">BOLSAS CONTRATADAS POR DÍA</label>
+                        <input type="number" class="form-control form-control-sm" id="mdlBolsas" value="20" min="1">
+                    </div>
+
+                    <div class="col-md-6 rme-field" style="display: none;">
+                        <label class="form-label" style="font-size: 12px;">NO. RECOLECCIONES / DÍA</label>
+                        <input type="number" class="form-control form-control-sm" id="mdlRecolectores" value="1" min="1">
+                    </div>
+                    <div class="col-md-6 rme-field" style="display: none;">
+                        <label class="form-label" style="font-size: 12px;">TURNO</label>
+                        <select class="form-select form-select-sm" id="mdlTurno">
+                            <option value="">-- Selecciona --</option>
+                            <option value="MAÑANA">MAÑANA</option>
+                            <option value="TARDE">TARDE</option>
+                            <option value="NOCHE">NOCHE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="rme-field mb-3 p-3 rounded" style="display: none; background: #F1F8E9; border: 1px solid #C5E1A5;">
+                    <h6 style="font-size: 13px; color: #33691E; font-weight: bold;">CONFIGURADOR DE COSTOS (RME)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size: 12px;">COSTO UNITARIO DEL SERVICIO</label>
+                            <input type="number" class="form-control form-control-sm" id="mdlCostoTonelada" value="0" disabled style="background: #f5f5f5;">
+                            <small class="text-muted" style="font-size: 10px;">Asignado automáticamente por tipo de unidad.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size: 12px;">COSTO DISPOSICIÓN EXTRA</label>
+                            <input type="number" class="form-control form-control-sm" id="mdlCostoDisposicion" value="0" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" style="font-size: 12px;">DÍAS DE RECOLECCIÓN SOLICITADO</label>
+                    <div class="d-flex flex-wrap gap-3 mt-2" id="mdlDiasContainer">
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Lunes" class="chk-dia" checked> LUNES
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Martes" class="chk-dia" checked> MARTES
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Miércoles" class="chk-dia" checked> MIÉRCOLES
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Jueves" class="chk-dia" checked> JUEVES
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Viernes" class="chk-dia" checked> VIERNES
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Sábado" class="chk-dia" checked> SÁBADO
+                        </label>
+                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" value="Domingo" class="chk-dia" checked> DOMINGO
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: none;">
+                <button type="button" class="btn btn-link" data-bs-dismiss="modal" style="text-decoration: none; color: #888; font-weight: 600;">CANCELAR</button>
+                <button type="button" class="btn text-white" style="background: #A16A34; border-radius: 6px; font-weight: 600; padding: 6px 20px;" onclick="addServicio()">AGREGAR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+}
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const prospectoId = @(ViewBag.ProspectoId ?? "null");
+        
+        let prospectoData = null;
+        let sucursalesData = [];
+        let serviciosDb = [];
+        let unidadesRME = [];
+        let mapInstance = null;
+        let mapMarker = null;
+        
+        let items = []; // Array of { id, tab_id, tipo_servicio, ... }
+        let activeTab = 'MATRIZ'; // 'MATRIZ' or sucursal id
+
+        const formatMXN = (num) => {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
+        };
+
+        $(document).ready(function() {
+            if (!prospectoId) {
+                window.location.href = '@Url.Action("Index", "Prospectos")';
+                return;
+            }
+
+            // Set dates
+            const today = new Date().toISOString().split('T')[0];
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            $('#fechaInicio').val(today);
+            $('#fechaLimite').val(nextWeek);
+
+            // Fetch Data
+            Promise.all([
+                fetch('@Url.Action("GetProspectos", "Cotizador")').then(r=>r.json()),
+                fetch('@Url.Action("GetSucursales", "Cotizador")/' + prospectoId).then(r=>r.json()),
+                fetch('@Url.Action("GetServiciosResiduos", "Cotizador")').then(r=>r.json()),
+                fetch('@Url.Action("GetConfiguradorUnidades", "Cotizador")').then(r=>r.json()),
+                fetch('@Url.Action("GetBorradores", "Cotizador")/' + prospectoId).then(r=>r.json())
+            ]).then(([prospectos, sucursales, serviciosRes, unidadesRes, borradoresRes]) => {
+                if (prospectos && prospectos.length > 0) {
+                    prospectoData = prospectos.find(p => p.id == prospectoId || (p.Id && p.Id == prospectoId));
+                    if (!prospectoData) {
+                        // Fallback object for UI check
+                        prospectoData = prospectos[0];
+                    }
+                }
+                if (sucursales) sucursalesData = sucursales;
+                if (serviciosRes && serviciosRes.success) serviciosDb = serviciosRes.data;
+                if (unidadesRes && unidadesRes.success) unidadesRME = unidadesRes.data;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const borradorId = urlParams.get('borradorId');
+                if (borradorId && borradoresRes && borradoresRes.success && borradoresRes.data) {
+                    const borradorStr = borradoresRes.data.find(b => (b.Borrador_ID || b.borrador_id) == borradorId);
+                    if (borradorStr && (borradorStr.Datos_Borrador || borradorStr.datos_borrador)) {
+                        try {
+                            const datos = JSON.parse(borradorStr.Datos_Borrador || borradorStr.datos_borrador);
+                            if (datos.items) items = datos.items;
+                            if (datos.fechaInicio) $('#fechaInicio').val(datos.fechaInicio);
+                            if (datos.fechaLimite) $('#fechaLimite').val(datos.fechaLimite);
+                        } catch (e) {
+                            console.error('Error parsing borrador:', e);
+                        }
+                    }
+                }
+
+                initUI();
+            }).catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'Hubo un problema al cargar los datos.', 'error');
+            });
+        });
+
+        function initUI() {
+            $('#loaderCotizador').hide();
+            if (!prospectoData) {
+                $('#cotizadorContainer').html('<div class="alert alert-danger">No se encontró información del prospecto.</div>').show();
+                return;
+            }
+            $('#cotizadorContainer').show();
+
+            // Populate Prospecto Info
+            const p = prospectoData;
+            // Use property keys carefully as they may be PascalCase or camelCase
+            const getVal = (key1, key2) => p[key1] !== undefined ? p[key1] : (p[key2] !== undefined ? p[key2] : '');
+            
+            const htmlInfo = `
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Tipo de persona</label><input class="form-control form-control-sm" value="${getVal('tipoPersona','TipoPersona') || 'Moral'}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Razón Social / Nombre completo</label><input class="form-control form-control-sm" value="${getVal('nombre','Nombre')}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">RFC</label><input class="form-control form-control-sm" value="${getVal('rfc','Rfc')}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Nombre Comercial</label><input class="form-control form-control-sm" value="${getVal('nombreComercial','NombreComercial')}" disabled></div>
+                
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">¿Tiene sucursales?</label><input class="form-control form-control-sm" value="${sucursalesData.length > 0 ? 'SÍ - ' + sucursalesData.length + ' REGISTRADAS' : 'NO'}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Nombre completo de contacto</label><input class="form-control form-control-sm" value="${getVal('contacto','Contacto')}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Teléfono de contacto</label><input class="form-control form-control-sm" value="${getVal('telefono','Telefono')}" disabled></div>
+                <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Correo electrónico</label><input class="form-control form-control-sm" value="${getVal('email','Email')}" disabled></div>
+            `;
+            $('#prospectoInfoContainer').html(htmlInfo);
+
+            renderTabs();
+            renderActiveTabContent();
+            renderResumen();
+            populateModalSelects();
+        }
+
+        function renderTabs() {
+            const p = prospectoData;
+            const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+            let tabsHtml = `
+                <button onclick="changeTab('MATRIZ')" style="padding: 12px 24px; background: ${activeTab === 'MATRIZ' ? '#5D4037' : '#D7CCC8'}; color: ${activeTab === 'MATRIZ' ? '#fff' : '#5D4037'}; border: none; border-radius: 8px 8px 0 0; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                    🏢 MATRIZ - ${getVal('nombreComercial', 'NombreComercial') || getVal('nombre', 'Nombre')}
+                </button>
+            `;
+            sucursalesData.forEach((s, idx) => {
+                const sId = (s.id || s.Id).toString();
+                const num = String(idx+1).padStart(3,'0');
+                const nom = s.nombre_sucursal || s.NombreSucursal;
+                tabsHtml += `
+                    <button onclick="changeTab('${sId}')" style="padding: 12px 24px; background: ${activeTab === sId ? '#5D4037' : '#D7CCC8'}; color: ${activeTab === sId ? '#fff' : '#5D4037'}; border: none; border-radius: 8px 8px 0 0; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                        🏢 SUC. ${num} - ${nom}
+                    </button>
+                `;
+            });
+            $('#tabsContainer').html(tabsHtml);
+        }
+
+        function changeTab(tabId) {
+            activeTab = tabId;
+            renderTabs();
+            renderActiveTabContent();
+        }
+
+        function renderActiveTabContent() {
+            let lat, lng, dom;
+            if (activeTab === 'MATRIZ') {
+                const p = prospectoData;
+                const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+                dom = [getVal('calle','Calle'), getVal('numExt','NumExt'), getVal('colonia','Colonia'), getVal('municipio','Municipio')].filter(Boolean).join(', ');
+                lat = getVal('lat','Lat');
+                lng = getVal('lng','Lng');
+            } else {
+                const s = sucursalesData.find(x => (x.id || x.Id).toString() === activeTab);
+                if (s) {
+                    dom = s.direccion || [s.calle || s.Calle, s.numExt || s.NumExt, s.colonia || s.Colonia, s.municipio || s.Municipio].filter(Boolean).join(', ');
+                    lat = s.lat || s.Lat;
+                    lng = s.lng || s.Lng;
+                }
+            }
+
+            $('#activeDomicilio').val(dom || 'N/A');
+            $('#activeLat').val(lat || '');
+            $('#activeLng').val(lng || '');
+
+            updateMap(lat, lng);
+            renderTable();
+        }
+
+        function updateMap(lat, lng) {
+            const mapDiv = document.getElementById('mapaView');
+            if (!lat || !lng) {
+                if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+                mapDiv.innerHTML = '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999;"><i class="fas fa-map-marker-alt"></i> Coordenadas no disponibles</div>';
+                return;
+            }
+
+            if (!mapInstance) {
+                mapDiv.innerHTML = '';
+                mapInstance = L.map('mapaView').setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(mapInstance);
+                mapMarker = L.marker([lat, lng]).addTo(mapInstance);
+            } else {
+                mapInstance.setView([lat, lng], 15);
+                if (mapMarker) mapMarker.setLatLng([lat, lng]);
+            }
+        }
+
+        function renderTable() {
+            const activeItems = items.filter(i => i.tab_id === activeTab);
+            let html = '';
+            if (activeItems.length === 0) {
+                html = `<tr><td colspan="8" style="padding: 30px; text-align: center; color: #666; border: 1px solid #eee;">Sin servicios agregados</td></tr>`;
+            } else {
+                activeItems.forEach(it => {
+                    const isRSU = it.tipo_servicio === 'RSU';
+                    const badgeColor = isRSU ? '#E67E22' : '#27AE60';
+                    const tipoTexto = isRSU ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
+                    
+                    let detalles = '';
+                    if (isRSU) {
+                        detalles = `
+                            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
+                                <span style="color: #666;">Producto:</span><span style="font-weight: 700; color: #333;">${it.tipo_residuo}</span>
+                                <span style="color: #666;">Ruta:</span><span style="color: #3498DB; font-weight: 700;">—</span>
+                                <span style="color: #666;">Bolsas:</span><span style="font-weight: 700; color: #333;">${it.bolsas}</span>
+                            </div>`;
+                    } else {
+                        detalles = `
+                            <div style="display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
+                                <span style="color: #666;">Unidad:</span><span style="color: #3498DB; font-weight: 700;">${it.tipo_unidad || 'N/A'}</span>
+                                <span style="color: #666;">Tipo Serv:</span><span style="color: #8E44AD; font-weight: 700;">${it.tipo_cobro === 'PESO' ? 'Peso' : 'Viaje'}</span>
+                                <span style="color: #666;">Recorrido:</span><span style="background: #f0f0f0; border-radius: 4px; padding: 2px 6px; font-weight: 600; width: fit-content; color: #666;">Config</span>
+                                <span style="color: #666;">Recolecciones:</span><span style="font-weight: 700; color: #333;">${it.recolectores}/día</span>
+                                <span style="color: #666;">Turno:</span><span style="color: #E67E22; font-weight: 700; text-transform: capitalize;">${(it.turno || '').toLowerCase()}</span>
+                            </div>`;
+                    }
+
+                    let diasHtml = it.dias_asignados.map(d => {
+                        const bg = isRSU ? '#FFE0B2' : '#C8E6C9';
+                        const col = isRSU ? '#E65100' : '#2E7D32';
+                        return `<span style="background: ${bg}; color: ${col}; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">${d.substring(0,3)}</span>`;
+                    }).join(' ');
+
+                    const pu = isRSU ? formatMXN(18.60) : formatMXN(getPrecioUnitarioRME(it));
+                    const puColor = isRSU ? '#333' : '#2E7D32';
+
+                    html += `
+                        <tr>
+                            <td style="padding: 16px; vertical-align: middle; border: 1px solid #eee;"><span style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">${it.tipo_servicio}</span></td>
+                            <td style="padding: 16px; font-weight: 600; font-size: 12px; color: #333; vertical-align: middle; border: 1px solid #eee;">${tipoTexto}</td>
+                            <td style="padding: 16px; vertical-align: middle; border: 1px solid #eee;">${detalles}</td>
+                            <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">${diasHtml}</div>
+                            </td>
+                            <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; vertical-align: middle; color: ${puColor}; border: 1px solid #eee;">${pu}</td>
+                            <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
+                                <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 30px; padding: 0;" /> %
+                            </td>
+                            <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; color: #2E7D32; vertical-align: middle; border: 1px solid #eee;">${formatMXN(calcularSubtotalItem(it))}</td>
+                            <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
+                                <button type="button" style="background: transparent; border: none; font-size: 18px; cursor: pointer;" onclick="removeItem(${it.id})">
+                                    <i class="far fa-minus-square" style="color: #C0392B;"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            $('#serviciosTbody').html(html);
+            renderResumen();
+        }
+
+        function getPrecioUnitarioRME(i) {
+            return (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
+        }
+
+        function calcularSubtotalItem(i) {
+            if (i.tipo_servicio === 'RSU') {
+                const diasPorSemana = Array.isArray(i.dias_asignados) ? i.dias_asignados.length : 1;
+                const bolsasMensuales = (i.bolsas * diasPorSemana * 52) / 12;
+                return bolsasMensuales * 18.60 * (1 + (i.porcentaje_adicional || 0)/100);
+            } else {
+                const viajesMensuales = i.recolectores * i.dias_asignados.length * 4;
+                const costo_por_viaje = getPrecioUnitarioRME(i);
+                const subtotalBase = costo_por_viaje * viajesMensuales;
+                return subtotalBase * (1 + (i.porcentaje_adicional || 0)/100);
+            }
+        }
+
+        function updatePorcentaje(id, val) {
+            const it = items.find(x => x.id === id);
+            if (it) {
+                it.porcentaje_adicional = Number(val) || 0;
+                renderTable();
+            }
+        }
+
+        function removeItem(id) {
+            items = items.filter(x => x.id !== id);
+            renderTable();
+        }
+
+        function renderResumen() {
+            const subtotalForTab = (tabId) => items.filter(i => i.tab_id === tabId).reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            
+            const p = prospectoData;
+            const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+            let h = `
+                <div style="min-width: 200px; padding: 16px; border: 1px solid #E0E0E0; border-radius: 8px; background: #FAFAFA;">
+                    <div style="font-size: 12px; font-weight: 700; color: #5D4037; margin-bottom: 8px;">🏢 MATRIZ - ${getVal('nombreComercial','NombreComercial') || getVal('nombre','Nombre')}</div>
+                    <div style="font-size: 18px; font-weight: 800;">${formatMXN(subtotalForTab('MATRIZ'))}</div>
+                    <div style="font-size: 11px; color: #999;">${items.filter(i=>i.tab_id === 'MATRIZ').length} Servicios</div>
+                </div>
+            `;
+            sucursalesData.forEach((s, idx) => {
+                const sId = (s.id || s.Id).toString();
+                h += `
+                    <div style="min-width: 200px; padding: 16px; border: 1px solid #E0E0E0; border-radius: 8px; background: #FAFAFA;">
+                        <div style="font-size: 12px; font-weight: 700; color: #5D4037; margin-bottom: 8px;">🏢 SUC. ${String(idx+1).padStart(3,'0')}</div>
+                        <div style="font-size: 18px; font-weight: 800;">${formatMXN(subtotalForTab(sId))}</div>
+                        <div style="font-size: 11px; color: #999;">${items.filter(i=>i.tab_id === sId).length} Servicios</div>
+                    </div>
+                `;
+            });
+            $('#resumenTabsContainer').html(h);
+
+            const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const iva = subGlobal * 0.16;
+            const total = subGlobal + iva;
+
+            $('#subtotalGlobalLbl').text(formatMXN(subGlobal));
+            $('#ivaGlobalLbl').text(formatMXN(iva));
+            $('#totalGlobalLbl').text(formatMXN(total));
+        }
+
+        // --- Modal functions ---
+        function populateModalSelects() {
+            let rsuHtml = '<option value="">-- Selecciona --</option>';
+            serviciosDb.filter(s => s.codigo_sana && s.codigo_sana.startsWith('RSU')).forEach(s => {
+                rsuHtml += `<option value="${s.codigo_control}">${s.descripcion}</option>`;
+            });
+            $('#mdlCodigoControl').html(rsuHtml);
+
+            let rmeHtml = '<option value="">-- Selecciona --</option>';
+            unidadesRME.forEach(u => {
+                rmeHtml += `<option value="${u.Nombre_Unidad}">${u.Nombre_Unidad} - ${formatMXN(u.Costo_Unitario)}</option>`;
+            });
+            $('#mdlTipoUnidad').html(rmeHtml);
+        }
+
+        function openModalServicio() {
+            $('#mdlTipoServicio').val('RSU');
+            toggleModalFields();
+            $('#mdlCodigoControl').val('');
+            $('#mdlBolsas').val(20);
+            $('.chk-dia').prop('checked', true);
+            var myModal = new bootstrap.Modal(document.getElementById('modalServicio'));
+            myModal.show();
+        }
+
+        function toggleModalFields() {
+            const t = $('#mdlTipoServicio').val();
+            if (t === 'RSU') {
+                $('.rsu-field').show();
+                $('.rme-field').hide();
+            } else {
+                $('.rsu-field').hide();
+                $('.rme-field').show();
+            }
+        }
+
+        function updateUnidadInfo() {
+            const nom = $('#mdlTipoUnidad').val();
+            const u = unidadesRME.find(x => x.Nombre_Unidad === nom);
+            if (u) {
+                $('#mdlCostoTonelada').val(u.Costo_Unitario);
+            } else {
+                $('#mdlCostoTonelada').val(0);
+            }
+        }
+
+        function addServicio() {
+            const tipo = $('#mdlTipoServicio').val();
+            const dias = [];
+            $('.chk-dia:checked').each(function() { dias.push($(this).val()); });
+            
+            if (dias.length === 0) {
+                Swal.fire('Atención', 'Selecciona al menos un día de recolección.', 'warning');
+                return;
+            }
+
+            let newItem = {
+                id: Date.now(),
+                tab_id: activeTab,
+                tipo_servicio: tipo,
+                dias_asignados: dias,
+                porcentaje_adicional: 0
+            };
+
+            if (tipo === 'RSU') {
+                const cod = $('#mdlCodigoControl').val();
+                if (!cod) return Swal.fire('Falta residuo', 'Selecciona un tipo de residuo.', 'warning');
+                const serv = serviciosDb.find(s => s.codigo_control === cod);
+                
+                newItem.codigo_control = cod;
+                newItem.tipo_residuo = serv ? serv.descripcion : 'RSU';
+                newItem.bolsas = Number($('#mdlBolsas').val()) || 1;
+                newItem.precio_unitario = 18.60;
+                
+            } else {
+                newItem.tipo_residuo = 'Residuos de Manejo Especial';
+                newItem.tipo_unidad = $('#mdlTipoUnidad').val();
+                newItem.tipo_cobro = $('#mdlTipoCobro').val();
+                newItem.recolectores = Number($('#mdlRecolectores').val()) || 1;
+                newItem.turno = $('#mdlTurno').val();
+                newItem.costo_tonelada = Number($('#mdlCostoTonelada').val()) || 0;
+                newItem.costo_disposicion = Number($('#mdlCostoDisposicion').val()) || 0;
+                
+                if (!newItem.tipo_unidad) return Swal.fire('Atención', 'Selecciona un tipo de unidad RME.', 'warning');
+                if (!newItem.tipo_cobro) return Swal.fire('Atención', 'Selecciona un tipo de servicio (cobro).', 'warning');
+            }
+
+            items.push(newItem);
+            renderTable();
+            
+            bootstrap.Modal.getInstance(document.getElementById('modalServicio')).hide();
+        }
+
+        // --- Save and APIs ---
+        function guardarBorrador() {
+            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+            const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const datos = {
+                fechaInicio: $('#fechaInicio').val(),
+                fechaLimite: $('#fechaLimite').val(),
+                items: items,
+                totales: { subtotal: subGlobal, iva: subGlobal * 0.16, total: subGlobal * 1.16 }
+            };
+            
+            fetch('@Url.Action("CreateBorrador", "Cotizador")', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: prospectoId, datos: JSON.stringify(datos) })
+            }).then(r=>r.json()).then(res => {
+                if (res.success) {
+                    Swal.fire({icon:'success', title:'Borrador guardado correctamente', toast:true, position:'top-end', timer:2000, showConfirmButton:false});
+                } else {
+                    Swal.fire('Error', res.error, 'error');
+                }
+            }).catch(console.error);
+        }
+
+        function descargarPDF() {
+            const p = prospectoData;
+            const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+            
+            const nombreStr = getVal('nombreComercial','NombreComercial') || getVal('nombre','Nombre') || 'Prospecto';
+            const rfcStr = getVal('rfc','Rfc') || '--';
+            const tipoPerStr = getVal('tipoPersona','TipoPersona') || '--';
+            const contactoStr = getVal('telefono','Telefono') || '--';
+            const correoStr = getVal('email','Email') || '--';
+            const vigenciaStr = $('#fechaLimite').val() ? $('#fechaLimite').val().split('-').reverse().join('/') : '--';
+            const prospectoIdDisp = prospectoId || '000';
+
+            let htmlPdf = `
+                <html>
+                <head>
+                    <title>Cotización - ${nombreStr}</title>
+                    <style>
+                        @@media print {
+                            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                        }
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; margin: 0; }
+                        .header-box { background: #4E342E; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; }
+                        .header-box h1 { color: white; margin: 0; font-size: 24px; }
+                        .header-cot { background: #FFCC80; color: #E65100; font-weight: bold; padding: 8px 16px; border-radius: 4px; font-size: 18px; }
+                        
+                        .info-bar { background: #3E2723; display: grid; grid-template-columns: repeat(4, 1fr); padding: 15px 30px; color: white; border-radius: 0 0 8px 8px; font-size: 12px; }
+                        .info-bar span { display: block; font-size: 10px; color: #D7CCC8; margin-bottom: 4px; }
+                        .info-bar strong { font-size: 13px; font-weight: bold; text-transform: uppercase; }
+
+                        .vigencia-row { text-align: right; margin-top: 20px; font-weight: bold; font-size: 14px; }
+                        .vigencia-row span { border: 1px solid #ccc; padding: 4px 12px; border-radius: 4px; font-weight: normal; margin-left: 8px; }
+
+                        .section-title { color: #8D6E63; font-size: 16px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #D7CCC8; padding-bottom: 5px; margin-top: 30px; margin-bottom: 20px; }
+
+                        .sucursal-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; color: #333; }
+                        .sucursal-empty { text-align: right; color: #999; font-weight: normal; text-transform: uppercase; }
+
+                        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
+                        th { background-color: #EFEBE9; color: #5D4037; border: 1px solid #BCAAA4; padding: 10px 8px; text-align: left; text-transform: uppercase; }
+                        td { border: 1px solid #ddd; padding: 10px 8px; vertical-align: top; }
+                        .text-right { text-align: right; }
+                        .text-center { text-align: center; }
+
+                        .badge-rsu { background: #F57F17; color: white; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+                        .badge-rme { background: #4CAF50; color: white; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+                        .badge-day-rsu { background: #FFF3E0; color: #E65100; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
+                        .badge-day-rme { background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
+                        
+                        .detail-grid { display: grid; grid-template-columns: 80px 1fr; gap: 4px; align-items: center; }
+                        .detail-label { color: #666; }
+                        .detail-val-blue { color: #1976D2; font-weight: 600; }
+                        .detail-val-purple { color: #8E24AA; font-weight: 600; }
+                        .detail-val-orange { color: #E65100; font-weight: 600; }
+                        .detail-val-dark { color: #333; font-weight: 600; }
+
+                        .summary-box { float: right; width: 350px; margin-top: 20px; font-size: 13px; color: #555; }
+                        .summary-row { display: flex; justify-content: space-between; padding: 6px 0; }
+                        .summary-row.total-row { background: #3E2723; color: white; padding: 12px; margin-top: 10px; font-weight: bold; font-size: 15px; border-radius: 4px; align-items: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header-box">
+                        <h1>${nombreStr}</h1>
+                        <div class="header-cot">COT - ${String(prospectoIdDisp).padStart(3, '0')}</div>
+                    </div>
+                    <div class="info-bar">
+                        <div><span>RFC</span><strong>${rfcStr}</strong></div>
+                        <div><span>TIPO DE PERSONA</span><strong>${tipoPerStr}</strong></div>
+                        <div><span>CONTACTO</span><strong>${contactoStr}</strong></div>
+                        <div><span>CORREO</span><strong>${correoStr}</strong></div>
+                    </div>
+
+                    <div class="vigencia-row">VIGENCIA: <span>${vigenciaStr}</span></div>
+
+                    <div class="section-title">SERVICIOS COTIZADOS</div>
+            `;
+
+            let domCount = 0;
+
+            const renderSection = (tabId, tabName) => {
+                const activeItems = items.filter(i => i.tab_id === tabId);
+                const subtotal = activeItems.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+                
+                if (activeItems.length > 0) domCount++;
+
+                if (activeItems.length === 0) {
+                    htmlPdf += `
+                        <div class="sucursal-header">
+                            <div>${tabName}</div>
+                            <div class="sucursal-empty">SIN SERVICIOS AÚN</div>
+                        </div>
+                    `;
+                } else {
+                    htmlPdf += `
+                        <div class="sucursal-header">
+                            <div>${tabName}</div>
+                            <div>${formatMXN(subtotal)} / mes</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">TIPO</th>
+                                    <th style="width: 110px;">SERVICIO</th>
+                                    <th>DETALLES DEL SERVICIO</th>
+                                    <th class="text-center" style="width: 90px;">DÍAS</th>
+                                    <th class="text-center" style="width: 70px;">PRECIO UNIT.</th>
+                                    <th class="text-center" style="width: 75px;">% ADICIONAL</th>
+                                    <th class="text-center" style="width: 80px;">SUBTOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    activeItems.forEach(it => {
+                        const isRSU = it.tipo_servicio === 'RSU';
+                        const badgeType = isRSU ? 'badge-rsu' : 'badge-rme';
+                        const badgeDay = isRSU ? 'badge-day-rsu' : 'badge-day-rme';
+                        const servName = isRSU ? 'Residuos<br>Sólidos<br>Urbanos' : 'Residuos<br>de Manejo<br>Especial';
+                        
+                        let detalles = '';
+                        if (isRSU) {
+                            detalles = `
+                                <div class="detail-grid">
+                                    <span class="detail-label">Producto:</span> <span class="detail-val-dark">${it.tipo_residuo}</span>
+                                    <span class="detail-label">Ruta:</span> <span class="detail-val-blue">Por asignar</span>
+                                    <span class="detail-label">Bolsas:</span> <span class="detail-val-dark">${it.bolsas}</span>
+                                </div>`;
+                        } else {
+                            detalles = `
+                                <div class="detail-grid">
+                                    <span class="detail-label">Unidad:</span> <span class="detail-val-blue">${it.tipo_unidad || 'N/A'}</span>
+                                    <span class="detail-label">Tipo Serv:</span> <span class="detail-val-purple">${(it.tipo_cobro || '').toLowerCase().replace(/^\w/, c => c.toUpperCase())}</span>
+                                    <span class="detail-label">Recorrido:</span> <span class="detail-val-dark">Config</span>
+                                    <span class="detail-label">Recolecciones:</span> <span class="detail-val-dark">${it.recolectores}/día</span>
+                                    <span class="detail-label">Turno:</span> <span class="detail-val-orange">${(it.turno || '').toLowerCase().replace(/^\w/, c => c.toUpperCase())}</span>
+                                </div>`;
+                        }
+
+                        let diasHtml = it.dias_asignados.map(d => `<span class="${badgeDay}">${d.substring(0,3)}</span>`).join('');
+                        const pu = isRSU ? formatMXN(18.60) : formatMXN(getPrecioUnitarioRME(it));
+                        const sub = formatMXN(calcularSubtotalItem(it));
+                        const subColor = isRSU ? '#2E7D32' : '#2E7D32'; // both green in screenshot
+                        
+                        htmlPdf += `
+                            <tr>
+                                <td class="text-center" style="vertical-align: middle;"><span class="${badgeType}">${it.tipo_servicio}</span></td>
+                                <td style="vertical-align: middle; font-weight: bold; color: #555;">${servName}</td>
+                                <td style="vertical-align: middle;">${detalles}</td>
+                                <td class="text-center" style="vertical-align: middle;">${diasHtml}</td>
+                                <td class="text-center" style="vertical-align: middle; font-weight: bold; color: #333;">${pu}</td>
+                                <td class="text-center" style="vertical-align: middle;">${it.porcentaje_adicional || 0}%</td>
+                                <td class="text-center" style="vertical-align: middle; font-weight: bold; color: ${subColor};">${sub}</td>
+                            </tr>
+                        `;
+                    });
+                    htmlPdf += `</tbody></table>`;
+                }
+            };
+
+            renderSection('MATRIZ', `MATRIZ - ${nombreStr}`);
+
+            sucursalesData.forEach((s, idx) => {
+                const sId = (s.id || s.Id).toString();
+                const nom = s.nombre_sucursal || s.NombreSucursal;
+                const num = String(idx+1).padStart(3,'0');
+                renderSection(sId, `SUCURSAL ${num} - ${nom}`);
+            });
+
+            const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const iva = subGlobal * 0.16;
+            const total = subGlobal + iva;
+
+            htmlPdf += `
+                    <div style="clear: both;"></div>
+                    <div class="summary-box">
+                        <div class="summary-row"><span>SUBTOTAL SERVICIOS (${domCount} DOMICILIOS)</span> <strong>${formatMXN(subGlobal)}</strong></div>
+                        <div class="summary-row"><span>IVA</span> <strong>${formatMXN(iva)}</strong></div>
+                        <div class="summary-row"><span>DESCUENTO</span> <strong>$0.00</strong></div>
+                        <div class="summary-row total-row"><span>TOTAL MENSUAL ESTIMADO</span> <span>${formatMXN(total)}</span></div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            let iframe = document.getElementById('printFrame');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'printFrame';
+                iframe.style.position = 'absolute';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = 'none';
+                document.body.appendChild(iframe);
+            }
+            
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(htmlPdf);
+            doc.close();
+            
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 800);
+        }
+
+        function guardarCotizacion() {
+            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+            
+            $('#btnGuardar').prop('disabled', true).text('Enviando...');
+            
+            const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const totalGlobal = subGlobal * 1.16;
+            const p = prospectoData;
+            const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+
+            // 1. Create Trato
+            fetch('@Url.Action("CreateTrato", "Cotizador")', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prospecto_id: prospectoId,
+                    nombre_trato: 'Cotización CRM',
+                    importe: totalGlobal,
+                    fase_id: 2,
+                    fecha_limite_cotizacion: $('#fechaLimite').val()
+                })
+            }).then(r=>r.json()).then(res => {
+                if (!res.success) throw new Error(res.error);
+                const tratoId = res.id;
+                
+                // 2. Create Servicios Cotizados (sequential promises)
+                let promiseChain = Promise.resolve();
+                items.forEach(it => {
+                    promiseChain = promiseChain.then(() => {
+                        return fetch('@Url.Action("CreateServicioCotizado", "Cotizador")', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                trato_id: tratoId,
+                                tipo_residuo: it.tipo_residuo,
+                                frecuencia: 'Mensual',
+                                periodicidad_pago: 'Mensual',
+                                volumen_estimado: it.tipo_servicio === 'RSU' ? it.bolsas : it.recolectores,
+                                precio_unitario: it.tipo_servicio === 'RSU' ? 18.60 : getPrecioUnitarioRME(it),
+                                dias_asignados: it.dias_asignados.join(','),
+                                porcentaje_adicional: it.porcentaje_adicional,
+                                sucursal_id: it.tab_id === 'MATRIZ' ? null : it.tab_id, // Adjust this based on DB logic
+                                tipo_unidad: it.tipo_unidad,
+                                tipo_cobro: it.tipo_cobro,
+                                recolectores: it.recolectores,
+                                turno: it.turno,
+                                ruta: 'Por asignar'
+                            })
+                        }).then(r=>r.json()).then(sRes => {
+                            if (!sRes.success) throw new Error(sRes.error);
+                        });
+                    });
+                });
+                
+                return promiseChain.then(() => {
+                    // 3. Send Email
+                    return fetch('@Url.Action("EnviarCotizacion", "Cotizador")', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prospecto_id: prospectoId,
+                            email: getVal('email','Email') || 'sin-correo@crm.com',
+                            nombre: getVal('nombre','Nombre') || 'Cliente CRM'
+                        })
+                    }).then(r=>r.json());
+                });
+            })
+            .then(emailRes => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cotización enviada',
+                    html: `Se envió el correo al cliente.<br><br>Contraseña generada: ${emailRes.password_temporal || 'N/A'}<br><br>El estatus cambió a "Cotizado".`,
+                    timer: 6000,
+                    showConfirmButton: true
+                }).then(() => {
+                    window.location.href = '@Url.Action("Index", "Cotizador")';
+                });
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('Error', e.message || 'Error al guardar la cotización', 'error');
+                $('#btnGuardar').prop('disabled', false).text('Enviar al cliente');
+            });
+        }
+    </script>
+}

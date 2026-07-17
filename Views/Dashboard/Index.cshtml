@@ -1,0 +1,276 @@
+@model CRMSistema.Models.ViewModels.DashboardViewModel
+@{
+    ViewBag.Title = "Panel de Control";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title">Panel de control</h2>
+        <p class="section-sub">Resumen en tiempo real del sistema comercial</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-warning">@Model.Error</div>
+}
+
+<!-- KPI GRID -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-top">
+            <div>
+                <div class="metric-label">Ingresos del mes</div>
+                <h3 class="metric-value">@Model.Kpis.ingresosMes.valor.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</h3>
+            </div>
+            <div class="metric-icon" style="background:#ecfdf5;color:#059669;">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+        </div>
+        <div class="metric-trend @(Model.Kpis.ingresosMes.cambio >= 0 ? "up" : "down")">
+            <i class="fas @(Model.Kpis.ingresosMes.cambio >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+            <span>@(Model.Kpis.ingresosMes.cambio >= 0 ? "+" : "")@Model.Kpis.ingresosMes.cambio%</span>
+            <span style="color:#94a3b8;font-weight:400;">vs mes anterior</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-top">
+            <div>
+                <div class="metric-label">Nuevos prospectos</div>
+                <h3 class="metric-value">@Model.Kpis.prospectosMes.valor</h3>
+            </div>
+            <div class="metric-icon" style="background:#eef2ff;color:#4f46e5;">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="metric-trend @(Model.Kpis.prospectosMes.cambio >= 0 ? "up" : "down")">
+            <i class="fas @(Model.Kpis.prospectosMes.cambio >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+            <span>@(Model.Kpis.prospectosMes.cambio >= 0 ? "+" : "")@Model.Kpis.prospectosMes.cambio%</span>
+            <span style="color:#94a3b8;font-weight:400;">vs mes anterior</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-top">
+            <div>
+                <div class="metric-label">Cotizaciones activas</div>
+                <h3 class="metric-value">@(Model.Kpis.cotizaciones?.total ?? 0)</h3>
+            </div>
+            <div class="metric-icon" style="background:#fffbeb;color:#d97706;">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+        </div>
+        <div class="metric-trend neutral">
+            <span>@(Model.Kpis.cotizaciones?.servicios ?? 0) servicios &middot; @(Model.Kpis.cotizaciones?.borradores ?? 0) borradores</span>
+        </div>
+    </div>
+</div>
+
+<!-- KPI EXTRA -->
+<div class="metric-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="metric-card" style="border-left-color:#dc2626;">
+        <div class="metric-top">
+            <div>
+                <div class="metric-label">Deudores</div>
+                <h3 class="metric-value">@Model.Kpis.deudores</h3>
+            </div>
+            <div class="metric-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i></div>
+        </div>
+    </div>
+
+    <div class="metric-card" style="border-left-color:#059669;">
+        <div class="metric-top"> 
+            <div>
+                <div class="metric-label">Al corriente</div>
+                <h3 class="metric-value">@Model.Kpis.alCorriente</h3>
+            </div>
+            <div class="metric-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-check-circle"></i></div>
+        </div>
+    </div>
+
+    <div class="metric-card" style="border-left-color:#4f46e5;">
+        <div class="metric-top">
+            <div>
+                <div class="metric-label">Prospectos con sucursales</div>
+                <h3 class="metric-value">@(Model.Kpis.sucursales?.prospectosConSuc ?? 0)</h3>
+            </div>
+            <div class="metric-icon" style="background:#eef2ff;color:#4f46e5;"><i class="fas fa-building"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS ROW -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-chart-line me-2"></i>Crecimiento comercial</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="tendenciaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-chart-pie me-2"></i>Estado de prospectos</div>
+            <div class="card-body">
+                <div class="status-list">
+                    @{
+                        var colores = new[] { "#6366f1", "#f59e0b", "#10b981", "#ef4444", "#94a3b8" };
+                        var totalProspectos = 0;
+                        foreach (var e in Model.EstatusDistribucion) { totalProspectos += e.cantidad; }
+                        for (int i = 0; i < Model.EstatusDistribucion.Count; i++)
+                        {
+                            var item = Model.EstatusDistribucion[i];
+                            var pct = totalProspectos > 0 ? (item.cantidad * 100 / totalProspectos) : 0;
+                            var color = colores[i % colores.Length];
+                            <div class="status-row">
+                                <div class="status-info">
+                                    <span class="status-dot" style="background:@color;"></span>
+                                    <span class="status-name">@item.estatus</span>
+                                    <span class="status-count">@item.cantidad</span>
+                                </div>
+                                <div class="status-bar-bg">
+                                    <div class="status-bar" style="width:@(pct)%; background:@color;"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PIPELINE TABLE -->
+<div class="card">
+    <div class="card-header"><i class="fas fa-table me-2"></i>Pipeline inmediato</div>
+    <div class="card-body table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Empresa / Cliente</th>
+                    <th>Contacto</th>
+                    <th>Estatus</th>
+                    <th>Sucursales</th>
+                    <th style="text-align:right;">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Pipeline)
+                {
+                    <tr>
+                        <td style="font-weight:700;">@(p.empresa ?? "&mdash;")</td>
+                        <td>@(p.contacto ?? "&mdash;")</td>
+                        <td>@Html.Partial("~/Views/Prospectos/_BadgeEstatus.cshtml", p.estatus)</td>
+                        <td style="text-align:center;">@(p.tieneSucursales ?? "No")</td>
+                        <td style="text-align:right; font-weight:700;">@(p.monto > 0 ? p.monto.ToString("C0", new System.Globalization.CultureInfo("es-MX")) : "--")</td>
+                    </tr>
+                }
+                @if (Model.Pipeline.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--text3); padding:40px;">No hay prospectos registrados</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- COTIZACIONES RECIENTES -->
+@if (Model.CotizacionesDetalle.Count > 0)
+{
+    <div class="card">
+        <div class="card-header"><i class="fas fa-file-invoice-dollar me-2"></i>Cotizaciones recientes</div>
+        <div class="card-body table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Tipo Residuo</th>
+                        <th>Frecuencia</th>
+                        <th>Periodicidad</th>
+                        <th style="text-align:right;">Volumen</th>
+                        <th style="text-align:right;">Precio Unit.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.CotizacionesDetalle)
+                    {
+                        <tr>
+                            <td style="font-weight:700;">@(c.empresa ?? "&mdash;")</td>
+                            <td>@(c.tipo_residuo ?? "&mdash;")</td>
+                            <td>@(c.frecuencia ?? "&mdash;")</td>
+                            <td>@(c.periodicidad_pago ?? "&mdash;")</td>
+                            <td style="text-align:right;">@(c.volumen_estimado > 0 ? c.volumen_estimado.ToString("N2") : "&mdash;")</td>
+                            <td style="text-align:right; font-weight:700;">@(c.precio_unitario > 0 ? c.precio_unitario.ToString("C2", new System.Globalization.CultureInfo("es-MX")) : "&mdash;")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        var tendenciaData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Tendencia));
+        var meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        var labels = tendenciaData.map(function(t) {
+            var partes = t.mes.split('-');
+            return meses[parseInt(partes[1], 10) - 1] + ' ' + partes[0];
+        });
+
+        var ctx = document.getElementById('tendenciaChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Prospectos',
+                        data: tendenciaData.map(function(t) { return t.prospectos; }),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Ingresos ($)',
+                        data: tendenciaData.map(function(t) { return t.ingresos; }),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y2'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Prospectos' }
+                    },
+                    y2: {
+                        position: 'right',
+                        beginAtZero: true,
+                        title: { display: true, text: 'Ingresos ($)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    </script>
+}

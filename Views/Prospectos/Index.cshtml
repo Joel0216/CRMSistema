@@ -1,0 +1,40 @@
+@model List<CRMSistema.Models.ViewModels.ProspectoViewModel>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Prospectos";
+    ViewBag.ActiveMenu = "Prospectos";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title">Padr&oacute;n de Prospectos</h2>
+        <p class="section-sub">@(Model?.Count ?? 0) registros en total</p>
+    </div>
+    <button type="button" id="btnAgregarProspecto" class="btn-custom btn-primary-custom">
+        + Agregar Prospecto
+    </button>
+</div>
+
+@Html.Partial("~/Views/Prospectos/_TablaProspectos.cshtml", Model)
+
+<!-- Contenedor del modal de prospecto -->
+<div id="modalProspectoContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1040;"></div>
+
+@section scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        window.estatusLista = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.EstatusLista ?? new string[] { }));
+        window.vendedores = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Vendedores ?? new List<CRMSistema.Models.Usuarios.UsuarioDto>()));
+        window.urlBase = '@Url.Action("Index", "Prospectos")';
+        window.urlAsignarVendedor = '@Url.Action("AsignarVendedor", "Prospectos")';
+        window.urlRechazar = '@Url.Action("Rechazar", "Prospectos")';
+        window.urlCambiarEstatus = '@Url.Action("CambiarEstatus", "Prospectos")';
+        window.urlEliminar = '@Url.Action("Eliminar", "Prospectos")';
+        window.urlNotificacion = '@Url.Action("Notificacion", "Prospectos")';
+        window.urlPartialNuevo = '@Url.Action("PartialNuevo", "Prospectos")';
+        window.urlPartialEditar = '@Url.Action("PartialEditar", "Prospectos")';
+        window.urlPartialDetalle = '@Url.Action("PartialDetalle", "Prospectos")';
+    </script>
+    <script src="~/Scripts/prospectos.js?v=20"></script>
+}

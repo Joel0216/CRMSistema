@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - Acceso Cliente</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+    @Styles.Render("~/Content/css")
+    @RenderSection("styles", required: false)
+</head>
+<body class="login-page" style="background: linear-gradient(135deg, #1e3a5f 0%, #2a5282 100%);">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="~/Content/Assets/logo_ecolsur.png" alt="Logo" onerror="this.style.display='none'" />
+            <div class="login-title" style="color: #1e3a5f;">Portal Cliente</div>
+            <div class="login-subtitle">Acceso Clientes</div>
+        </div>
+
+        @RenderBody()
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,259 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Cotizador - Seleccionar Prospecto";
+    ViewBag.ActiveMenu = "Cotizador";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title text-uppercase">COTIZADOR</h2>
+        <p class="section-sub" id="lblCount">Cargando prospectos...</p>
+    </div>
+</div>
+
+<!-- Contenedor del modal de prospecto -->
+<div id="modalProspectoContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1040;"></div>
+
+<div class="search-bar">
+    <div class="search-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="form-input" id="txtBuscar" placeholder="Buscar por empresa o contacto...">
+    </div>
+    <select class="form-input" id="cbxEstatus" style="width: 200px;">
+        <option value="">Todos los estatus</option>
+        <option value="Nuevo">Nuevo</option>
+        <option value="En seguimiento">En seguimiento</option>
+        <option value="Cotizado">Cotizado</option>
+        <option value="Adeudo">Adeudo</option>
+        <option value="Inactivo">Inactivo</option>
+        <option value="Rechazado">Rechazado</option>
+        <option value="Aprobado">Aprobado</option>
+    </select>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Razón Social</th>
+                    <th>Vendedor</th>
+                    <th>RFC</th>
+                    <th>Dirección</th>
+                    <th>Estatus</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbProspectos">
+                <tr><td colspan="7" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Provide the globals required by prospectos.js
+        window.urlPartialDetalle = '@Url.Action("PartialDetalle", "Prospectos")';
+        window.estatusLista = [];
+        window.vendedores = [];
+    </script>
+    <script src="~/Scripts/prospectos.js?v=20"></script>
+    
+    <script>
+        let allProspectos = [];
+
+        $(document).ready(function() {
+            fetchProspectos();
+
+            $('#txtBuscar').on('input', renderTable);
+            $('#cbxEstatus').on('change', renderTable);
+        });
+
+        function fetchProspectos() {
+            fetch('@Url.Action("GetProspectos", "Cotizador")')
+                .then(r => r.json())
+                .then(data => {
+                    allProspectos = data || [];
+                    renderTable();
+                })
+                .catch(e => {
+                    console.error(e);
+                    $('#tbProspectos').html('<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                });
+        }
+
+        function getBadge(e) {
+            const m = {
+                'Nuevo': 'badge-prospecto', 'En seguimiento': 'badge-cotizacion',
+                'Cotizado': 'badge-cotizacion', 'Adeudo': 'badge-perdido', 'Inactivo': 'badge-cerrado',
+                'Rechazado': 'badge-perdido', 'Aprobado': 'badge-prospecto'
+            };
+            return m[e] || 'badge-prospecto';
+        }
+
+        function renderTable() {
+            const filtro = $('#txtBuscar').val().toLowerCase();
+            const estatus = $('#cbxEstatus').val();
+
+            const filtrados = allProspectos.filter(p => {
+                const nombre = (p.nombre || p.Nombre || '').toLowerCase();
+                const contacto = (p.contacto || p.Contacto || '').toLowerCase();
+                const pEstatus = p.estatus || p.Estatus;
+
+                const matchText = !filtro || nombre.includes(filtro) || contacto.includes(filtro);
+                const matchEstatus = !estatus || pEstatus === estatus;
+                return matchText && matchEstatus;
+            });
+
+            $('#lblCount').text(`${filtrados.length} registros encontrados`);
+
+            let html = '';
+            if (filtrados.length === 0) {
+                html = `<tr><td colspan="7" class="text-center py-4" style="color: var(--text3);">Sin resultados</td></tr>`;
+            } else {
+                filtrados.forEach(p => {
+                    const id = p.id || p.Id;
+                    const rfc = p.rfc || p.Rfc || '—';
+                    const calle = p.calle || p.Calle;
+                    const num = p.numExt || p.NumExt;
+                    const col = p.colonia || p.Colonia;
+                    const mun = p.municipio || p.Municipio;
+                    const vend = p.vendedorNombre || p.VendedorNombre;
+                    const est = p.estatus || p.Estatus;
+                    
+                    const dirStr = [calle, num ? `#${num}` : '', col, mun].filter(Boolean).join(', ') || '—';
+
+                    html += `
+                        <tr>
+                            <td>${id}</td>
+                            <td style="font-weight: 600;">${p.nombre || p.Nombre || ''}</td>
+                            <td class="text-center" style="font-size: 12px;">
+                                ${vend ? `<span style="background:#E3F2FD; color:#1565C0; padding:4px 8px; border-radius:12px; font-weight:600;">${vend}</span>` : '<span style="color:#999;">Sin asignar</span>'}
+                            </td>
+                            <td class="text-muted">${rfc}</td>
+                            <td class="text-muted" style="font-size: 12px;">${dirStr}</td>
+                            <td><span class="badge ${getBadge(est)}">${est}</span></td>
+                            <td style="text-align: right;">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn-custom btn-ghost-custom btn-sm-custom" onclick="abrirModalCotizador(${id}, '${(p.nombre || p.Nombre || '').replace(/'/g, "\\'")}')" title="Ver Prospecto">
+                                        <i class="fas fa-eye" style="color: var(--text3);"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            $('#tbProspectos').html(html);
+        }
+
+        function goToGenerar(id) {
+            window.location.href = '@Url.Action("Generar", "Cotizador")' + '?prospectoId=' + id;
+        }
+
+        function verBorradores(id) {
+            const prospecto = allProspectos.find(p => p.id == id || p.Id == id);
+            const nombreStr = prospecto ? (prospecto.nombre || prospecto.Nombre) : '';
+
+            fetch('@Url.Action("GetBorradores", "Cotizador")/' + id)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        let htmlCards = '';
+                        res.data.forEach(b => {
+                            const bId = b.Borrador_ID || b.borrador_id;
+                            const bDate = (b.Fecha_Creacion || b.fecha_creacion).replace('T', ', ');
+                            htmlCards += `
+                                <div style="border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 12px; text-align: left; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                    <div style="font-weight: bold; color: #333; font-size: 14px;">Borrador #${bId}</div>
+                                    <div style="color: #888; font-size: 12px; margin-bottom: 16px;">${bDate}</div>
+                                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                                        <button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-pencil-alt"></i> Continuar Editando
+                                        </button>
+                                        <button onclick="eliminarBorrador(${bId}, ${id})" style="background: #fff; border: 1px solid #E74C3C; color: #E74C3C; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        Swal.fire({
+                            title: `<div style="background: #4A2C0A; color: white; padding: 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 16px;">
+                                        <span>Borradores: ${nombreStr}</span>
+                                        <button onclick="Swal.close()" style="background: #fff; border: none; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Cerrar</button>
+                                    </div>`,
+                            html: `<div style="padding: 16px; background: #f9f9f9;">${htmlCards}</div>`,
+                            showConfirmButton: false,
+                            padding: 0,
+                            customClass: { popup: 'swal-wide-custom' },
+                            width: 600
+                        });
+                    } else {
+                        Swal.fire('Sin resultados', 'No se encontraron borradores para este prospecto.', 'info');
+                    }
+                }).catch(e => {
+                    console.error(e);
+                    Swal.fire('Error', 'Hubo un problema al buscar los borradores.', 'error');
+                });
+        }
+
+        function eliminarBorrador(borradorId, prospectoId) {
+            Swal.fire({
+                title: '¿Eliminar borrador?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E74C3C',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('@Url.Action("DeleteBorrador", "Cotizador")/' + borradorId, { method: 'POST' })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire('Eliminado', 'El borrador ha sido eliminado.', 'success').then(() => {
+                                    verBorradores(prospectoId);
+                                });
+                            } else {
+                                Swal.fire('Error', res.error, 'error');
+                            }
+                        }).catch(console.error);
+                }
+            });
+        }
+
+        window.currentProspectoId = 0;
+        function abrirModalCotizador(id, nombre) {
+            window.currentProspectoId = id;
+            if (typeof window.abrirModalDetalle === 'function') {
+                window.abrirModalDetalle(id);
+            } else {
+                Swal.fire('Error', 'No se pudieron cargar los scripts del modal.', 'error');
+            }
+        }
+
+        $(document).ajaxComplete(function(event, xhr, settings) {
+            if (settings.url.indexOf('PartialDetalle') !== -1) {
+                // Change modal actions for Cotizador
+                $('#btnAccionesDetalle').html(`
+                    <button type="button" class="btn-custom btn-outline-custom" onclick="verBorradores(window.currentProspectoId)" style="color: #5D4037; border-color: #5D4037;">Ver borradores de cotización</button>
+                    <button type="button" class="btn-custom btn-primary-custom" onclick="goToGenerar(window.currentProspectoId)" style="background: #5D4037; color: white; border: none;">Generar Cotización</button>
+                `);
+                
+                // Hide specific Prospecto elements if needed
+                $('#seccionEstadoDetalle').hide();
+                $('.modal-title-custom').text('VISUALIZAR PROSPECTO');
+            }
+        });
+    </script>
+}
