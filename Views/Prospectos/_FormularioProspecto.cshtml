@@ -97,7 +97,7 @@
                     <!-- ESTADO DEL PROSPECTO (SOLO DETALLE) -->
                     <div id="seccionEstadoDetalle" style="display: none; margin-top: 24px; padding: 16px; background: #F8F9FA; border-radius: 8px; border: 1px solid var(--border-light);">
                         <div class="section-title-sm" style="margin-bottom: 12px;">ESTATUS</div>
-                        <div id="badgeContainerDetalle" style="margin-bottom: 12px;">
+                        <div id="badgeContainerDetalle" style="margin-bottom: 12px; padding: 6px; display: inline-block; border-radius: 8px;">
                             @Html.Partial("~/Views/Prospectos/_BadgeEstatus.cshtml", Model.Estatus ?? "Nuevo")
                         </div>
                         <div id="motivoRechazoDetalle" style="display: none; margin-top: 12px;">

@@ -20,7 +20,8 @@
 </head>
 <body class="modal-open" style="overflow: auto;">
     <div class="layout">
-        <aside class="sidebar">
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div style="font-size: 20px; font-weight: bold; color: white; padding: 10px;">Ciclo Ambiental</div>
             </div>
@@ -76,6 +77,9 @@
 
         <main class="main-content">
             <div class="topbar">
+                <button type="button" id="btnToggleSidebar" class="btn-toggle-sidebar" aria-label="Abrir menú">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="topbar-dot"></div>
                 <span class="topbar-title">@ViewBag.Title</span>
             </div>
@@ -94,8 +98,14 @@
 
             if (btn && sidebar) {
                 btn.addEventListener('click', function () {
-                    sidebar.classList.add('sidebar-open');
-                    if (overlay) overlay.classList.add('active');
+                    var isOpen = sidebar.classList.contains('sidebar-open');
+                    if (isOpen) {
+                        sidebar.classList.remove('sidebar-open');
+                        if (overlay) overlay.classList.remove('active');
+                    } else {
+                        sidebar.classList.add('sidebar-open');
+                        if (overlay) overlay.classList.add('active');
+                    }
                 });
             }
 

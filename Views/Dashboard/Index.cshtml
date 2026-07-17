@@ -104,7 +104,7 @@
 <div class="row">
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header"><i class="fas fa-chart-line me-2"></i>Crecimiento comercial</div>
+            <div class="card-header"><i class="fas fa-chart-line me-2"></i>Evoluci&oacute;n comercial</div>
             <div class="card-body">
                 <div class="chart-container">
                     <canvas id="tendenciaChart"></canvas>
@@ -115,31 +115,60 @@
 
     <div class="col-lg-4">
         <div class="card">
-            <div class="card-header"><i class="fas fa-chart-pie me-2"></i>Estado de prospectos</div>
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span><i class="fas fa-chart-pie me-2"></i>Crecimiento comercial</span>
+            </div>
             <div class="card-body">
-                <div class="status-list">
-                    @{
-                        var colores = new[] { "#6366f1", "#f59e0b", "#10b981", "#ef4444", "#94a3b8" };
-                        var totalProspectos = 0;
-                        foreach (var e in Model.EstatusDistribucion) { totalProspectos += e.cantidad; }
-                        for (int i = 0; i < Model.EstatusDistribucion.Count; i++)
-                        {
-                            var item = Model.EstatusDistribucion[i];
-                            var pct = totalProspectos > 0 ? (item.cantidad * 100 / totalProspectos) : 0;
-                            var color = colores[i % colores.Length];
-                            <div class="status-row">
-                                <div class="status-info">
-                                    <span class="status-dot" style="background:@color;"></span>
-                                    <span class="status-name">@item.estatus</span>
-                                    <span class="status-count">@item.cantidad</span>
-                                </div>
-                                <div class="status-bar-bg">
-                                    <div class="status-bar" style="width:@(pct)%; background:@color;"></div>
-                                </div>
-                            </div>
-                        }
-                    }
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2" style="font-size:12px;">
+                    <div class="d-flex align-items-center gap-1">
+                        <select id="mesInicio" class="form-select form-select-sm" style="width:auto; min-width:110px; font-size:12px;">
+                            @{
+                                var hoy = DateTime.Now;
+                                for (int i = 0; i < 12; i++)
+                                {
+                                    var d = hoy.AddMonths(-i);
+                                    var val = d.ToString("yyyy-MM");
+                                    var txt = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(d.Month).Substring(0, 3) + " " + d.Year;
+                                    var sel = i == 0 ? "selected" : "";
+                                    <option value="@val" @sel>@txt</option>
+                                }
+                            }
+                        </select>
+                        <span style="color:var(--text3);">-</span>
+                        <select id="mesFin" class="form-select form-select-sm" style="width:auto; min-width:110px; font-size:12px;">
+                            @{
+                                for (int i = 0; i < 12; i++)
+                                {
+                                    var d = hoy.AddMonths(-i);
+                                    var val = d.ToString("yyyy-MM");
+                                    var txt = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(d.Month).Substring(0, 3) + " " + d.Year;
+                                    var sel = i == 1 ? "selected" : "";
+                                    <option value="@val" @sel>@txt</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-check d-flex align-items-center gap-1 mb-0" style="font-size:12px;">
+                        <input class="form-check-input" type="checkbox" id="chkComparar" style="cursor:pointer; margin-top:0;">
+                        <label class="form-check-label" for="chkComparar" style="cursor:pointer; color:var(--text2); white-space:nowrap;">Comparar</label>
+                    </div>
                 </div>
+                <div id="tituloCrecimiento" style="font-size:11px; font-weight:700; color:var(--text2); margin-bottom:8px; text-align:center;"></div>
+                <div class="row g-2">
+                    <div class="col-6 text-center">
+                        <div id="tituloMesA" style="font-size:11px; font-weight:600; color:var(--text2); margin-bottom:4px;"></div>
+                        <div class="chart-container" style="height:160px;">
+                            <canvas id="pastelA"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-6 text-center">
+                        <div id="tituloMesB" style="font-size:11px; font-weight:600; color:var(--text2); margin-bottom:4px;"></div>
+                        <div class="chart-container" style="height:160px;">
+                            <canvas id="pastelB"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div id="leyendaPastel" class="mt-2" style="font-size:11px;"></div>
             </div>
         </div>
     </div>
@@ -219,15 +248,18 @@
 @section scripts {
     <script>
         var tendenciaData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Tendencia));
-        var meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        var estatusInicial = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.EstatusDistribucion));
+        var urlEstatusPorMes = '@Url.Action("GetEstatusDistribucionPorMes", "Dashboard")';
+        var mesesNombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
+        // Gráfica de línea
         var labels = tendenciaData.map(function(t) {
             var partes = t.mes.split('-');
-            return meses[parseInt(partes[1], 10) - 1] + ' ' + partes[0];
+            return mesesNombres[parseInt(partes[1], 10) - 1] + ' ' + partes[0];
         });
 
-        var ctx = document.getElementById('tendenciaChart').getContext('2d');
-        new Chart(ctx, {
+        var ctxLine = document.getElementById('tendenciaChart').getContext('2d');
+        new Chart(ctxLine, {
             type: 'line',
             data: {
                 labels: labels,
@@ -255,22 +287,130 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top' }
-                },
+                plugins: { legend: { position: 'top' } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Prospectos' }
-                    },
-                    y2: {
-                        position: 'right',
-                        beginAtZero: true,
-                        title: { display: true, text: 'Ingresos ($)' },
-                        grid: { drawOnChartArea: false }
-                    }
+                    y: { beginAtZero: true, title: { display: true, text: 'Prospectos' } },
+                    y2: { position: 'right', beginAtZero: true, title: { display: true, text: 'Ingresos ($)' }, grid: { drawOnChartArea: false } }
                 }
             }
+        });
+
+        // Gráficas de pastel compactas — Crecimiento comercial
+        var coloresPastel = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#14b8a6', '#94a3b8', '#f97316'];
+        var chartA = null;
+        var chartB = null;
+
+        function etiquetaMesCorto(valorMes) {
+            var p = valorMes.split('-');
+            return mesesNombres[parseInt(p[1], 10) - 1] + ' ' + p[0];
+        }
+
+        function crearPastelCompacto(ctx, datos) {
+            var labels = datos.map(function(x) { return x.estatus; });
+            var valores = datos.map(function(x) { return x.cantidad; });
+            var colores = datos.map(function(_, i) { return coloresPastel[i % coloresPastel.length]; });
+            return new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: valores,
+                        backgroundColor: colores,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                    var pct = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return context.label + ': ' + context.raw + ' (' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function cargarEstatusPorMes(mes) {
+            return $.get(urlEstatusPorMes, { mes: mes })
+                .then(function(data) {
+                    return (data && data.success) ? (data.data || []) : [];
+                })
+                .fail(function() {
+                    return [];
+                });
+        }
+
+        function datosConFallback(datos, mes) {
+            var mesActual = new Date().toISOString().slice(0, 7);
+            if ((!datos || datos.length === 0) && estatusInicial && estatusInicial.length > 0 && mes === mesActual) {
+                return estatusInicial;
+            }
+            return datos || [];
+        }
+
+        function renderLeyendaPastel(datosA, datosB) {
+            var set = {};
+            (datosA || []).forEach(function(x, i) { set[x.estatus] = coloresPastel[i % coloresPastel.length]; });
+            (datosB || []).forEach(function(x, i) { if (!set[x.estatus]) set[x.estatus] = coloresPastel[i % coloresPastel.length]; });
+            var html = '<div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;">';
+            Object.keys(set).sort().forEach(function(estatus) {
+                html += '<span style="display:inline-flex; align-items:center; gap:3px;">' +
+                        '<span style="width:8px; height:8px; border-radius:50%; background:' + set[estatus] + ';"></span>' +
+                        '<span style="font-size:11px; color:var(--text2);">' + estatus + '</span></span>';
+            });
+            html += '</div>';
+            document.getElementById('leyendaPastel').innerHTML = html;
+        }
+
+        function actualizarPastel(chart, ctx, datos) {
+            if (chart) chart.destroy();
+            return datos.length > 0 ? crearPastelCompacto(ctx, datos) : null;
+        }
+
+        function cargarCrecimiento() {
+            var mesA = $('#mesInicio').val();
+            var mesB = $('#mesFin').val();
+            var comparar = $('#chkComparar').is(':checked');
+
+            $('#tituloCrecimiento').text('Crecimiento comercial' + (comparar ? ' — comparativa' : ''));
+            $('#tituloMesA').text(etiquetaMesCorto(mesA));
+
+            $.when(cargarEstatusPorMes(mesA), comparar ? cargarEstatusPorMes(mesB) : $.Deferred().resolve([]))
+                .done(function(datosA, datosB) {
+                    datosA = datosConFallback(datosA, mesA);
+                    datosB = comparar ? datosConFallback(datosB, mesB) : [];
+
+                    chartA = actualizarPastel(chartA, document.getElementById('pastelA').getContext('2d'), datosA);
+
+                    if (comparar) {
+                        $('#tituloMesB').text(etiquetaMesCorto(mesB)).show();
+                        document.getElementById('pastelB').parentElement.parentElement.style.display = 'block';
+                        chartB = actualizarPastel(chartB, document.getElementById('pastelB').getContext('2d'), datosB);
+                    } else {
+                        $('#tituloMesB').text('').hide();
+                        document.getElementById('pastelB').parentElement.parentElement.style.display = 'none';
+                        if (chartB) { chartB.destroy(); chartB = null; }
+                    }
+
+                    renderLeyendaPastel(datosA, datosB);
+                }).fail(function() {
+                    if (chartA) chartA.destroy();
+                    if (chartB) chartB.destroy();
+                    document.getElementById('leyendaPastel').innerHTML = '';
+                });
+        }
+
+        $(function() {
+            cargarCrecimiento();
+            $('#mesInicio, #mesFin, #chkComparar').on('change', cargarCrecimiento);
         });
     </script>
 }

@@ -14,6 +14,7 @@ namespace CRMSistema.Models.Cotizador
         public decimal? precio_unitario { get; set; }
         public string dias_asignados { get; set; }
         public decimal? porcentaje_adicional { get; set; }
+        public decimal? porcentaje_descuento { get; set; }
         public string sucursal_id { get; set; }
         public string tipo_unidad { get; set; }
         public string tipo_cobro { get; set; }

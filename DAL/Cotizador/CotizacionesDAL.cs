@@ -97,6 +97,7 @@ namespace CRMSistema.DAL.Cotizador
                 cmd.Parameters.AddWithValue("@Precio_Unitario", (object)model.precio_unitario ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Dias_Asignados", model.dias_asignados);
                 cmd.Parameters.AddWithValue("@Porcentaje_Adicional", (object)model.porcentaje_adicional ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Porcentaje_Descuento", (object)model.porcentaje_descuento ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Sucursal_ID", model.sucursal_id);
                 cmd.Parameters.AddWithValue("@Tipo_Unidad", model.tipo_unidad);
                 cmd.Parameters.AddWithValue("@Tipo_Cobro", model.tipo_cobro);

@@ -50,7 +50,7 @@
     <!-- CONTENIDO DE LA PESTAÑA -->
     <div class="card mb-4 shadow-sm" style="border-top-left-radius: 0;">
         <div class="card-header fw-bold" style="color: #E65100; background: transparent; border-bottom: 1px solid #eee;">VERIFICACIÓN DEL DOMICILIO Y DÍAS DE SERVICIO DISPONIBLES</div>
-        <div class="card-body" style="padding: 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
+        <div class="card-body" id="verificacionDomicilioGrid" style="padding: 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
             <div id="mapaView" style="height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid #CFD8DC; background-color: #e9ecef; z-index: 1;">
                 <!-- Map loads here -->
             </div>
@@ -88,6 +88,7 @@
                         <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Días</th>
                         <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Precio Unit.</th>
                         <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">% Adicional</th>
+                        <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">% Descuento</th>
                         <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Subtotal</th>
                         <th style="font-size: 11px; font-weight: 700; text-align: center; border: 1px solid #5D4037; padding: 12px;"></th>
                     </tr>
@@ -108,7 +109,7 @@
                 <!-- JS injected -->
             </div>
 
-            <div style="border-top: 2px dashed #C4A574; margin-top: 16px; padding-top: 16px; width: 400px; margin-left: auto;">
+            <div id="resumenTotales" style="border-top: 2px dashed #C4A574; margin-top: 16px; padding-top: 16px; width: 400px; margin-left: auto;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
                     <span>Subtotal servicios (todas las sucursales)</span>
                     <span style="font-weight: 600;" id="subtotalGlobalLbl">$0.00</span>
@@ -427,7 +428,7 @@
             const activeItems = items.filter(i => i.tab_id === activeTab);
             let html = '';
             if (activeItems.length === 0) {
-                html = `<tr><td colspan="8" style="padding: 30px; text-align: center; color: #666; border: 1px solid #eee;">Sin servicios agregados</td></tr>`;
+                html = `<tr><td colspan="9" style="padding: 30px; text-align: center; color: #666; border: 1px solid #eee;">Sin servicios agregados</td></tr>`;
             } else {
                 activeItems.forEach(it => {
                     const isRSU = it.tipo_servicio === 'RSU';
@@ -474,6 +475,9 @@
                             <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
                                 <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 30px; padding: 0;" /> %
                             </td>
+                            <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
+                                <input type="number" min="0" max="100" value="${it.porcentaje_descuento || 0}" onchange="updateDescuento(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 30px; padding: 0;" /> %
+                            </td>
                             <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; color: #2E7D32; vertical-align: middle; border: 1px solid #eee;">${formatMXN(calcularSubtotalItem(it))}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
                                 <button type="button" style="background: transparent; border: none; font-size: 18px; cursor: pointer;" onclick="removeItem(${it.id})">
@@ -493,22 +497,43 @@
         }
 
         function calcularSubtotalItem(i) {
+            const adicional = (i.porcentaje_adicional || 0) / 100;
+            const descuento = (i.porcentaje_descuento || 0) / 100;
+            let base = 0;
             if (i.tipo_servicio === 'RSU') {
                 const diasPorSemana = Array.isArray(i.dias_asignados) ? i.dias_asignados.length : 1;
                 const bolsasMensuales = (i.bolsas * diasPorSemana * 52) / 12;
-                return bolsasMensuales * 18.60 * (1 + (i.porcentaje_adicional || 0)/100);
+                base = bolsasMensuales * 18.60;
             } else {
                 const viajesMensuales = i.recolectores * i.dias_asignados.length * 4;
                 const costo_por_viaje = getPrecioUnitarioRME(i);
-                const subtotalBase = costo_por_viaje * viajesMensuales;
-                return subtotalBase * (1 + (i.porcentaje_adicional || 0)/100);
+                base = costo_por_viaje * viajesMensuales;
             }
+            return base * (1 + adicional) * (1 - descuento);
+        }
+
+        function calcularDescuentoItem(i) {
+            const subConDescuento = calcularSubtotalItem(i);
+            const descuento = (i.porcentaje_descuento || 0) / 100;
+            if (descuento >= 1 || descuento <= 0) return 0;
+            return subConDescuento / (1 - descuento) - subConDescuento;
         }
 
         function updatePorcentaje(id, val) {
             const it = items.find(x => x.id === id);
             if (it) {
                 it.porcentaje_adicional = Number(val) || 0;
+                renderTable();
+            }
+        }
+
+        function updateDescuento(id, val) {
+            const it = items.find(x => x.id === id);
+            if (it) {
+                let v = Number(val) || 0;
+                if (v > 100) v = 100;
+                if (v < 0) v = 0;
+                it.porcentaje_descuento = v;
                 renderTable();
             }
         }
@@ -612,7 +637,8 @@
                 tab_id: activeTab,
                 tipo_servicio: tipo,
                 dias_asignados: dias,
-                porcentaje_adicional: 0
+                porcentaje_adicional: 0,
+                porcentaje_descuento: 0
             };
 
             if (tipo === 'RSU') {
@@ -774,6 +800,7 @@
                                     <th class="text-center" style="width: 90px;">DÍAS</th>
                                     <th class="text-center" style="width: 70px;">PRECIO UNIT.</th>
                                     <th class="text-center" style="width: 75px;">% ADICIONAL</th>
+                                    <th class="text-center" style="width: 70px;">% DESCUENTO</th>
                                     <th class="text-center" style="width: 80px;">SUBTOTAL</th>
                                 </tr>
                             </thead>
@@ -807,8 +834,8 @@
                         let diasHtml = it.dias_asignados.map(d => `<span class="${badgeDay}">${d.substring(0,3)}</span>`).join('');
                         const pu = isRSU ? formatMXN(18.60) : formatMXN(getPrecioUnitarioRME(it));
                         const sub = formatMXN(calcularSubtotalItem(it));
-                        const subColor = isRSU ? '#2E7D32' : '#2E7D32'; // both green in screenshot
-                        
+                        const subColor = '#2E7D32';
+
                         htmlPdf += `
                             <tr>
                                 <td class="text-center" style="vertical-align: middle;"><span class="${badgeType}">${it.tipo_servicio}</span></td>
@@ -817,6 +844,7 @@
                                 <td class="text-center" style="vertical-align: middle;">${diasHtml}</td>
                                 <td class="text-center" style="vertical-align: middle; font-weight: bold; color: #333;">${pu}</td>
                                 <td class="text-center" style="vertical-align: middle;">${it.porcentaje_adicional || 0}%</td>
+                                <td class="text-center" style="vertical-align: middle;">${it.porcentaje_descuento || 0}%</td>
                                 <td class="text-center" style="vertical-align: middle; font-weight: bold; color: ${subColor};">${sub}</td>
                             </tr>
                         `;
@@ -835,15 +863,16 @@
             });
 
             const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const descuentoGlobal = items.reduce((s, i) => s + calcularDescuentoItem(i), 0);
             const iva = subGlobal * 0.16;
             const total = subGlobal + iva;
 
             htmlPdf += `
                     <div style="clear: both;"></div>
                     <div class="summary-box">
-                        <div class="summary-row"><span>SUBTOTAL SERVICIOS (${domCount} DOMICILIOS)</span> <strong>${formatMXN(subGlobal)}</strong></div>
+                        <div class="summary-row"><span>SUBTOTAL SERVICIOS (${domCount} DOMICILIOS)</span> <strong>${formatMXN(subGlobal + descuentoGlobal)}</strong></div>
+                        <div class="summary-row"><span>DESCUENTO</span> <strong>-${formatMXN(descuentoGlobal)}</strong></div>
                         <div class="summary-row"><span>IVA</span> <strong>${formatMXN(iva)}</strong></div>
-                        <div class="summary-row"><span>DESCUENTO</span> <strong>$0.00</strong></div>
                         <div class="summary-row total-row"><span>TOTAL MENSUAL ESTIMADO</span> <span>${formatMXN(total)}</span></div>
                     </div>
                 </body>
@@ -911,6 +940,7 @@
                                 precio_unitario: it.tipo_servicio === 'RSU' ? 18.60 : getPrecioUnitarioRME(it),
                                 dias_asignados: it.dias_asignados.join(','),
                                 porcentaje_adicional: it.porcentaje_adicional,
+                                porcentaje_descuento: it.porcentaje_descuento,
                                 sucursal_id: it.tab_id === 'MATRIZ' ? null : it.tab_id, // Adjust this based on DB logic
                                 tipo_unidad: it.tipo_unidad,
                                 tipo_cobro: it.tipo_cobro,
