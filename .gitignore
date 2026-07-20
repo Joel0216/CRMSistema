@@ -11,3 +11,6 @@ packages/
 # Archivos de entorno
 .env
 .env.local
+
+# Caché de compilación ASP.NET
+_program files_git/
