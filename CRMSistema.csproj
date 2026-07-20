@@ -109,7 +109,9 @@
     <Compile Include="Controllers\Prospectos\ProspectosController.cs" />
     <Compile Include="Controllers\Cotizador\CotizadorController.cs" />
     <Compile Include="Controllers\Contratos\ContratosController.cs" />
+    <Compile Include="Controllers\ContratosAutorizados\ContratosAutorizadosController.cs" />
     <Compile Include="Controllers\Manifiestos\ManifiestosController.cs" />
+    <Compile Include="Controllers\ValidacionCotizaciones\ValidacionCotizacionesController.cs" />
     <Compile Include="Controllers\Usuarios\UsuariosController.cs" />
     <Compile Include="Controllers\Cliente\ClienteController.cs" />
     <Compile Include="DAL\Db.cs" />
@@ -127,6 +129,8 @@
     <Compile Include="Models\ViewModels\ProspectoViewModel.cs" />
     <Compile Include="Models\Prospectos\ApiProspectoModel.cs" />
     <Compile Include="Models\Cotizador\BorradorDto.cs" />
+    <Compile Include="Models\Cotizador\CotizacionValidacionModel.cs" />
+    <Compile Include="Models\Cotizador\CotizacionValidacionRequest.cs" />
     <Compile Include="Models\Cotizador\CrearTratoRequest.cs" />
     <Compile Include="Models\Cotizador\EnviarCotizacionRequest.cs" />
     <Compile Include="Models\Cotizador\ServicioCotizadoModel.cs" />
@@ -135,6 +139,7 @@
     <Compile Include="Models\Cotizador\UnidadRmeDto.cs" />
     <Compile Include="Models\Dashboard\DashboardKpiDto.cs" />
     <Compile Include="Models\Usuarios\UsuarioDto.cs" />
+    <Compile Include="Models\Contratos\ContratoAutorizadoModel.cs" />
     <Compile Include="Models\Contratos\ContratoDto.cs" />
     <Compile Include="Models\Manifiestos\ManifiestoDto.cs" />
     <Compile Include="Filters\JsonExceptionFilter.cs" />
@@ -149,6 +154,7 @@
     <Content Include="Content\Assets\*" />
     <Content Include="Scripts\*.js" />
     <Content Include="Global.asax" />
+    <Content Include="sql\validacion_cotizaciones.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -180,7 +186,9 @@
     <Content Include="Views\Cotizador\Index.cshtml" />
     <Content Include="Views\Cotizador\Generar.cshtml" />
     <Content Include="Views\Contratos\Index.cshtml" />
+    <Content Include="Views\ContratosAutorizados\Index.cshtml" />
     <Content Include="Views\Manifiestos\Index.cshtml" />
+    <Content Include="Views\ValidacionCotizaciones\Index.cshtml" />
     <Content Include="Views\Cliente\Index.cshtml" />
     <Content Include="Views\Cliente\Cotizaciones.cshtml" />
     <Content Include="Views\Cliente\Contratos.cshtml" />

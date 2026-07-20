@@ -33,7 +33,7 @@
         window.sucursalesIniciales = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Sucursales ?? new List<CRMSistema.Models.ViewModels.ProspectoSucursalViewModel>()));
         window.esModoDetalle = true;
     </script>
-    <script src="~/Scripts/prospectos.js?v=10"></script>
+    <script src="~/Scripts/prospectos.js?v=21"></script>
     <script>
         $(function () {
             // Mostrar modal
@@ -48,21 +48,35 @@
             
             // Desactivar todos los inputs
             $('#frmProspecto input, #frmProspecto select, #frmProspecto textarea').prop('disabled', true);
-            
+
+            // Deshabilitar botón de verificar dirección en modo solo lectura
+            $('#frmProspecto button[onclick*="verificarDireccion(\'form\')"]').prop('disabled', true);
+
             // Ocultar botones de agregar
             $('#btnAgregarContacto, #btnAgregarSucursal').hide();
-            
+
             // Deshabilitar click en fotoSlots
             $('[id^=fotoSlot], #docCatastralSlot').css('cursor', 'default').removeAttr('onclick');
-            
+
             // Cambiar texto a Cancelar
             $('#btnProspectoCancelar').text('Volver').css({'background': '#EBF5FB', 'color': '#2874A6', 'border': 'none', 'font-weight': '600'});
             $('#btnProspectoCancelar').attr('href', '@Url.Action("Index")');
-            
+
             // Asegurarnos de renderizar las listas con los botones ocultos
             if (typeof renderContactos === 'function') renderContactos();
             if (typeof renderSucursales === 'function') renderSucursales();
-            
+
+            // Inicializar mapa de matriz en solo lectura si hay coordenadas guardadas
+            var latMatriz = parseFloat(($('#Lat').val() || '').replace(',', '.'));
+            var lngMatriz = parseFloat(($('#Lng').val() || '').replace(',', '.'));
+            if (!isNaN(latMatriz) && !isNaN(lngMatriz)) {
+                setTimeout(function() {
+                    if (typeof window.inicializarMapaLeaflet === 'function') {
+                        window.inicializarMapaLeaflet('form', latMatriz, lngMatriz, '', true);
+                    }
+                }, 200);
+            }
+
             // Llenar previews de matriz si hay Base64 (las properties del model ya están en los hidden)
             var fachada = $('#hdnFotoFachada').val();
             var acceso = $('#hdnFotoAcceso').val();

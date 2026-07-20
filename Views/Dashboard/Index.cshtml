@@ -103,10 +103,10 @@
 <!-- CHARTS ROW -->
 <div class="row">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card" style="height:320px; display:flex; flex-direction:column;">
             <div class="card-header"><i class="fas fa-chart-line me-2"></i>Evoluci&oacute;n comercial</div>
-            <div class="card-body">
-                <div class="chart-container">
+            <div class="card-body" style="flex:1; min-height:0;">
+                <div class="chart-container" style="height:100%;">
                     <canvas id="tendenciaChart"></canvas>
                 </div>
             </div>
@@ -114,14 +114,14 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span><i class="fas fa-chart-pie me-2"></i>Crecimiento comercial</span>
+        <div class="card" style="height:320px; display:flex; flex-direction:column;">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 py-2">
+                <span style="font-size:14px;"><i class="fas fa-chart-pie me-2"></i>Crecimiento comercial</span>
             </div>
-            <div class="card-body">
-                <div class="d-flex flex-wrap gap-2 align-items-center mb-2" style="font-size:12px;">
+            <div class="card-body py-2" style="flex:1; min-height:0; overflow:auto;">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-1" style="font-size:11px;">
                     <div class="d-flex align-items-center gap-1">
-                        <select id="mesInicio" class="form-select form-select-sm" style="width:auto; min-width:110px; font-size:12px;">
+                        <select id="mesInicio" class="form-select form-select-sm" style="width:auto; min-width:90px; font-size:11px; padding:2px 6px;">
                             @{
                                 var hoy = DateTime.Now;
                                 for (int i = 0; i < 12; i++)
@@ -135,7 +135,7 @@
                             }
                         </select>
                         <span style="color:var(--text3);">-</span>
-                        <select id="mesFin" class="form-select form-select-sm" style="width:auto; min-width:110px; font-size:12px;">
+                        <select id="mesFin" class="form-select form-select-sm" style="width:auto; min-width:90px; font-size:11px; padding:2px 6px;">
                             @{
                                 for (int i = 0; i < 12; i++)
                                 {
@@ -148,27 +148,27 @@
                             }
                         </select>
                     </div>
-                    <div class="form-check d-flex align-items-center gap-1 mb-0" style="font-size:12px;">
+                    <div class="form-check d-flex align-items-center gap-1 mb-0" style="font-size:11px;">
                         <input class="form-check-input" type="checkbox" id="chkComparar" style="cursor:pointer; margin-top:0;">
                         <label class="form-check-label" for="chkComparar" style="cursor:pointer; color:var(--text2); white-space:nowrap;">Comparar</label>
                     </div>
                 </div>
-                <div id="tituloCrecimiento" style="font-size:11px; font-weight:700; color:var(--text2); margin-bottom:8px; text-align:center;"></div>
-                <div class="row g-2">
+                <div id="tituloCrecimiento" style="font-size:11px; font-weight:700; color:var(--text2); margin-bottom:4px; text-align:center;"></div>
+                <div class="row g-1">
                     <div class="col-6 text-center">
-                        <div id="tituloMesA" style="font-size:11px; font-weight:600; color:var(--text2); margin-bottom:4px;"></div>
-                        <div class="chart-container" style="height:160px;">
+                        <div id="tituloMesA" style="font-size:10px; font-weight:600; color:var(--text2); margin-bottom:2px;"></div>
+                        <div class="chart-container" style="height:115px;">
                             <canvas id="pastelA"></canvas>
                         </div>
                     </div>
                     <div class="col-6 text-center">
-                        <div id="tituloMesB" style="font-size:11px; font-weight:600; color:var(--text2); margin-bottom:4px;"></div>
-                        <div class="chart-container" style="height:160px;">
+                        <div id="tituloMesB" style="font-size:10px; font-weight:600; color:var(--text2); margin-bottom:2px;"></div>
+                        <div class="chart-container" style="height:115px;">
                             <canvas id="pastelB"></canvas>
                         </div>
                     </div>
                 </div>
-                <div id="leyendaPastel" class="mt-2" style="font-size:11px;"></div>
+                <div id="leyendaPastel" class="mt-1" style="font-size:10px;"></div>
             </div>
         </div>
     </div>

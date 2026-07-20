@@ -1,0 +1,149 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Contratos Autorizados";
+    ViewBag.ActiveMenu = "ContratosAutorizados";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="section-title mb-0" style="text-transform: uppercase;">Contratos Autorizados</h2>
+        <p class="section-sub mb-0" id="lblCount">Cargando...</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table" id="tblContratos">
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Razón Social</th>
+                    <th>RFC</th>
+                    <th>Monto Mensual</th>
+                    <th>Estatus</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbContratos">
+                <tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none;">
+            <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none;">
+                <h5 class="modal-title" style="font-size: 16px; text-transform: uppercase;">Detalle del Contrato</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Folio</label>
+                        <div id="detFolio" style="font-weight: 600;"></div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Razón Social</label>
+                        <div id="detRazonSocial" style="font-weight: 600;"></div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">RFC</label>
+                        <div id="detRFC" style="font-weight: 600;"></div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Monto Mensual</label>
+                        <div id="detMonto" style="font-weight: 600;"></div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Fecha de Autorización</label>
+                        <div id="detFecha" style="font-weight: 600;"></div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Estatus</label>
+                        <div id="detEstatus"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #eee;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let contratos = [];
+
+        const formatMXN = (num) => {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
+        };
+
+        $(document).ready(function() {
+            cargarContratos();
+        });
+
+        function cargarContratos() {
+            fetch('@Url.Action("GetContratos", "ContratosAutorizados")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        contratos = res.data || [];
+                        renderizarTabla();
+                    } else {
+                        $('#tbContratos').html(`<tr><td colspan="6" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    $('#tbContratos').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                });
+        }
+
+        function renderizarTabla() {
+            $('#lblCount').text(`${contratos.length} registros encontrados`);
+            if (contratos.length === 0) {
+                $('#tbContratos').html('<tr><td colspan="6" class="text-center py-4">No hay contratos autorizados.</td></tr>');
+                return;
+            }
+
+            let html = '';
+            contratos.forEach(c => {
+                const fecha = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—';
+                html += `
+                    <tr>
+                        <td style="font-weight: 600;">${c.Folio || '—'}</td>
+                        <td>${c.RazonSocial || '—'}</td>
+                        <td class="text-muted">${c.RFC || '—'}</td>
+                        <td class="text-muted">${formatMXN(c.Monto_Mensual)}</td>
+                        <td><span class="badge" style="background: #E8F5E9; color: #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${c.Estatus || 'Activo'}</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${c.Contrato_ID})" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tbContratos').html(html);
+        }
+
+        function verDetalle(id) {
+            const c = contratos.find(x => x.Contrato_ID === id);
+            if (!c) return;
+
+            $('#detFolio').text(c.Folio || '—');
+            $('#detRazonSocial').text(c.RazonSocial || '—');
+            $('#detRFC').text(c.RFC || '—');
+            $('#detMonto').text(formatMXN(c.Monto_Mensual));
+            $('#detFecha').text(c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—');
+            $('#detEstatus').html(`<span class="badge" style="background: #E8F5E9; color: #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${c.Estatus || 'Activo'}</span>`);
+
+            const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+            modal.show();
+        }
+    </script>
+}

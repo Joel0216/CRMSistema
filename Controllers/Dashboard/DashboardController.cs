@@ -123,7 +123,7 @@ namespace CRMSistema.Controllers.Dashboard
                     .Select(r => new EstatusDistribucionDto { estatus = ToString(r.estatus), cantidad = ToInt(r.cantidad, 0) }).ToList();
                 if (distEstatus.Count == 0)
                     distEstatus = CalcularEstatusDistribucionDesdeProspectos();
-                model.EstatusDistribucion = distEstatus;
+                model.EstatusDistribucion = CompletarEstatusDistribucion(distEstatus);
 
                 var pipeline = _dal.ObtenerPipeline()
                     .Select(r => new PipelineDto
@@ -176,13 +176,40 @@ namespace CRMSistema.Controllers.Dashboard
             {
                 var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
                 var prospectos = pDal.ObtenerTodos();
-                return prospectos
+                var datos = prospectos
                     .GroupBy(p => (p.estatus as string) ?? "Sin estatus")
                     .Select(g => new EstatusDistribucionDto { estatus = g.Key, cantidad = g.Count() })
                     .OrderByDescending(x => x.cantidad)
                     .ToList();
+                return CompletarEstatusDistribucion(datos);
             }
             catch { return new List<EstatusDistribucionDto>(); }
+        }
+
+        private List<EstatusDistribucionDto> CompletarEstatusDistribucion(List<EstatusDistribucionDto> datos)
+        {
+            var ordenEstatus = new[] { "Nuevo", "En seguimiento", "Cotizado", "Pendiente", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
+            var datosLimpios = (datos ?? new List<EstatusDistribucionDto>())
+                .Where(x => !string.IsNullOrWhiteSpace(x.estatus))
+                .Select(x => new EstatusDistribucionDto { estatus = x.estatus.Trim(), cantidad = x.cantidad })
+                .ToList();
+
+            var mapa = datosLimpios
+                .ToDictionary(x => x.estatus, x => x.cantidad, StringComparer.OrdinalIgnoreCase);
+
+            // Estatus base siempre visibles (aunque tengan 0)
+            var resultado = ordenEstatus
+                .Select(e => new EstatusDistribucionDto { estatus = e, cantidad = mapa.ContainsKey(e) ? mapa[e] : 0 })
+                .ToList();
+
+            // Agregar estatus extra que vengan de la base de datos y no estén en la lista base
+            var extras = datosLimpios
+                .Where(x => !ordenEstatus.Contains(x.estatus, StringComparer.OrdinalIgnoreCase))
+                .OrderByDescending(x => x.cantidad)
+                .ToList();
+
+            resultado.AddRange(extras);
+            return resultado;
         }
 
         private List<PipelineDto> CalcularPipelineDesdeProspectos()
@@ -257,6 +284,8 @@ namespace CRMSistema.Controllers.Dashboard
                 bool esMesActual = inicio.Year == ahora.Year && inicio.Month == ahora.Month;
                 if (datos.Count == 0 && esMesActual)
                     datos = CalcularEstatusDistribucionDesdeProspectos();
+
+                datos = CompletarEstatusDistribucion(datos);
 
                 return Content(Newtonsoft.Json.JsonConvert.SerializeObject(new { success = true, data = datos }), "application/json");
             }

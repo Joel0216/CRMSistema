@@ -365,7 +365,7 @@ namespace CRMSistema.Controllers.Prospectos
         private void CargarViewBags(int? prospectoId = null)
         {
             ViewBag.TiposPersona = new[] { "Física", "Moral" };
-            ViewBag.EstatusLista = new[] { "Nuevo", "En seguimiento", "Cotizado", "Adeudo", "Inactivo", "Rechazado", "Aprobado" };
+            ViewBag.EstatusLista = new[] { "Nuevo", "En seguimiento", "Cotizado", "Pendiente", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
             ViewBag.SiNo = new[] { "No", "Sí" };
             try
             {

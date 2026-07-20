@@ -4,20 +4,20 @@
     ViewBag.ActiveMenu = "Cotizador";
 }
 
-<div class="page-header d-flex justify-content-between align-items-center mb-4">
-    <div>
+<div class="page-header d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div class="mb-2 mb-md-0">
         <h2 class="section-title mb-0" style="text-transform: uppercase;">Generar Nueva Cotización</h2>
     </div>
-    <div class="d-flex gap-3">
+    <div class="d-flex gap-3 flex-wrap align-items-end">
         <div>
             <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha de inicio</label>
-            <input type="date" class="form-input form-control form-control-sm" id="fechaInicio" disabled style="width: 150px;">
+            <input type="date" class="form-input form-control form-control-sm" id="fechaInicio" disabled style="min-width: 130px; width: auto;">
         </div>
         <div>
             <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha límite</label>
-            <input type="date" class="form-input form-control form-control-sm" id="fechaLimite" style="width: 150px;">
+            <input type="date" class="form-input form-control form-control-sm" id="fechaLimite" style="min-width: 130px; width: auto;">
         </div>
-        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm align-self-end h-auto mt-auto py-1">
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm align-self-end h-auto py-1">
             <i class="fas fa-arrow-left me-1"></i> Volver
         </a>
     </div>
@@ -50,7 +50,7 @@
     <!-- CONTENIDO DE LA PESTAÑA -->
     <div class="card mb-4 shadow-sm" style="border-top-left-radius: 0;">
         <div class="card-header fw-bold" style="color: #E65100; background: transparent; border-bottom: 1px solid #eee;">VERIFICACIÓN DEL DOMICILIO Y DÍAS DE SERVICIO DISPONIBLES</div>
-        <div class="card-body" id="verificacionDomicilioGrid" style="padding: 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
+        <div class="card-body verificacion-grid" style="padding: 20px;">
             <div id="mapaView" style="height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid #CFD8DC; background-color: #e9ecef; z-index: 1;">
                 <!-- Map loads here -->
             </div>
@@ -79,7 +79,7 @@
         <div class="card-header fw-bold" style="color: #E65100; background: transparent; border-bottom: 1px solid #eee; border-top: 1px solid #eee;">SERVICIOS A COTIZAR</div>
 
         <div class="card-body" style="padding: 20px; overflow-x: auto;">
-            <table class="table mb-0" style="border: 1px solid #5D4037;">
+            <table class="table mb-0" style="border: 1px solid #5D4037; min-width: 900px;">
                 <thead style="background: #F5EFE9; color: #5D4037;">
                     <tr>
                         <th style="font-size: 11px; font-weight: 700; border: 1px solid #5D4037; padding: 12px; text-transform: uppercase;">Tipo</th>
@@ -97,7 +97,12 @@
                     <!-- JS injected -->
                 </tbody>
             </table>
-            <button class="btn btn-link mt-3" style="color: #5D4037; font-weight: 700; text-decoration: none; padding: 0;" onclick="openModalServicio()">+ Agregar servicio</button>
+
+            <div style="text-align: left; margin-top: 16px;">
+                <button class="btn btn-sm text-white" style="background: #4A2C0A; font-weight: 600; border-radius: 6px;" onclick="openModalServicio()">
+                    <i class="fas fa-plus me-1"></i> Agregar servicio
+                </button>
+            </div>
         </div>
     </div>
 
@@ -109,7 +114,7 @@
                 <!-- JS injected -->
             </div>
 
-            <div id="resumenTotales" style="border-top: 2px dashed #C4A574; margin-top: 16px; padding-top: 16px; width: 400px; margin-left: auto;">
+            <div id="resumenTotales" class="resumen-totales">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
                     <span>Subtotal servicios (todas las sucursales)</span>
                     <span style="font-weight: 600;" id="subtotalGlobalLbl">$0.00</span>
@@ -124,125 +129,157 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                <button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="guardarBorrador()">Guardar borrador</button>
-                <button class="btn btn-secondary" style="background: #8D6E63; border: none; font-weight: 600;" onclick="descargarPDF()">Descargar PDF</button>
-                <button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="guardarCotizacion()" id="btnGuardar">Enviar al cliente</button>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+                <button class="btn btn-outline-secondary mb-2 mb-md-0" style="border-color: #A16A34; color: #A16A34; font-weight: 600;" onclick="solicitarValidacion()">Solicitar validación</button>
+                <div class="d-flex gap-3 flex-wrap">
+                    <button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="guardarBorrador()">Guardar borrador</button>
+                    <button class="btn btn-secondary" style="background: #8D6E63; border: none; font-weight: 600;" onclick="descargarPDF()">Descargar PDF</button>
+                    <button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="guardarCotizacion()" id="btnGuardar">Enviar al cliente</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Agregar Servicio -->
-<div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            <div class="modal-header" style="background: #4A2C0A; color: white; border-bottom: none;">
-                <h5 class="modal-title" style="font-size: 14px; text-transform: uppercase;">AGREGAR SERVICIO</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div id="modalServicio" onclick="if(event.target === this) closeModalServicio()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1040; padding: 0;">
+    <div class="modal-servicio-box">
+        <div class="modal-header" style="background: #4A2C0A; color: white; border-bottom: none; flex-shrink: 0;">
+            <h5 style="font-size: 14px; text-transform: uppercase; margin: 0; font-weight: 700;">AGREGAR SERVICIO</h5>
+            <button type="button" class="btn btn-sm" onclick="closeModalServicio()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+        </div>
+
+        <div class="modal-body" style="padding: 24px; overflow-y: auto;">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">PRODUCTO (Tipo Servicio)</label>
+                    <select class="form-select form-select-sm" id="mdlTipoServicio" onchange="toggleModalFields()">
+                        <option value="RSU">RSU</option>
+                        <option value="RME">RME</option>
+                    </select>
+                </div>
+
+                <div class="col-md-8 rsu-field">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE RESIDUO</label>
+                    <select class="form-select form-select-sm" id="mdlCodigoControl"></select>
+                </div>
+
+                <div class="col-md-4 rme-field" style="display: none;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE UNIDAD</label>
+                    <select class="form-select form-select-sm" id="mdlTipoUnidad" onchange="updateUnidadInfo()"></select>
+                </div>
+                <div class="col-md-4 rme-field" style="display: none;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE SERVICIO</label>
+                    <select class="form-select form-select-sm" id="mdlTipoCobro">
+                        <option value="">-- Selecciona --</option>
+                        <option value="VIAJE">VIAJE</option>
+                        <option value="PESO">PESO</option>
+                    </select>
+                </div>
             </div>
-            <div class="modal-body">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label" style="font-size: 12px;">PRODUCTO (Tipo Servicio)</label>
-                        <select class="form-select form-select-sm" id="mdlTipoServicio" onchange="toggleModalFields()">
-                            <option value="RSU">RSU</option>
-                            <option value="RME">RME</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-8 rsu-field">
-                        <label class="form-label" style="font-size: 12px;">TIPO DE RESIDUO</label>
-                        <select class="form-select form-select-sm" id="mdlCodigoControl"></select>
-                    </div>
 
-                    <div class="col-md-4 rme-field" style="display: none;">
-                        <label class="form-label" style="font-size: 12px;">TIPO DE UNIDAD</label>
-                        <select class="form-select form-select-sm" id="mdlTipoUnidad" onchange="updateUnidadInfo()"></select>
-                    </div>
-                    <div class="col-md-4 rme-field" style="display: none;">
-                        <label class="form-label" style="font-size: 12px;">TIPO DE SERVICIO</label>
-                        <select class="form-select form-select-sm" id="mdlTipoCobro">
-                            <option value="">-- Selecciona --</option>
-                            <option value="VIAJE">VIAJE</option>
-                            <option value="PESO">PESO</option>
-                        </select>
-                    </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6 rsu-field">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">BOLSAS CONTRATADAS POR DÍA</label>
+                    <input type="number" class="form-control form-control-sm" id="mdlBolsas" value="20" min="1">
                 </div>
 
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6 rsu-field">
-                        <label class="form-label" style="font-size: 12px;">BOLSAS CONTRATADAS POR DÍA</label>
-                        <input type="number" class="form-control form-control-sm" id="mdlBolsas" value="20" min="1">
-                    </div>
-
-                    <div class="col-md-6 rme-field" style="display: none;">
-                        <label class="form-label" style="font-size: 12px;">NO. RECOLECCIONES / DÍA</label>
-                        <input type="number" class="form-control form-control-sm" id="mdlRecolectores" value="1" min="1">
-                    </div>
-                    <div class="col-md-6 rme-field" style="display: none;">
-                        <label class="form-label" style="font-size: 12px;">TURNO</label>
-                        <select class="form-select form-select-sm" id="mdlTurno">
-                            <option value="">-- Selecciona --</option>
-                            <option value="MAÑANA">MAÑANA</option>
-                            <option value="TARDE">TARDE</option>
-                            <option value="NOCHE">NOCHE</option>
-                        </select>
-                    </div>
+                <div class="col-md-6 rme-field" style="display: none;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">NO. RECOLECCIONES / DÍA</label>
+                    <input type="number" class="form-control form-control-sm" id="mdlRecolectores" value="1" min="1">
                 </div>
-
-                <div class="rme-field mb-3 p-3 rounded" style="display: none; background: #F1F8E9; border: 1px solid #C5E1A5;">
-                    <h6 style="font-size: 13px; color: #33691E; font-weight: bold;">CONFIGURADOR DE COSTOS (RME)</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label" style="font-size: 12px;">COSTO UNITARIO DEL SERVICIO</label>
-                            <input type="number" class="form-control form-control-sm" id="mdlCostoTonelada" value="0" disabled style="background: #f5f5f5;">
-                            <small class="text-muted" style="font-size: 10px;">Asignado automáticamente por tipo de unidad.</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" style="font-size: 12px;">COSTO DISPOSICIÓN EXTRA</label>
-                            <input type="number" class="form-control form-control-sm" id="mdlCostoDisposicion" value="0" min="0">
-                        </div>
-                    </div>
+                <div class="col-md-6 rme-field" style="display: none;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TURNO</label>
+                    <select class="form-select form-select-sm" id="mdlTurno">
+                        <option value="">-- Selecciona --</option>
+                        <option value="MAÑANA">MAÑANA</option>
+                        <option value="TARDE">TARDE</option>
+                        <option value="NOCHE">NOCHE</option>
+                    </select>
                 </div>
+            </div>
 
-                <div>
-                    <label class="form-label" style="font-size: 12px;">DÍAS DE RECOLECCIÓN SOLICITADO</label>
-                    <div class="d-flex flex-wrap gap-3 mt-2" id="mdlDiasContainer">
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Lunes" class="chk-dia" checked> LUNES
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Martes" class="chk-dia" checked> MARTES
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Miércoles" class="chk-dia" checked> MIÉRCOLES
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Jueves" class="chk-dia" checked> JUEVES
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Viernes" class="chk-dia" checked> VIERNES
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Sábado" class="chk-dia" checked> SÁBADO
-                        </label>
-                        <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
-                            <input type="checkbox" value="Domingo" class="chk-dia" checked> DOMINGO
-                        </label>
+            <div class="rme-field mb-3 p-3 rounded" style="display: none; background: #F1F8E9; border: 1px solid #C5E1A5;">
+                <h6 style="font-size: 13px; color: #33691E; font-weight: bold; margin-bottom: 12px;">CONFIGURADOR DE COSTOS (RME)</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size: 12px; font-weight: 700;">COSTO UNITARIO DEL SERVICIO</label>
+                        <input type="number" class="form-control form-control-sm" id="mdlCostoTonelada" value="0" disabled style="background: #f5f5f5;">
+                        <small class="text-muted" style="font-size: 10px;">Asignado automáticamente por tipo de unidad.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size: 12px; font-weight: 700;">COSTO DISPOSICIÓN EXTRA</label>
+                        <input type="number" class="form-control form-control-sm" id="mdlCostoDisposicion" value="0" min="0">
                     </div>
                 </div>
             </div>
-            <div class="modal-footer" style="border-top: none;">
-                <button type="button" class="btn btn-link" data-bs-dismiss="modal" style="text-decoration: none; color: #888; font-weight: 600;">CANCELAR</button>
-                <button type="button" class="btn text-white" style="background: #A16A34; border-radius: 6px; font-weight: 600; padding: 6px 20px;" onclick="addServicio()">AGREGAR</button>
+
+            <div>
+                <label class="form-label" style="font-size: 12px; font-weight: 700;">DÍAS DE RECOLECCIÓN SOLICITADO</label>
+                <div class="d-flex flex-wrap gap-3 mt-2" id="mdlDiasContainer">
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Lunes" class="chk-dia" checked> LUNES
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Martes" class="chk-dia" checked> MARTES
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Miércoles" class="chk-dia" checked> MIÉRCOLES
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Jueves" class="chk-dia" checked> JUEVES
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Viernes" class="chk-dia" checked> VIERNES
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Sábado" class="chk-dia" checked> SÁBADO
+                    </label>
+                    <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" value="Domingo" class="chk-dia" checked> DOMINGO
+                    </label>
+                </div>
             </div>
+        </div>
+
+        <div class="modal-footer" style="border-top: 1px solid #eee; padding: 16px 24px; justify-content: flex-end; gap: 12px; flex-shrink: 0;">
+            <button type="button" class="btn btn-link" onclick="closeModalServicio()" style="text-decoration: none; color: #888; font-weight: 600;">CANCELAR</button>
+            <button type="button" class="btn text-white" style="background: #A16A34; border-radius: 6px; font-weight: 600; padding: 6px 20px;" onclick="addServicio()">AGREGAR</button>
         </div>
     </div>
 </div>
 
 @section Styles {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .verificacion-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @@media (min-width: 992px) { .verificacion-grid { grid-template-columns: 1.5fr 1fr; gap: 24px; } }
+
+        .resumen-totales { width: 100%; margin-left: 0; border-top: 2px dashed #C4A574; margin-top: 16px; padding-top: 16px; }
+        @@media (min-width: 768px) { .resumen-totales { width: 400px; margin-left: auto; } }
+
+        .modal-servicio-box {
+            background: white;
+            border-radius: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        @@media (min-width: 768px) {
+            .modal-servicio-box {
+                border-radius: 14px;
+                width: 850px;
+                max-width: 95%;
+                max-height: 95vh;
+                height: auto;
+            }
+        }
+    </style>
 }
 
 @section Scripts {
@@ -260,6 +297,7 @@
         
         let items = []; // Array of { id, tab_id, tipo_servicio, ... }
         let activeTab = 'MATRIZ'; // 'MATRIZ' or sucursal id
+        let borradorGuardadoId = null;
 
         const formatMXN = (num) => {
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
@@ -306,6 +344,7 @@
                             if (datos.items) items = datos.items;
                             if (datos.fechaInicio) $('#fechaInicio').val(datos.fechaInicio);
                             if (datos.fechaLimite) $('#fechaLimite').val(datos.fechaLimite);
+                            borradorGuardadoId = parseInt(borradorId);
                         } catch (e) {
                             console.error('Error parsing borrador:', e);
                         }
@@ -417,7 +456,7 @@
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19
                 }).addTo(mapInstance);
-                mapMarker = L.marker([lat, lng]).addTo(mapInstance);
+                mapMarker = L.marker([lat, lng], { draggable: false }).addTo(mapInstance);
             } else {
                 mapInstance.setView([lat, lng], 15);
                 if (mapMarker) mapMarker.setLatLng([lat, lng]);
@@ -473,10 +512,10 @@
                             </td>
                             <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; vertical-align: middle; color: ${puColor}; border: 1px solid #eee;">${pu}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
-                                <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 30px; padding: 0;" /> %
+                                <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
                             </td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
-                                <input type="number" min="0" max="100" value="${it.porcentaje_descuento || 0}" onchange="updateDescuento(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 30px; padding: 0;" /> %
+                                <input type="number" min="0" max="100" value="${it.porcentaje_descuento || 0}" onchange="updateDescuento(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
                             </td>
                             <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; color: #2E7D32; vertical-align: middle; border: 1px solid #eee;">${formatMXN(calcularSubtotalItem(it))}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
@@ -577,6 +616,25 @@
         }
 
         // --- Modal functions ---
+        function openModalServicio() {
+            $('#mdlTipoServicio').val('RSU');
+            toggleModalFields();
+            $('#mdlCodigoControl').val('');
+            $('#mdlBolsas').val(20);
+            $('#mdlRecolectores').val(1);
+            $('#mdlTurno').val('');
+            $('#mdlTipoUnidad').val('');
+            $('#mdlTipoCobro').val('');
+            $('#mdlCostoTonelada').val(0);
+            $('#mdlCostoDisposicion').val(0);
+            $('.chk-dia').prop('checked', true);
+            $('#modalServicio').css('display', 'flex');
+        }
+
+        function closeModalServicio() {
+            $('#modalServicio').hide();
+        }
+
         function populateModalSelects() {
             let rsuHtml = '<option value="">-- Selecciona --</option>';
             serviciosDb.filter(s => s.codigo_sana && s.codigo_sana.startsWith('RSU')).forEach(s => {
@@ -591,15 +649,6 @@
             $('#mdlTipoUnidad').html(rmeHtml);
         }
 
-        function openModalServicio() {
-            $('#mdlTipoServicio').val('RSU');
-            toggleModalFields();
-            $('#mdlCodigoControl').val('');
-            $('#mdlBolsas').val(20);
-            $('.chk-dia').prop('checked', true);
-            var myModal = new bootstrap.Modal(document.getElementById('modalServicio'));
-            myModal.show();
-        }
 
         function toggleModalFields() {
             const t = $('#mdlTipoServicio').val();
@@ -666,8 +715,7 @@
 
             items.push(newItem);
             renderTable();
-            
-            bootstrap.Modal.getInstance(document.getElementById('modalServicio')).hide();
+            closeModalServicio();
         }
 
         // --- Save and APIs ---
@@ -681,22 +729,80 @@
                 totales: { subtotal: subGlobal, iva: subGlobal * 0.16, total: subGlobal * 1.16 }
             };
             
-            fetch('@Url.Action("CreateBorrador", "Cotizador")', {
+            return fetch('@Url.Action("CreateBorrador", "Cotizador")', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: prospectoId, datos: JSON.stringify(datos) })
             }).then(r=>r.json()).then(res => {
                 if (res.success) {
+                    borradorGuardadoId = res.id;
                     Swal.fire({icon:'success', title:'Borrador guardado correctamente', toast:true, position:'top-end', timer:2000, showConfirmButton:false});
+                    return { success: true, id: res.id };
                 } else {
                     Swal.fire('Error', res.error, 'error');
+                    return { success: false, error: res.error };
                 }
-            }).catch(console.error);
+            }).catch(e => {
+                console.error(e);
+                return { success: false, error: e.message };
+            });
+        }
+
+        function solicitarValidacion() {
+            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+
+            const enviar = () => {
+                const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+                const datos = {
+                    fechaInicio: $('#fechaInicio').val(),
+                    fechaLimite: $('#fechaLimite').val(),
+                    items: items,
+                    totales: { subtotal: subGlobal, iva: subGlobal * 0.16, total: subGlobal * 1.16 }
+                };
+
+                fetch('@Url.Action("SolicitarValidacion", "Cotizador")', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prospecto_id: prospectoId, borrador_id: borradorGuardadoId, datos: JSON.stringify(datos) })
+                }).then(r=>r.json()).then(res => {
+                    if (res.success) {
+                        borradorGuardadoId = res.borrador_id;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Enviada a validación',
+                            text: 'La cotización se envió correctamente para su revisión.',
+                            confirmButtonText: 'Aceptar'
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Index", "Cotizador")';
+                        });
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                }).catch(console.error);
+            };
+
+            if (!borradorGuardadoId) {
+                Swal.fire({
+                    title: 'Guardar borrador',
+                    text: 'Aún no has guardado un borrador. ¿Deseas guardarlo y enviarlo a validación?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, guardar y enviar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        guardarBorrador().then(r => {
+                            if (r.success) enviar();
+                        });
+                    }
+                });
+            } else {
+                enviar();
+            }
         }
 
         function descargarPDF() {
             const p = prospectoData;
             const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
-            
+
             const nombreStr = getVal('nombreComercial','NombreComercial') || getVal('nombre','Nombre') || 'Prospecto';
             const rfcStr = getVal('rfc','Rfc') || '--';
             const tipoPerStr = getVal('tipoPersona','TipoPersona') || '--';

@@ -1,0 +1,675 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Cotizaciones por Aprobar";
+    ViewBag.ActiveMenu = "CotizacionesPorAprobar";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="section-title mb-0" style="text-transform: uppercase;">Cotizaciones por Aprobar</h2>
+        <p class="section-sub mb-0" id="lblCount">Cargando...</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table" id="tblValidaciones">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Razón Social</th>
+                    <th>RFC</th>
+                    <th>Dirección</th>
+                    <th>Estatus</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbValidaciones">
+                <tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .detalle-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.55);
+        align-items: center;
+        justify-content: center;
+        z-index: 1040;
+        padding: 0;
+    }
+    .detalle-overlay.show { display: flex; }
+
+    .detalle-box {
+        background: white;
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    @@media (min-width: 768px) {
+        .detalle-box {
+            border-radius: 14px;
+            width: 1150px;
+            max-width: 96%;
+            max-height: 96vh;
+            height: auto;
+        }
+    }
+
+    @@media (min-width: 1400px) {
+        .detalle-box {
+            width: 1500px;
+        }
+    }
+
+    .detalle-body {
+        padding: 28px 32px;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .cards-container-responsive {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+    @@media (min-width: 992px) {
+        .cards-container-responsive {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+    }
+
+    .card-sucursal {
+        background: #fff;
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        padding: 16px;
+        cursor: pointer;
+        transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+        box-shadow: 0 2px 8px rgba(63,40,26,0.06);
+        min-width: 0;
+    }
+    .card-sucursal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(63,40,26,0.12);
+        border-color: var(--brown-pale, #C49A6C);
+    }
+    .card-sucursal.active {
+        border: 2px solid var(--brown-dark, #4E342E);
+        background: #FAF6F1;
+        box-shadow: 0 6px 18px rgba(63,40,26,0.14);
+    }
+    .card-sucursal .sucursal-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--brown-mid, #6B4A30);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .card-sucursal .sucursal-monto {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--brown-dark, #3E2723);
+        margin-bottom: 4px;
+    }
+    .card-sucursal .sucursal-count {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .detalle-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    @@media (min-width: 992px) {
+        .detalle-grid {
+            grid-template-columns: 1fr 400px;
+        }
+    }
+
+    .summary-responsive {
+        width: 100%;
+        margin-left: 0;
+        border: 1px solid var(--brown-pale, #C4A574);
+        border-radius: 10px;
+        padding: 20px 22px;
+        background: #FFFDE7;
+        box-shadow: 0 2px 10px rgba(63,40,26,0.06);
+    }
+    .summary-responsive .summary-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--brown-mid, #6B4A30);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px dashed #E0E0E0;
+        font-size: 14px;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .monto {
+        font-weight: 700;
+        color: #3E2723;
+        font-family: 'Inter', monospace;
+        font-variant-numeric: tabular-nums;
+    }
+    .summary-row.total {
+        background: var(--brown-dark, #3E2723);
+        color: white;
+        margin: 16px -22px -20px -22px;
+        padding: 16px 22px;
+        border-radius: 0 0 10px 10px;
+        font-size: 17px;
+        font-weight: bold;
+    }
+    .summary-row.total .monto {
+        color: white;
+        font-size: 19px;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+    .action-btns .btn-custom {
+        padding: 10px 24px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-transform: none;
+    }
+    .btn-rechazar-custom { background: #C0392B; color: white; }
+    .btn-rechazar-custom:hover { background: #A93226; }
+    .btn-autorizar-custom { background: #2E7D32; color: white; }
+    .btn-autorizar-custom:hover { background: #1B5E20; }
+
+    .modal-footer {
+        padding: 18px 32px;
+    }
+
+    .swal-wide-rechazo { width: 500px !important; max-width: 90% !important; }
+    .swal-wide-rechazo textarea { min-height: 120px !important; }
+</style>
+
+<!-- Modal Detalle -->
+<div id="modalDetalle" class="detalle-overlay" onclick="if(event.target === this) cerrarDetalle()">
+    <div class="detalle-box">
+        <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none; flex-shrink: 0;">
+            <h5 class="modal-title" id="modalFolio" style="font-size: 16px; text-transform: uppercase;">RESUMEN DE COTIZACIÓN</h5>
+            <button type="button" class="btn btn-sm" onclick="cerrarDetalle()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+        </div>
+        <div class="detalle-body">
+            <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                <h5 id="modalTitulo" style="color: #4E342E; font-weight: bold; word-break: break-word;"></h5>
+                <span class="badge" style="background: #FFE0B2; color: #E65100; padding: 6px 12px; border-radius: 20px; font-weight: bold; flex-shrink: 0;">PENDIENTE DE APROBACIÓN</span>
+            </div>
+
+            <div class="row mb-4" id="modalInfo">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2 mb-2">
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Razón Social</label>
+                    <div id="infoRazonSocial" style="font-weight: 600; font-size: 14px; word-break: break-word;"></div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2 mb-2">
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">RFC</label>
+                    <div id="infoRFC" style="font-weight: 600; font-size: 14px;"></div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2 mb-2">
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Vendedor</label>
+                    <div id="infoVendedor" style="font-weight: 600; font-size: 14px;"></div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Fecha de creación</label>
+                    <div id="infoFecha" style="font-weight: 600; font-size: 14px;"></div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Vigencia</label>
+                    <div id="infoVigencia" style="font-weight: 600; font-size: 14px;"></div>
+                </div>
+            </div>
+
+            <h6 style="color: #A16A34; font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #C4A574; padding-bottom: 8px; margin-bottom: 16px;">
+                Desglose por Sucursal — Selecciona una para ver sus servicios
+            </h6>
+
+            <div id="cardsContainer" class="cards-container-responsive">
+            </div>
+
+            <div id="serviciosContainer" style="display: none;">
+                <div class="detalle-grid">
+                    <div class="servicios-col">
+                        <h6 id="tituloServicios" style="color: #A16A34; font-size: 13px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">Servicios</h6>
+                        <div class="table-responsive">
+                            <table class="table" style="border: 1px solid #4E342E; font-size: 12px; min-width: 700px;">
+                                <thead style="background: #8D6E63; color: white;">
+                                    <tr>
+                                        <th style="border: 1px solid #4E342E;">Servicio</th>
+                                        <th style="border: 1px solid #4E342E;">Producto</th>
+                                        <th style="border: 1px solid #4E342E;">Ruta</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Días asignados</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Cantidad de Bolsas</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Precio Unitario</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">% adicional</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbServicios">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="resumen-col">
+                        <div class="summary-responsive">
+                            <div class="summary-title">Resumen Consolidado — Todas las Sucursales</div>
+                            <div class="summary-row">
+                                <span style="color: #5D4037;">Subtotal servicios</span>
+                                <span id="resumenSubtotal" class="monto"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color: #5D4037;">IVA (16%)</span>
+                                <span id="resumenIVA" class="monto"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color: #5D4037;">Descuento</span>
+                                <span id="resumenDescuento" class="monto"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color: #5D4037;">% Descuento</span>
+                                <span id="resumenPctDescuento" class="monto"></span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>TOTAL MENSUAL</span>
+                                <span id="resumenTotal" class="monto"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid #eee; justify-content: flex-end; flex-shrink: 0;">
+            <div class="action-btns">
+                <button type="button" class="btn-custom btn-rechazar-custom" onclick="rechazarValidacion()">Rechazar</button>
+                <button type="button" class="btn-custom btn-autorizar-custom" onclick="autorizarValidacion()">Autorizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let validaciones = [];
+        let validacionActual = null;
+        let datosActual = null;
+        let prospectoActual = null;
+        let sucursalesActual = [];
+        let grupoActivo = 'MATRIZ';
+
+        const formatMXN = (num) => {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
+        };
+
+        $(document).ready(function() {
+            cargarPendientes();
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $('#modalDetalle').hasClass('show')) {
+                    cerrarDetalle();
+                }
+            });
+        });
+
+        function cerrarDetalle() {
+            $('#modalDetalle').removeClass('show');
+        }
+
+        function cargarPendientes() {
+            fetch('@Url.Action("GetPendientes", "ValidacionCotizaciones")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        validaciones = res.data || [];
+                        renderizarTabla();
+                    } else {
+                        $('#tbValidaciones').html(`<tr><td colspan="6" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    $('#tbValidaciones').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                });
+        }
+
+        function renderizarTabla() {
+            $('#lblCount').text(`${validaciones.length} registros encontrados`);
+            if (validaciones.length === 0) {
+                $('#tbValidaciones').html('<tr><td colspan="6" class="text-center py-4">No hay cotizaciones pendientes de aprobación.</td></tr>');
+                return;
+            }
+
+            let html = '';
+            validaciones.forEach(v => {
+                const direccion = [v.Calle, v.Num_Ext ? `#${v.Num_Ext}` : '', v.Colonia, v.Municipio].filter(Boolean).join(', ') || '—';
+                html += `
+                    <tr>
+                        <td>${v.Validacion_ID}</td>
+                        <td style="font-weight: 600;">${v.RazonSocial || '—'}</td>
+                        <td class="text-muted">${v.RFC || '—'}</td>
+                        <td class="text-muted" style="font-size: 12px;">${direccion}</td>
+                        <td><span class="badge" style="background: #FFE0B2; color: #E65100; padding: 4px 10px; border-radius: 12px; font-size: 11px;">Pendiente</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${v.Validacion_ID})" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tbValidaciones').html(html);
+        }
+
+        function verDetalle(id) {
+            validacionActual = validaciones.find(v => v.Validacion_ID === id);
+            if (!validacionActual) return;
+
+            fetch('@Url.Action("GetDetalle", "ValidacionCotizaciones")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        prospectoActual = res.prospecto;
+                        sucursalesActual = res.sucursales || [];
+                        try {
+                            datosActual = JSON.parse(res.validacion.Datos_Cotizacion || '{}');
+                        } catch (e) {
+                            datosActual = {};
+                        }
+                        mostrarDetalle();
+                        $('#modalDetalle').addClass('show');
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                })
+                .catch(console.error);
+        }
+
+        function mostrarDetalle() {
+            const v = validacionActual;
+            const p = prospectoActual;
+            const d = datosActual || {};
+
+            const razon = getProp(p, 'Nombre', 'nombre') || v.RazonSocial || '—';
+            const rfc = getProp(p, 'RFC', 'rfc') || v.RFC || '—';
+            const vendedor = getProp(p, 'Vendedor_Nombre', 'vendedorNombre') || v.VendedorNombre || 'Sin asignar';
+            const fechaCreacion = v.Fecha_Creacion ? new Date(v.Fecha_Creacion).toLocaleDateString('es-MX') : '—';
+            const vigenciaInicio = d.fechaInicio ? formatearFecha(d.fechaInicio) : '—';
+            const vigenciaFin = d.fechaLimite ? formatearFecha(d.fechaLimite) : '—';
+            const folio = `COT-${new Date().getFullYear()}-${v.Validacion_ID.toString().padStart(4, '0')}`;
+
+            $('#modalFolio').text(`RESUMEN DE COTIZACIÓN - ${folio}`);
+            $('#modalTitulo').text(`${folio} | ${razon.toUpperCase()}`);
+            $('#infoRazonSocial').text(razon);
+            $('#infoRFC').text(rfc);
+            $('#infoVendedor').text(vendedor);
+            $('#infoFecha').text(fechaCreacion);
+            $('#infoVigencia').text(`${vigenciaInicio} al ${vigenciaFin}`);
+
+            renderizarCards();
+            grupoActivo = 'MATRIZ';
+            renderizarServicios();
+            renderizarTotales();
+        }
+
+        function getProp(obj, key1, key2) {
+            if (!obj) return '';
+            return obj[key1] !== undefined ? obj[key1] : (obj[key2] !== undefined ? obj[key2] : '');
+        }
+
+        function formatearFecha(fechaStr) {
+            if (!fechaStr) return '—';
+            const partes = fechaStr.split('-');
+            if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return fechaStr;
+        }
+
+        function renderizarCards() {
+            const p = prospectoActual;
+            const nombreCliente = getProp(p, 'Nombre_Comercial', 'nombreComercial') || getProp(p, 'Nombre', 'nombre') || 'Cliente';
+            const items = datosActual.items || [];
+
+            let html = `
+                <div class="card-sucursal active" onclick="cambiarGrupo('MATRIZ')" id="card-MATRIZ">
+                    <div class="sucursal-label"><i class="fas fa-building"></i> MATRIZ — ${nombreCliente}</div>
+                    <div class="sucursal-monto">${formatMXN(subtotalGrupo('MATRIZ'))}</div>
+                    <div class="sucursal-count">${items.filter(i => i.tab_id === 'MATRIZ').length} Servicios</div>
+                </div>
+            `;
+
+            sucursalesActual.forEach((s, idx) => {
+                const sId = String(getProp(s, 'Sucursal_ID', 'id') || getProp(s, 'Id', 'id'));
+                const nom = getProp(s, 'Nombre_Sucursal', 'nombre_sucursal') || `Sucursal ${idx + 1}`;
+                html += `
+                    <div class="card-sucursal" onclick="cambiarGrupo('${sId}')" id="card-${sId}">
+                        <div class="sucursal-label"><i class="fas fa-building"></i> SUC. ${String(idx + 1).padStart(3, '0')} — ${nom}</div>
+                        <div class="sucursal-monto">${formatMXN(subtotalGrupo(sId))}</div>
+                        <div class="sucursal-count">${items.filter(i => String(i.tab_id) === sId).length} Servicios</div>
+                    </div>
+                `;
+            });
+
+            $('#cardsContainer').html(html);
+            resaltarCardActivo();
+        }
+
+        function cambiarGrupo(grupoId) {
+            grupoActivo = grupoId;
+            resaltarCardActivo();
+            renderizarServicios();
+        }
+
+        function resaltarCardActivo() {
+            $('#cardsContainer .card-sucursal').removeClass('active');
+            $(`#card-${grupoActivo}`).addClass('active');
+        }
+
+        function renderizarServicios() {
+            const items = (datosActual.items || []).filter(i => String(i.tab_id) === String(grupoActivo));
+
+            if (items.length === 0) {
+                $('#serviciosContainer').hide();
+                return;
+            }
+
+            $('#serviciosContainer').show();
+            const nombreCliente = getProp(prospectoActual, 'Nombre_Comercial', 'nombreComercial') || getProp(prospectoActual, 'Nombre', 'nombre') || 'Cliente';
+            const titulo = grupoActivo === 'MATRIZ' ? `MATRIZ - ${nombreCliente}` : `SUCURSAL - ${getNombreSucursal(grupoActivo)}`;
+            $('#tituloServicios').text(`SERVICIOS COTIZADOS - ${titulo.toUpperCase()}`);
+
+            let html = '';
+            items.forEach(it => {
+                const isRSU = (it.tipo_servicio || '').toUpperCase() === 'RSU';
+                const bg = isRSU ? '#F57F17' : '#4CAF50';
+                const dias = Array.isArray(it.dias_asignados) ? it.dias_asignados : (it.dias_asignados || '').toString().split(',').filter(Boolean);
+                const diasHtml = dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
+                const cantidad = isRSU ? (it.bolsas || 0) : (it.recolectores || 0);
+                const pu = isRSU ? 18.60 : ((Number(it.costo_tonelada) || 0) + (Number(it.costo_disposicion) || 0));
+                const subtotal = calcularSubtotalItem(it);
+
+                html += `
+                    <tr>
+                        <td style="border: 1px solid #ccc;"><span style="background: ${bg}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">${it.tipo_servicio}</span></td>
+                        <td style="border: 1px solid #ccc; font-weight: 600;">${it.tipo_residuo || '—'}</td>
+                        <td style="border: 1px solid #ccc;">${it.ruta || 'Por asignar'}</td>
+                        <td style="border: 1px solid #ccc; text-align: center;"><div style="display: flex; gap: 2px; justify-content: center;">${diasHtml}</div></td>
+                        <td style="border: 1px solid #ccc; text-align: center;">${cantidad}</td>
+                        <td style="border: 1px solid #ccc; text-align: center; font-weight: 600;">${formatMXN(pu)}</td>
+                        <td style="border: 1px solid #ccc; text-align: center;">${it.porcentaje_adicional || 0}%</td>
+                        <td style="border: 1px solid #ccc; text-align: center; font-weight: bold; color: #2E7D32;">${formatMXN(subtotal)}</td>
+                    </tr>
+                `;
+            });
+
+            $('#tbServicios').html(html);
+        }
+
+        function getNombreSucursal(id) {
+            const s = sucursalesActual.find(x => String(getProp(x, 'Sucursal_ID', 'id')) === String(id) || String(getProp(x, 'Id', 'id')) === String(id));
+            return s ? getProp(s, 'Nombre_Sucursal', 'nombre_sucursal') : id;
+        }
+
+        function calcularSubtotalItem(i) {
+            const isRSU = (i.tipo_servicio || '').toUpperCase() === 'RSU';
+            const dias = Array.isArray(i.dias_asignados) ? i.dias_asignados : (i.dias_asignados || '').toString().split(',').filter(Boolean);
+            const diasPorSemana = dias.length || 1;
+            const adicional = (Number(i.porcentaje_adicional) || 0) / 100;
+            const descuento = (Number(i.porcentaje_descuento) || 0) / 100;
+            let base = 0;
+
+            if (isRSU) {
+                const bolsasMensuales = ((i.bolsas || 0) * diasPorSemana * 52) / 12;
+                base = bolsasMensuales * 18.60;
+            } else {
+                const viajesMensuales = (i.recolectores || 0) * diasPorSemana * 4;
+                const pu = (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
+                base = viajesMensuales * pu;
+            }
+
+            return base * (1 + adicional) * (1 - descuento);
+        }
+
+        function subtotalGrupo(grupoId) {
+            const items = (datosActual.items || []).filter(i => String(i.tab_id) === String(grupoId));
+            return items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+        }
+
+        function renderizarTotales() {
+            const items = datosActual.items || [];
+            const subtotal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+            const descuento = items.reduce((s, i) => {
+                const sub = calcularSubtotalItem(i);
+                const desc = (Number(i.porcentaje_descuento) || 0) / 100;
+                if (desc <= 0 || desc >= 1) return s;
+                return s + (sub / (1 - desc) - sub);
+            }, 0);
+
+            let pctDescuento = 0;
+            if ((subtotal + descuento) > 0) {
+                pctDescuento = (descuento / (subtotal + descuento)) * 100;
+            }
+
+            $('#resumenSubtotal').text(formatMXN(subtotal + descuento));
+            $('#resumenIVA').text(formatMXN(iva));
+            $('#resumenDescuento').text(formatMXN(descuento));
+            $('#resumenPctDescuento').text(pctDescuento.toFixed(2) + '%');
+            $('#resumenTotal').text(formatMXN(total));
+        }
+
+        function rechazarValidacion() {
+            if (!validacionActual) return;
+            $('#modalDetalle').removeClass('show');
+
+            Swal.fire({
+                title: 'Motivo de rechazo',
+                input: 'textarea',
+                inputLabel: 'Motivo',
+                inputPlaceholder: 'Escribe el motivo del rechazo...',
+                inputAttributes: { 'aria-label': 'Motivo de rechazo', rows: '4' },
+                showCancelButton: true,
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#C62828',
+                allowOutsideClick: false,
+                customClass: { popup: 'swal-wide-rechazo' },
+                preConfirm: (motivo) => {
+                    if (!motivo || motivo.trim() === '') {
+                        Swal.showValidationMessage('Debes escribir un motivo');
+                        return false;
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('@Url.Action("Rechazar", "ValidacionCotizaciones")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify({ validacion_id: validacionActual.Validacion_ID, motivo: result.value })
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) {
+                            Swal.fire('Rechazada', res.message, 'success').then(() => {
+                                cerrarDetalle();
+                                cargarPendientes();
+                            });
+                        } else {
+                            Swal.fire('Error', res.error, 'error').then(() => {
+                                $('#modalDetalle').addClass('show');
+                            });
+                        }
+                    }).catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'No se pudo rechazar la cotización.', 'error').then(() => {
+                            $('#modalDetalle').addClass('show');
+                        });
+                    });
+                } else {
+                    $('#modalDetalle').addClass('show');
+                }
+            });
+        }
+
+        function autorizarValidacion() {
+            if (!validacionActual) return;
+            Swal.fire({
+                title: '¿Autorizar cotización?',
+                text: 'Al autorizar se creará un contrato con estatus Activo.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, autorizar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E7D32'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('@Url.Action("Autorizar", "ValidacionCotizaciones")/' + validacionActual.Validacion_ID, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) {
+                            Swal.fire('Autorizada', `${res.message}\nFolio: ${res.folio}`, 'success').then(() => {
+                                cerrarDetalle();
+                                cargarPendientes();
+                            });
+                        } else {
+                            Swal.fire('Error', res.error, 'error');
+                        }
+                    }).catch(console.error);
+                }
+            });
+        }
+    </script>
+}

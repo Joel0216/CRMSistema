@@ -139,5 +139,50 @@ namespace CRMSistema.DAL.Cotizador
             AdoHelper.Execute("SP_ServiciosCotizados_Delete", CommandType.StoredProcedure,
                 new SqlParameter("@ID", id));
         }
+
+        // ─────────────────────────────────────────────────────────
+        // Validación de cotizaciones
+        // ─────────────────────────────────────────────────────────
+        public int CrearValidacion(CotizacionValidacionModel model)
+        {
+            using (var db = Db.GetConnection())
+            using (var cmd = new SqlCommand("SP_CotizacionesValidacion_Insert", db))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Prospecto_ID", model.Prospecto_ID);
+                cmd.Parameters.AddWithValue("@Borrador_ID", model.Borrador_ID);
+                cmd.Parameters.AddWithValue("@Datos_Cotizacion", model.Datos_Cotizacion);
+                cmd.Parameters.AddWithValue("@Usuario_Creacion", (object)model.Usuario_Creacion ?? DBNull.Value);
+
+                db.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+            }
+        }
+
+        public List<CotizacionValidacionModel> ObtenerValidacionesPendientes()
+        {
+            return AdoHelper.Query<CotizacionValidacionModel>("SP_CotizacionesValidacion_GetPending", CommandType.StoredProcedure);
+        }
+
+        public CotizacionValidacionModel ObtenerValidacionPorId(int id)
+        {
+            return AdoHelper.QuerySingle<CotizacionValidacionModel>("SP_CotizacionesValidacion_GetById", CommandType.StoredProcedure,
+                new SqlParameter("@Validacion_ID", id));
+        }
+
+        public CotizacionValidacionModel ObtenerValidacionPorProspecto(int prospectoId)
+        {
+            return AdoHelper.QuerySingle<CotizacionValidacionModel>("SP_CotizacionesValidacion_GetByProspecto", CommandType.StoredProcedure,
+                new SqlParameter("@Prospecto_ID", prospectoId));
+        }
+
+        public void ActualizarEstatusValidacion(int id, string estatus, string motivoRechazo, string usuarioValida)
+        {
+            AdoHelper.Execute("SP_CotizacionesValidacion_UpdateEstatus", CommandType.StoredProcedure,
+                new SqlParameter("@Validacion_ID", id),
+                new SqlParameter("@Estatus", estatus),
+                new SqlParameter("@Motivo_Rechazo", (object)motivoRechazo ?? DBNull.Value),
+                new SqlParameter("@Usuario_Valida", (object)usuarioValida ?? DBNull.Value));
+        }
     }
 }

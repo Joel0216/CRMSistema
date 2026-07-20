@@ -106,6 +106,11 @@
             tabIdxProspecto = index;
             actualizarBotonesProspecto();
         }
+
+        // Si se muestra la pestaña dirección y ya hay mapa, ajustar tamaño
+        if (tabId === 'direccion' && window.mapasLeaflet && window.mapasLeaflet['form']) {
+            setTimeout(function () { window.mapasLeaflet['form'].invalidateSize(); }, 50);
+        }
     };
 
     function actualizarBotonesProspecto() {
@@ -172,6 +177,7 @@
             // Inicializar UI según modo
             if (window.esModoDetalle) {
                 $('#frmProspecto input, #frmProspecto select, #frmProspecto textarea, #frmProspecto button[type="submit"]').prop('disabled', true);
+                $('#frmProspecto button[onclick*="verificarDireccion(\'form\')"]').prop('disabled', true);
                 $('#btnProspectoGuardar').remove();
                 $('#btnAgregarContacto, #btnAgregarSucursal').hide();
                 $('[id^=fotoSlot], #docCatastralSlot').css('cursor', 'default').removeAttr('onclick');
@@ -180,6 +186,15 @@
                 if ($('#hdnFotoFachada').val()) { $('#fotoPreview1').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoFachada').val()); $('#fotoPlaceholder1').hide(); }
                 if ($('#hdnFotoAcceso').val()) { $('#fotoPreview2').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoAcceso').val()); $('#fotoPlaceholder2').hide(); }
                 if ($('#hdnFotoReferencia').val()) { $('#fotoPreview3').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoReferencia').val()); $('#fotoPlaceholder3').hide(); }
+
+                // Inicializar mapa de matriz en solo lectura si hay coordenadas guardadas
+                var latMatriz = parseFloat(($('#Lat').val() || '').replace(',', '.'));
+                var lngMatriz = parseFloat(($('#Lng').val() || '').replace(',', '.'));
+                if (!isNaN(latMatriz) && !isNaN(lngMatriz)) {
+                    setTimeout(function() {
+                        window.inicializarMapaLeaflet('form', latMatriz, lngMatriz, '', true);
+                    }, 100);
+                }
             }
 
             actualizarBotonesProspecto();
@@ -305,6 +320,17 @@
             tabIdxSuc = index;
             actualizarBotonesSuc();
         }
+
+        // Inicializar mapa de sucursal en solo lectura si se abre la pestaña dirección y hay coordenadas
+        if (tabId === 'direccion') {
+            var latSuc = parseFloat((document.getElementById('sucLat')?.value || '').replace(',', '.'));
+            var lngSuc = parseFloat((document.getElementById('sucLng')?.value || '').replace(',', '.'));
+            if (!isNaN(latSuc) && !isNaN(lngSuc)) {
+                setTimeout(function() {
+                    window.inicializarMapaLeaflet('suc', latSuc, lngSuc, '', window.sucursalSoloLectura === true);
+                }, 100);
+            }
+        }
     };
 
     function actualizarBotonesSuc() {
@@ -350,6 +376,7 @@
     };
 
     window.resetModalSucursal = function () {
+        window.sucursalSoloLectura = false;
         tabIdxSuc = 0;
         var tabItems = document.querySelectorAll('#modalSucursal .tab-item-suc');
         showTabSuc('contacto', tabItems[0]);
@@ -474,7 +501,9 @@
             if (docSlot) { docSlot.style.border = '2px dashed #C4A574'; docSlot.style.background = '#FFFAF5'; }
         }
 
+        window.sucursalSoloLectura = false;
         $('#modalSucursal input, #modalSucursal select, #modalSucursal textarea').prop('readonly', false).prop('disabled', false);
+        $('#modalSucursal button[onclick*="verificarDireccion(\'suc\')"]').prop('disabled', false);
         $('#btnGuardarSucursal').show();
         $('.modal-sucursal-titulo').text('EDITAR SUCURSAL');
 
@@ -483,6 +512,7 @@
     }
 
     function verSucursal(idx) {
+        window.sucursalSoloLectura = true;
         window.sucursalEditIndex = idx;
         var s = sucursales[idx];
         if (!s) return;
@@ -523,6 +553,7 @@
         }
 
         $('#modalSucursal input, #modalSucursal select, #modalSucursal textarea').prop('readonly', true).prop('disabled', true);
+        $('#modalSucursal button[onclick*="verificarDireccion(\'suc\')"]').prop('disabled', true);
         $('#btnGuardarSucursal').hide();
         $('.modal-sucursal-titulo').text('VER SUCURSAL');
 
@@ -998,21 +1029,29 @@
 window.mapasLeaflet = {};
 window.marcadoresLeaflet = {};
 
-window.inicializarMapaLeaflet = function(prefix, lat, lng, displayName) {
+window.inicializarMapaLeaflet = function(prefix, lat, lng, displayName, soloLectura) {
     var containerId = 'mapContainer-' + prefix;
     var container = document.getElementById(containerId);
     var span = document.getElementById('mapText-' + prefix);
 
     if (!container) return;
 
+    var esSoloLectura = soloLectura === true || window.esModoDetalle === true;
+
     if (span) span.style.display = 'none';
     container.style.border = '2px solid #C4A574';
 
-    if (window.mapasLeaflet[prefix]) {
-        var map = window.mapasLeaflet[prefix];
-        var marker = window.marcadoresLeaflet[prefix];
+    var map = window.mapasLeaflet[prefix];
+    var marker = window.marcadoresLeaflet[prefix];
+
+    // Si ya existe un mapa pero el modo de solo lectura cambió, recreamos el marcador para reflejar draggable correcto
+    if (map && marker) {
         map.setView([lat, lng], 16);
         marker.setLatLng([lat, lng]);
+        marker.dragging[esSoloLectura ? 'disable' : 'enable']();
+        if (esSoloLectura) {
+            marker.off('dragend');
+        }
         return;
     }
 
@@ -1028,7 +1067,7 @@ window.inicializarMapaLeaflet = function(prefix, lat, lng, displayName) {
     var iframe = document.getElementById('mapFrame-' + prefix);
     if (iframe) iframe.style.display = 'none';
 
-    var map = L.map('leaflet-' + prefix).setView([lat, lng], 16);
+    map = L.map('leaflet-' + prefix).setView([lat, lng], 16);
     window.mapasLeaflet[prefix] = map;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1036,41 +1075,43 @@ window.inicializarMapaLeaflet = function(prefix, lat, lng, displayName) {
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    marker = L.marker([lat, lng], { draggable: !esSoloLectura }).addTo(map);
     window.marcadoresLeaflet[prefix] = marker;
 
-    marker.on('dragend', function(e) {
-        var position = marker.getLatLng();
+    if (!esSoloLectura) {
+        marker.on('dragend', function(e) {
+            var position = marker.getLatLng();
 
-        var latInput = prefix === 'form' ? document.getElementById('Lat') : document.getElementById('sucLat');
-        var lngInput = prefix === 'form' ? document.getElementById('Lng') : document.getElementById('sucLng');
+            var latInput = prefix === 'form' ? document.getElementById('Lat') : document.getElementById('sucLat');
+            var lngInput = prefix === 'form' ? document.getElementById('Lng') : document.getElementById('sucLng');
 
-        if (latInput) latInput.value = position.lat.toFixed(6);
-        if (lngInput) lngInput.value = position.lng.toFixed(6);
+            if (latInput) latInput.value = position.lat.toFixed(6);
+            if (lngInput) lngInput.value = position.lng.toFixed(6);
 
-        fetch("https://nominatim.openstreetmap.org/reverse?lat=" + position.lat + "&lon=" + position.lng + "&format=json&addressdetails=1")
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data && data.address) {
-                    var ad = data.address;
+            fetch("https://nominatim.openstreetmap.org/reverse?lat=" + position.lat + "&lon=" + position.lng + "&format=json&addressdetails=1")
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.address) {
+                        var ad = data.address;
 
-                    var calleInput = prefix === 'form' ? document.getElementById('Calle') : document.getElementById('sucCalle');
-                    var numInput = prefix === 'form' ? document.getElementById('NumExt') : document.getElementById('sucNumExt');
-                    var colInput = prefix === 'form' ? document.getElementById('Colonia') : document.getElementById('sucColonia');
-                    var munInput = prefix === 'form' ? document.getElementById('Municipio') : document.getElementById('sucMunicipio');
-                    var estInput = prefix === 'form' ? document.getElementById('Estado') : document.getElementById('sucEstado');
-                    var cpInput = prefix === 'form' ? document.getElementById('Cp') : document.getElementById('sucCp');
+                        var calleInput = prefix === 'form' ? document.getElementById('Calle') : document.getElementById('sucCalle');
+                        var numInput = prefix === 'form' ? document.getElementById('NumExt') : document.getElementById('sucNumExt');
+                        var colInput = prefix === 'form' ? document.getElementById('Colonia') : document.getElementById('sucColonia');
+                        var munInput = prefix === 'form' ? document.getElementById('Municipio') : document.getElementById('sucMunicipio');
+                        var estInput = prefix === 'form' ? document.getElementById('Estado') : document.getElementById('sucEstado');
+                        var cpInput = prefix === 'form' ? document.getElementById('Cp') : document.getElementById('sucCp');
 
-                    if (calleInput && ad.road) calleInput.value = ad.road;
-                    if (numInput && ad.house_number) numInput.value = ad.house_number;
-                    if (colInput && (ad.neighbourhood || ad.suburb || ad.village || ad.town)) colInput.value = ad.neighbourhood || ad.suburb || ad.village || ad.town;
-                    if (munInput && (ad.city || ad.county || ad.municipality)) munInput.value = ad.city || ad.county || ad.municipality;
-                    if (estInput && ad.state) estInput.value = ad.state;
-                    if (cpInput && ad.postcode) cpInput.value = ad.postcode;
-                }
-            })
-            .catch(function(err) { console.error(err); });
-    });
+                        if (calleInput && ad.road) calleInput.value = ad.road;
+                        if (numInput && ad.house_number) numInput.value = ad.house_number;
+                        if (colInput && (ad.neighbourhood || ad.suburb || ad.village || ad.town)) colInput.value = ad.neighbourhood || ad.suburb || ad.village || ad.town;
+                        if (munInput && (ad.city || ad.county || ad.municipality)) munInput.value = ad.city || ad.county || ad.municipality;
+                        if (estInput && ad.state) estInput.value = ad.state;
+                        if (cpInput && ad.postcode) cpInput.value = ad.postcode;
+                    }
+                })
+                .catch(function(err) { console.error(err); });
+        });
+    }
 };
 
 window.buscarCP = function(cp, prefix) {

@@ -1,6 +1,6 @@
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewBag.Title = "Cotizador - Seleccionar Prospecto";
+    ViewBag.Title = "Cotizador";
     ViewBag.ActiveMenu = "Cotizador";
 }
 
@@ -63,7 +63,7 @@
         window.estatusLista = [];
         window.vendedores = [];
     </script>
-    <script src="~/Scripts/prospectos.js?v=20"></script>
+    <script src="~/Scripts/prospectos.js?v=21"></script>
     
     <script>
         let allProspectos = [];
@@ -162,48 +162,56 @@
             const prospecto = allProspectos.find(p => p.id == id || p.Id == id);
             const nombreStr = prospecto ? (prospecto.nombre || prospecto.Nombre) : '';
 
-            fetch('@Url.Action("GetBorradores", "Cotizador")/' + id)
-                .then(r => r.json())
-                .then(res => {
-                    if (res.success && res.data && res.data.length > 0) {
-                        let htmlCards = '';
-                        res.data.forEach(b => {
-                            const bId = b.Borrador_ID || b.borrador_id;
-                            const bDate = (b.Fecha_Creacion || b.fecha_creacion).replace('T', ', ');
-                            htmlCards += `
-                                <div style="border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 12px; text-align: left; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                                    <div style="font-weight: bold; color: #333; font-size: 14px;">Borrador #${bId}</div>
-                                    <div style="color: #888; font-size: 12px; margin-bottom: 16px;">${bDate}</div>
-                                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                                        <button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                            <i class="fas fa-pencil-alt"></i> Continuar Editando
-                                        </button>
-                                        <button onclick="eliminarBorrador(${bId}, ${id})" style="background: #fff; border: 1px solid #E74C3C; color: #E74C3C; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                        });
+            Promise.all([
+                fetch('@Url.Action("GetBorradores", "Cotizador")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()),
+                fetch('@Url.Action("GetPendientes", "ValidacionCotizaciones")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json())
+            ]).then(([resBorradores, resValidaciones]) => {
+                if (resBorradores.success && resBorradores.data && resBorradores.data.length > 0) {
+                    const validaciones = (resValidaciones.success && resValidaciones.data) ? resValidaciones.data : [];
 
-                        Swal.fire({
-                            title: `<div style="background: #4A2C0A; color: white; padding: 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 16px;">
-                                        <span>Borradores: ${nombreStr}</span>
-                                        <button onclick="Swal.close()" style="background: #fff; border: none; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Cerrar</button>
-                                    </div>`,
-                            html: `<div style="padding: 16px; background: #f9f9f9;">${htmlCards}</div>`,
-                            showConfirmButton: false,
-                            padding: 0,
-                            customClass: { popup: 'swal-wide-custom' },
-                            width: 600
-                        });
-                    } else {
-                        Swal.fire('Sin resultados', 'No se encontraron borradores para este prospecto.', 'info');
-                    }
-                }).catch(e => {
-                    console.error(e);
-                    Swal.fire('Error', 'Hubo un problema al buscar los borradores.', 'error');
-                });
+                    let htmlCards = '';
+                    resBorradores.data.forEach(b => {
+                        const bId = b.Borrador_ID || b.borrador_id;
+                        const bDate = (b.Fecha_Creacion || b.fecha_creacion).replace('T', ', ');
+                        const enRevision = validaciones.some(v => (v.Borrador_ID || v.borrador_id) == bId && (v.Estatus || '').toLowerCase() === 'pendiente');
+
+                        htmlCards += `
+                            <div style="border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 12px; text-align: left; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: bold; color: #333; font-size: 14px;">Borrador #${bId}</div>
+                                    ${enRevision ? `<span style="background: #FFE0B2; color: #E65100; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">Pendiente</span>` : ''}
+                                </div>
+                                <div style="color: #888; font-size: 12px; margin-bottom: 16px;">${bDate}</div>
+                                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-pencil-alt"></i> Continuar Editando
+                                    </button>
+                                    <button onclick="eliminarBorrador(${bId}, ${id})" style="background: #fff; border: 1px solid #E74C3C; color: #E74C3C; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    Swal.fire({
+                        title: `<div style="background: #4A2C0A; color: white; padding: 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 16px;">
+                                    <span>Borradores: ${nombreStr}</span>
+                                    <button onclick="Swal.close()" style="background: #fff; border: none; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Cerrar</button>
+                                </div>`,
+                        html: `<div style="padding: 16px; background: #f9f9f9;">${htmlCards}</div>`,
+                        showConfirmButton: false,
+                        padding: 0,
+                        customClass: { popup: 'swal-wide-custom' },
+                        width: 600
+                    });
+                } else {
+                    Swal.fire('Sin resultados', 'No se encontraron borradores para este prospecto.', 'info');
+                }
+            }).catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'Hubo un problema al buscar los borradores.', 'error');
+            });
         }
 
         function eliminarBorrador(borradorId, prospectoId) {

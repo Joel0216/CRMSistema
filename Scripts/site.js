@@ -20,24 +20,4 @@
         if (modal) modal.hide();
     };
 
-    // Toggle sidebar en móvil
-    document.addEventListener('DOMContentLoaded', function () {
-        var btn = document.getElementById('btnToggleSidebar');
-        var sidebar = document.getElementById('sidebar');
-        var overlay = document.getElementById('sidebarOverlay');
-
-        if (btn && sidebar) {
-            btn.addEventListener('click', function () {
-                sidebar.classList.add('sidebar-open');
-                if (overlay) overlay.classList.add('active');
-            });
-        }
-
-        if (overlay && sidebar) {
-            overlay.addEventListener('click', function () {
-                sidebar.classList.remove('sidebar-open');
-                overlay.classList.remove('active');
-            });
-        }
-    });
 })();
