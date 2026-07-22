@@ -32,5 +32,41 @@ namespace CRMSistema.DAL.Contratos
         {
             return AdoHelper.Query<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetAll", CommandType.StoredProcedure);
         }
+
+        public List<ContratoAutorizadoModel> ObtenerContratosPorEstatus(string estatus)
+        {
+            return AdoHelper.Query<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetByEstatus", CommandType.StoredProcedure,
+                new SqlParameter("@Estatus", (object)estatus ?? DBNull.Value));
+        }
+
+        public ContratoAutorizadoModel ObtenerPorId(int contratoId)
+        {
+            return AdoHelper.QuerySingle<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetById", CommandType.StoredProcedure,
+                new SqlParameter("@Contrato_ID", contratoId));
+        }
+
+        public ContratoAutorizadoModel ObtenerPorValidacionId(int validacionId)
+        {
+            return AdoHelper.QuerySingle<ContratoAutorizadoModel>(
+                "SELECT TOP 1 * FROM dbo.crm_contratos_autorizados WHERE Validacion_ID = @Validacion_ID ORDER BY Contrato_ID DESC",
+                CommandType.Text,
+                new SqlParameter("@Validacion_ID", validacionId));
+        }
+
+        public void ActualizarEstatus(int contratoId, string estatus)
+        {
+            AdoHelper.Execute("SP_ContratosAutorizados_UpdateEstatus", CommandType.StoredProcedure,
+                new SqlParameter("@Contrato_ID", contratoId),
+                new SqlParameter("@Estatus", estatus ?? ""));
+        }
+
+        public void ActualizarMontoMensual(int contratoId, decimal monto)
+        {
+            AdoHelper.Execute(
+                "UPDATE dbo.crm_contratos_autorizados SET Monto_Mensual = @Monto_Mensual WHERE Contrato_ID = @Contrato_ID",
+                CommandType.Text,
+                new SqlParameter("@Contrato_ID", contratoId),
+                new SqlParameter("@Monto_Mensual", monto));
+        }
     }
 }

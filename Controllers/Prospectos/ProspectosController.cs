@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Web.Mvc;
 using CRMSistema.Controllers.Base;
+using CRMSistema.DAL.Cotizador;
 using CRMSistema.DAL.Prospectos;
 using CRMSistema.DAL.Usuarios;
 using CRMSistema.Models.Prospectos;
@@ -75,6 +76,19 @@ namespace CRMSistema.Controllers.Prospectos
                 var m = MapDetalle(row);
                 m.Contactos = _dal.ObtenerContactos(id).Select(MapContacto).ToList();
                 m.Sucursales = _dal.ObtenerSucursales(id).Select(MapSucursal).ToList();
+
+                try
+                {
+                    var cotDal = new CotizacionesDAL();
+                    var val = cotDal.ObtenerValidacionPorProspecto(id);
+                    if (val != null)
+                    {
+                        m.EstatusCotizacion = val.Estatus;
+                        m.MotivoRechazoCotizacion = val.Motivo_Rechazo;
+                    }
+                }
+                catch { }
+
                 return m;
             }
             catch
@@ -139,6 +153,10 @@ namespace CRMSistema.Controllers.Prospectos
 
             if (!ModelState.IsValid)
             {
+                var errores = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error = "Datos incompletos: " + string.Join("; ", errores) });
+
                 CargarViewBags();
                 return View("Formulario", model);
             }
@@ -151,10 +169,17 @@ namespace CRMSistema.Controllers.Prospectos
                 _dal.InsertarSucursales(nuevoId, apiModel.sucursales);
                 _dal.InsertarContactos(nuevoId, apiModel.contactos);
                 TempData["Success"] = "Prospecto registrado correctamente.";
+
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = true, id = nuevoId, message = "Prospecto registrado correctamente." });
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error = "Error al guardar: " + ex.Message });
+
                 ModelState.AddModelError("", "Error al guardar: " + ex.Message);
                 CargarViewBags();
                 return View("Formulario", model);
@@ -203,6 +228,10 @@ namespace CRMSistema.Controllers.Prospectos
 
             if (!ModelState.IsValid)
             {
+                var errores = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error = "Datos incompletos: " + string.Join("; ", errores) });
+
                 CargarViewBags(id);
                 return View("Formulario", model);
             }
@@ -212,10 +241,17 @@ namespace CRMSistema.Controllers.Prospectos
                 var apiModel = ToApiModel(model);
                 _dal.Actualizar(id, apiModel, (apiModel.contacto ?? "").Trim(), (apiModel.nombre ?? "").Trim());
                 TempData["Success"] = "Prospecto actualizado correctamente.";
+
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = true, id = id, message = "Prospecto actualizado correctamente." });
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error = "Error al actualizar: " + ex.Message });
+
                 ModelState.AddModelError("", "Error al actualizar: " + ex.Message);
                 CargarViewBags(id);
                 return View("Formulario", model);
@@ -309,21 +345,47 @@ namespace CRMSistema.Controllers.Prospectos
         }
 
         [HttpPost]
-        public ActionResult Notificacion(int id, ApiNotificacionModel req)
+        public ActionResult Notificacion(int id, string req)
         {
             try
             {
-                string passwordTemporal = req.password_temporal;
-                string cotizacionRef = req.cotizacion_ref;
-                string vigenciaInicio = req.vigencia_inicio;
-                string vigenciaFin = req.vigencia_fin;
-
-                if (req.tipo_asunto == "Finalizar datos de registro" && string.IsNullOrEmpty(passwordTemporal))
+                ApiNotificacionModel model = null;
+                try
                 {
-                    var rand = new Random();
-                    passwordTemporal = rand.Next(10000000, 99999999).ToString() + "ABC!";
+                    model = JsonConvert.DeserializeObject<ApiNotificacionModel>(req);
                 }
-                else if (req.tipo_asunto == "Reenvío de Cotización")
+                catch (Exception exParse)
+                {
+                    return Json(new { success = false, error = "Formato de solicitud inválido: " + exParse.Message });
+                }
+
+                if (model == null)
+                    return Json(new { success = false, error = "No se recibieron datos de notificación." });
+
+                // Si no se envió usuario, tomar el de la sesión actual.
+                if (!model.enviado_por.HasValue)
+                {
+                    model.enviado_por = Session["UsuarioId"] as int?;
+                }
+
+                string passwordTemporal = model.password_temporal;
+                string cotizacionRef = model.cotizacion_ref;
+                string vigenciaInicio = model.vigencia_inicio;
+                string vigenciaFin = model.vigencia_fin;
+
+                if (model.tipo_asunto == "Finalizar datos de registro")
+                {
+                    if (string.IsNullOrEmpty(passwordTemporal))
+                    {
+                        var rand = new Random();
+                        passwordTemporal = rand.Next(10000000, 99999999).ToString() + "ABC!";
+                    }
+                    // Campos no aplicables para este asunto; enviar cadena vacía al SP para evitar parámetro no suministrado.
+                    cotizacionRef = cotizacionRef ?? "";
+                    vigenciaInicio = vigenciaInicio ?? "";
+                    vigenciaFin = vigenciaFin ?? "";
+                }
+                else if (model.tipo_asunto == "Reenvío de Cotización")
                 {
                     if (string.IsNullOrEmpty(cotizacionRef))
                     {
@@ -332,9 +394,19 @@ namespace CRMSistema.Controllers.Prospectos
                         vigenciaInicio = now.ToString("yyyy-MM-dd");
                         vigenciaFin = now.AddDays(7).ToString("yyyy-MM-dd");
                     }
+                    // Campo no aplicable para este asunto.
+                    passwordTemporal = passwordTemporal ?? "";
+                }
+                else
+                {
+                    // Defaults para cualquier otro asunto.
+                    passwordTemporal = passwordTemporal ?? "";
+                    cotizacionRef = cotizacionRef ?? "";
+                    vigenciaInicio = vigenciaInicio ?? "";
+                    vigenciaFin = vigenciaFin ?? "";
                 }
 
-                _dal.InsertarNotificacion(id, req, passwordTemporal, cotizacionRef, vigenciaInicio, vigenciaFin);
+                _dal.InsertarNotificacion(id, model, passwordTemporal, cotizacionRef, vigenciaInicio, vigenciaFin);
                 return Json(new { success = true, passwordTemporal, cotizacionRef, vigenciaInicio, vigenciaFin });
             }
             catch (Exception ex)
@@ -365,7 +437,7 @@ namespace CRMSistema.Controllers.Prospectos
         private void CargarViewBags(int? prospectoId = null)
         {
             ViewBag.TiposPersona = new[] { "Física", "Moral" };
-            ViewBag.EstatusLista = new[] { "Nuevo", "En seguimiento", "Cotizado", "Pendiente", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
+            ViewBag.EstatusLista = new[] { "Nuevo", "En revisión", "En seguimiento", "Cotizado", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
             ViewBag.SiNo = new[] { "No", "Sí" };
             try
             {

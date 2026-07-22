@@ -129,13 +129,12 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
-                <button class="btn btn-outline-secondary mb-2 mb-md-0" style="border-color: #A16A34; color: #A16A34; font-weight: 600;" onclick="solicitarValidacion()">Solicitar validación</button>
+            <div id="contenedorBotonesCotizador" class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
                 <div class="d-flex gap-3 flex-wrap">
                     <button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="guardarBorrador()">Guardar borrador</button>
                     <button class="btn btn-secondary" style="background: #8D6E63; border: none; font-weight: 600;" onclick="descargarPDF()">Descargar PDF</button>
-                    <button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="guardarCotizacion()" id="btnGuardar">Enviar al cliente</button>
                 </div>
+                <button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="solicitarValidacion()" id="btnGuardar">Enviar a validación</button>
             </div>
         </div>
     </div>
@@ -294,10 +293,17 @@
         let unidadesRME = [];
         let mapInstance = null;
         let mapMarker = null;
-        
+
         let items = []; // Array of { id, tab_id, tipo_servicio, ... }
         let activeTab = 'MATRIZ'; // 'MATRIZ' or sucursal id
         let borradorGuardadoId = null;
+
+        // Modo según autorización/envío
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramAutorizada = urlParams.get('autorizada') === '1';
+        let esAutorizada = paramAutorizada;
+        let esEnviadaAlCliente = false;
+        let modoSoloLectura = false;
 
         const formatMXN = (num) => {
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
@@ -334,8 +340,8 @@
                 if (serviciosRes && serviciosRes.success) serviciosDb = serviciosRes.data;
                 if (unidadesRes && unidadesRes.success) unidadesRME = unidadesRes.data;
 
-                const urlParams = new URLSearchParams(window.location.search);
                 const borradorId = urlParams.get('borradorId');
+                let promesaValidacion = Promise.resolve(null);
                 if (borradorId && borradoresRes && borradoresRes.success && borradoresRes.data) {
                     const borradorStr = borradoresRes.data.find(b => (b.Borrador_ID || b.borrador_id) == borradorId);
                     if (borradorStr && (borradorStr.Datos_Borrador || borradorStr.datos_borrador)) {
@@ -344,14 +350,30 @@
                             if (datos.items) items = datos.items;
                             if (datos.fechaInicio) $('#fechaInicio').val(datos.fechaInicio);
                             if (datos.fechaLimite) $('#fechaLimite').val(datos.fechaLimite);
+                            if (datos.enviadoACliente === true) esEnviadaAlCliente = true;
                             borradorGuardadoId = parseInt(borradorId);
+                            promesaValidacion = fetch('@Url.Action("GetValidacionPorBorrador", "Cotizador")/' + borradorId).then(r => r.json());
                         } catch (e) {
                             console.error('Error parsing borrador:', e);
                         }
                     }
                 }
 
-                initUI();
+                promesaValidacion.then(resValidacion => {
+                    if (resValidacion && resValidacion.success && resValidacion.validacion) {
+                        const estatus = (resValidacion.validacion.Estatus || '').toLowerCase();
+                        if (estatus === 'autorizada') {
+                            esAutorizada = true;
+                        }
+                    }
+                    // Si ya fue enviada al cliente, también forzar solo lectura.
+                    if (esEnviadaAlCliente) modoSoloLectura = true;
+                    else if (esAutorizada) modoSoloLectura = true; // autorizada pero aún no enviada: mostrar Enviar a cliente
+                    initUI();
+                }).catch(err => {
+                    console.error('Error consultando validación del borrador:', err);
+                    initUI();
+                });
             }).catch(e => {
                 console.error(e);
                 Swal.fire('Error', 'Hubo un problema al cargar los datos.', 'error');
@@ -370,13 +392,20 @@
             const p = prospectoData;
             // Use property keys carefully as they may be PascalCase or camelCase
             const getVal = (key1, key2) => p[key1] !== undefined ? p[key1] : (p[key2] !== undefined ? p[key2] : '');
-            
-            const htmlInfo = `
+
+            let estadoHtml = '';
+            if (esEnviadaAlCliente) {
+                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-lock"></i> Cotización enviada al cliente (solo lectura)</span></div>`;
+            } else if (esAutorizada) {
+                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-check-circle"></i> Cotización autorizada — lista para enviar al cliente</span></div>`;
+            }
+
+            const htmlInfo = estadoHtml + `
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Tipo de persona</label><input class="form-control form-control-sm" value="${getVal('tipoPersona','TipoPersona') || 'Moral'}" disabled></div>
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Razón Social / Nombre completo</label><input class="form-control form-control-sm" value="${getVal('nombre','Nombre')}" disabled></div>
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">RFC</label><input class="form-control form-control-sm" value="${getVal('rfc','Rfc')}" disabled></div>
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Nombre Comercial</label><input class="form-control form-control-sm" value="${getVal('nombreComercial','NombreComercial')}" disabled></div>
-                
+
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">¿Tiene sucursales?</label><input class="form-control form-control-sm" value="${sucursalesData.length > 0 ? 'SÍ - ' + sucursalesData.length + ' REGISTRADAS' : 'NO'}" disabled></div>
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Nombre completo de contacto</label><input class="form-control form-control-sm" value="${getVal('contacto','Contacto')}" disabled></div>
                 <div class="col-md-3"><label class="form-label" style="font-size: 12px;">Teléfono de contacto</label><input class="form-control form-control-sm" value="${getVal('telefono','Telefono')}" disabled></div>
@@ -388,6 +417,49 @@
             renderActiveTabContent();
             renderResumen();
             populateModalSelects();
+            aplicarModoSoloLectura();
+            renderBotonesAccion();
+        }
+
+        function aplicarModoSoloLectura() {
+            if (!modoSoloLectura) return;
+            // Fechas y tabla
+            $('#fechaInicio, #fechaLimite').prop('disabled', true);
+            $('#serviciosTbody input, #serviciosTbody select, #serviciosTbody textarea, #serviciosTbody button').prop('disabled', true);
+            $('#serviciosTbody button').hide();
+            // Botón de agregar servicio
+            $('button[onclick="openModalServicio()"]').prop('disabled', true).hide();
+            // Campos del modal de servicio (por si se llegara a abrir)
+            $('#mdlTipoServicio, #mdlCodigoControl, #mdlBolsas, #mdlRecolectores, #mdlTipoUnidad, #mdlTipoCobro, #mdlCostoDisposicion, #mdlTurno').prop('disabled', true);
+            $('.chk-dia').prop('disabled', true);
+            $('button[onclick="addServicio()"]').prop('disabled', true).hide();
+            $('button[onclick="closeModalServicio()"]').text('Cerrar');
+        }
+
+        function renderBotonesAccion() {
+            const $cont = $('#contenedorBotonesCotizador');
+            // Reemplazar botones según modo
+            let izquierda = '';
+            let derecha = '';
+
+            if (esEnviadaAlCliente) {
+                izquierda = `<button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="descargarPDF()"><i class="fas fa-file-pdf"></i> Descargar PDF</button>`;
+                derecha = `<button class="btn btn-secondary" disabled style="background: #9E9E9E; border: none; font-weight: 600;">Cotización ya enviada al cliente</button>`;
+            } else if (esAutorizada) {
+                izquierda = `<button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="descargarPDF()"><i class="fas fa-file-pdf"></i> Descargar PDF</button>`;
+                derecha = `<button class="btn btn-primary" style="background: #2E7D32; border: none; font-weight: 600;" onclick="enviarACliente()" id="btnEnviarCliente"><i class="fas fa-paper-plane me-1"></i> Enviar a cliente</button>`;
+            } else {
+                izquierda = `
+                    <button class="btn btn-outline-secondary" style="border-color: #C4A574; color: #5D4037; font-weight: 600;" onclick="guardarBorrador()">Guardar borrador</button>
+                    <button class="btn btn-secondary" style="background: #8D6E63; border: none; font-weight: 600;" onclick="descargarPDF()">Descargar PDF</button>
+                `;
+                derecha = `<button class="btn btn-primary" style="background: #4E342E; border: none; font-weight: 600;" onclick="solicitarValidacion()" id="btnGuardar">Enviar a validación</button>`;
+            }
+
+            $cont.html(`
+                <div class="d-flex gap-3 flex-wrap">${izquierda}</div>
+                <div class="d-flex gap-3 flex-wrap">${derecha}</div>
+            `);
         }
 
         function renderTabs() {
@@ -529,6 +601,7 @@
             }
             $('#serviciosTbody').html(html);
             renderResumen();
+            aplicarModoSoloLectura();
         }
 
         function getPrecioUnitarioRME(i) {
@@ -617,6 +690,7 @@
 
         // --- Modal functions ---
         function openModalServicio() {
+            if (modoSoloLectura) return;
             $('#mdlTipoServicio').val('RSU');
             toggleModalFields();
             $('#mdlCodigoControl').val('');
@@ -719,24 +793,49 @@
         }
 
         // --- Save and APIs ---
-        function guardarBorrador() {
-            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+        function obtenerDatosBorrador(extra) {
             const subGlobal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
-            const datos = {
+            return {
                 fechaInicio: $('#fechaInicio').val(),
                 fechaLimite: $('#fechaLimite').val(),
                 items: items,
-                totales: { subtotal: subGlobal, iva: subGlobal * 0.16, total: subGlobal * 1.16 }
+                totales: { subtotal: subGlobal, iva: subGlobal * 0.16, total: subGlobal * 1.16 },
+                ...extra
             };
-            
-            return fetch('@Url.Action("CreateBorrador", "Cotizador")', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: prospectoId, datos: JSON.stringify(datos) })
-            }).then(r=>r.json()).then(res => {
+        }
+
+        function guardarBorrador() {
+            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+            if (modoSoloLectura) return Swal.fire('Atención', 'No se puede editar una cotización autorizada o enviada.', 'warning');
+            return persistirBorrador(false);
+        }
+
+        function persistirBorrador(enviadoACliente) {
+            const datos = obtenerDatosBorrador({ enviadoACliente: enviadoACliente === true });
+            const datosJson = JSON.stringify(datos);
+
+            let promesa;
+            if (borradorGuardadoId) {
+                promesa = fetch('@Url.Action("UpdateBorrador", "Cotizador")', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: borradorGuardadoId, datos: datosJson })
+                }).then(r => r.json());
+            } else {
+                promesa = fetch('@Url.Action("CreateBorrador", "Cotizador")', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: prospectoId, datos: datosJson })
+                }).then(r => r.json()).then(res => {
+                    if (res.success) borradorGuardadoId = res.id;
+                    return res;
+                });
+            }
+
+            return promesa.then(res => {
                 if (res.success) {
-                    borradorGuardadoId = res.id;
-                    Swal.fire({icon:'success', title:'Borrador guardado correctamente', toast:true, position:'top-end', timer:2000, showConfirmButton:false});
-                    return { success: true, id: res.id };
+                    if (!enviadoACliente) {
+                        Swal.fire({icon:'success', title:'Borrador guardado correctamente', toast:true, position:'top-end', timer:2000, showConfirmButton:false});
+                    }
+                    return { success: true, id: borradorGuardadoId };
                 } else {
                     Swal.fire('Error', res.error, 'error');
                     return { success: false, error: res.error };
@@ -797,6 +896,57 @@
             } else {
                 enviar();
             }
+        }
+
+        function enviarACliente() {
+            if (items.length === 0) return Swal.fire('Atención', 'Agrega al menos un servicio.', 'warning');
+            if (!esAutorizada) return Swal.fire('Atención', 'Solo se puede enviar al cliente una cotización autorizada.', 'warning');
+
+            const p = prospectoData;
+            const getVal = (k1, k2) => p[k1] !== undefined ? p[k1] : (p[k2] !== undefined ? p[k2] : '');
+            const email = getVal('email', 'Email') || 'sin-correo@crm.com';
+            const nombre = getVal('nombreComercial', 'NombreComercial') || getVal('nombre', 'Nombre') || 'Cliente CRM';
+
+            Swal.fire({
+                title: 'Enviar cotización al cliente',
+                html: `Se enviará la cotización autorizada a <b>${email}</b>.<br>Una vez enviada, no podrá editarse este borrador, pero podrás crear cotizaciones nuevas.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E7D32'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $('#btnEnviarCliente').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
+
+                // 1. Guardar borrador con flag enviadoACliente=true
+                persistirBorrador(true).then(r => {
+                    if (!r.success) throw new Error(r.error || 'No se pudo guardar el borrador');
+
+                    // 2. Enviar correo/actualizar estatus a Cotizado
+                    return fetch('@Url.Action("EnviarCotizacion", "Cotizador")', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prospecto_id: prospectoId, email: email, nombre: nombre })
+                    }).then(r => r.json());
+                }).then(emailRes => {
+                    if (!emailRes.success) throw new Error(emailRes.error || 'Error al enviar');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cotización enviada',
+                        html: `Se envió el correo al cliente.<br><br>Contraseña generada: ${emailRes.password_temporal || 'N/A'}<br><br>El estatus cambió a "Cotizado".`,
+                        timer: 6000,
+                        showConfirmButton: true
+                    }).then(() => {
+                        window.location.href = '@Url.Action("Index", "Cotizador")';
+                    });
+                }).catch(e => {
+                    console.error(e);
+                    Swal.fire('Error', e.message || 'Error al enviar la cotización', 'error');
+                    $('#btnEnviarCliente').prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Enviar a cliente');
+                });
+            });
         }
 
         function descargarPDF() {

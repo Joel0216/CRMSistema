@@ -66,11 +66,7 @@
                         </div>
                         <div class="user-rol">admin</div>
                     </div>
-                    @using (Html.BeginForm("Logout", "Acceso", FormMethod.Post, new { style = "margin:0" }))
-                    {
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white; border: none; font-size: 12px; padding: 5px 10px; border-radius: 6px;" title="Cerrar sesi&oacute;n">Salir</button>
-                    }
+                    <a href="@Url.Action("Logout", "Acceso")" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white; border: none; font-size: 12px; padding: 5px 10px; border-radius: 6px; text-decoration: none;" title="Cerrar sesi&oacute;n">Salir</a>
                 </div>
             </div>
         </aside>

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Dynamic;
+using System.Linq;
 using CRMSistema.Models.Prospectos;
 
 namespace CRMSistema.DAL.Prospectos
@@ -13,7 +15,71 @@ namespace CRMSistema.DAL.Prospectos
     {
         public List<dynamic> ObtenerTodos()
         {
-            return AdoHelper.Query("SP_Prospectos_GetAll", CommandType.StoredProcedure);
+            var rows = AdoHelper.Query("SP_Prospectos_GetAll", CommandType.StoredProcedure);
+            // Normalizar claves para que los consumidores (Razor, JS, controllers) puedan usar
+            // nombres en camelCase sin depender del casing exacto de las columnas del SP.
+            return rows.Select(NormalizarClaves).ToList();
+        }
+
+        private static dynamic NormalizarClaves(dynamic r)
+        {
+            var dict = r as IDictionary<string, object>;
+            if (dict == null) return r;
+
+            var result = new ExpandoObject() as IDictionary<string, object>;
+            foreach (var kvp in dict)
+                result[kvp.Key] = kvp.Value;
+
+            void Alias(string nuevo, params string[] originales)
+            {
+                if (result.ContainsKey(nuevo)) return;
+                foreach (var orig in originales)
+                {
+                    var key = dict.Keys.FirstOrDefault(k => k.Equals(orig, StringComparison.OrdinalIgnoreCase));
+                    if (key != null)
+                    {
+                        result[nuevo] = dict[key];
+                        return;
+                    }
+                }
+            }
+
+            Alias("id", "Prospecto_ID", "prospecto_id", "ProspectoId");
+            Alias("nombre", "Nombre_Prospecto", "Nombre_Empresa", "Nombre_Comercial_Empresa", "Nombre_Comercial", "Empresa");
+            Alias("contacto", "Nombre_Prospecto", "Contacto");
+            Alias("rfc", "RFC");
+            Alias("telefono", "Telefono");
+            Alias("email", "Correo");
+            Alias("estatus", "Estatus");
+            Alias("tipoPersona", "Tipo_Persona", "TipoPersona");
+            Alias("tieneSucursales", "Tiene_Sucursales", "TieneSucursales");
+            Alias("nombreComercial", "Nombre_Comercial", "NombreComercial");
+            Alias("calle", "Calle");
+            Alias("numExt", "Num_Ext", "NumExt");
+            Alias("numInt", "Num_Int", "NumInt");
+            Alias("colonia", "Colonia");
+            Alias("municipio", "Municipio");
+            Alias("cp", "CP", "Cp");
+            Alias("estado", "Estado");
+            Alias("lat", "Lat");
+            Alias("lng", "Lng");
+            Alias("notas", "Notas");
+            Alias("concesionaria", "Concesionaria");
+            Alias("referencias", "Referencias");
+            Alias("folioCatastral", "Folio_Catastral", "FolioCatastral");
+            Alias("dias_disponibles", "Dias_Disponibles", "DiasDisponibles");
+            Alias("horario", "Horario");
+            Alias("ruta", "Ruta");
+            Alias("vendedorNombre", "VendedorNombre", "Nombre_Vendedor", "Vendedor");
+            Alias("vendedorId", "Vendedor_ID", "VendedorId");
+            Alias("foto_fachada", "Foto_Fachada");
+            Alias("foto_acceso", "Foto_Acceso");
+            Alias("foto_referencia", "Foto_Referencia");
+            Alias("documento_catastral", "Documento_Catastral");
+            Alias("documento_catastral_nombre", "Documento_Catastral_Nombre");
+            Alias("motivoRechazo", "Motivo_Rechazo", "MotivoRechazo");
+
+            return result;
         }
 
         public long UpsertEmpresa(string nombre, string rfc)
@@ -73,7 +139,21 @@ namespace CRMSistema.DAL.Prospectos
                 cmd.Parameters.AddWithValue("@Documento_Catastral_Nombre", d.documento_catastral_nombre);
 
                 db.Open();
-                return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                var result = cmd.ExecuteScalar();
+                int nuevoId = result != null ? Convert.ToInt32(result) : 0;
+
+                // Fallback: si el SP no devuelve el ID (devuelve 0), recuperarlo de la tabla.
+                if (nuevoId == 0)
+                {
+                    using (var idCmd = new SqlCommand(@"SELECT TOP 1 Prospecto_ID FROM crm_prospectos WHERE RFC = @RFC AND Correo = @Correo ORDER BY Prospecto_ID DESC", db))
+                    {
+                        idCmd.Parameters.AddWithValue("@RFC", d.rfc ?? "");
+                        idCmd.Parameters.AddWithValue("@Correo", d.email ?? "");
+                        var idObj = idCmd.ExecuteScalar();
+                        if (idObj != null) nuevoId = Convert.ToInt32(idObj);
+                    }
+                }
+                return nuevoId;
             }
         }
 
@@ -192,12 +272,12 @@ namespace CRMSistema.DAL.Prospectos
         {
             AdoHelper.Execute("SP_Notificaciones_Insert", CommandType.StoredProcedure,
                 new SqlParameter("@Prospecto_ID", id),
-                new SqlParameter("@Tipo_Asunto", req.tipo_asunto),
-                new SqlParameter("@Correo_Destino", req.correo_destino),
-                new SqlParameter("@Password_Temporal", passwordTemporal),
-                new SqlParameter("@Cotizacion_Ref", cotizacionRef),
-                new SqlParameter("@Vigencia_Inicio", vigenciaInicio),
-                new SqlParameter("@Vigencia_Fin", vigenciaFin),
+                new SqlParameter("@Tipo_Asunto", req.tipo_asunto ?? ""),
+                new SqlParameter("@Correo_Destino", req.correo_destino ?? ""),
+                new SqlParameter("@Password_Temporal", (object)passwordTemporal ?? DBNull.Value),
+                new SqlParameter("@Cotizacion_Ref", (object)cotizacionRef ?? DBNull.Value),
+                new SqlParameter("@Vigencia_Inicio", (object)vigenciaInicio ?? DBNull.Value),
+                new SqlParameter("@Vigencia_Fin", (object)vigenciaFin ?? DBNull.Value),
                 new SqlParameter("@Enviado_Por", (object)req.enviado_por ?? DBNull.Value));
         }
 

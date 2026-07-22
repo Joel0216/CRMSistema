@@ -370,20 +370,29 @@
         function renderizarTabla() {
             $('#lblCount').text(`${validaciones.length} registros encontrados`);
             if (validaciones.length === 0) {
-                $('#tbValidaciones').html('<tr><td colspan="6" class="text-center py-4">No hay cotizaciones pendientes de aprobación.</td></tr>');
+                $('#tbValidaciones').html('<tr><td colspan="6" class="text-center py-4">No hay cotizaciones por aprobar.</td></tr>');
                 return;
+            }
+
+            function badgeValidacion(estatus) {
+                const e = (estatus || '').toLowerCase();
+                if (e === 'autorizada') return { texto: 'Autorizada', bg: '#E8F5E9', color: '#2E7D32' };
+                if (e === 'rechazada') return { texto: 'Rechazada', bg: '#FFEBEE', color: '#C62828' };
+                return { texto: 'Pendiente', bg: '#FFE0B2', color: '#E65100' };
             }
 
             let html = '';
             validaciones.forEach(v => {
                 const direccion = [v.Calle, v.Num_Ext ? `#${v.Num_Ext}` : '', v.Colonia, v.Municipio].filter(Boolean).join(', ') || '—';
+                const b = badgeValidacion(v.Estatus);
+                const ocultarAcciones = b.texto !== 'Pendiente' ? 'display:none;' : '';
                 html += `
                     <tr>
                         <td>${v.Validacion_ID}</td>
                         <td style="font-weight: 600;">${v.RazonSocial || '—'}</td>
                         <td class="text-muted">${v.RFC || '—'}</td>
                         <td class="text-muted" style="font-size: 12px;">${direccion}</td>
-                        <td><span class="badge" style="background: #FFE0B2; color: #E65100; padding: 4px 10px; border-radius: 12px; font-size: 11px;">Pendiente</span></td>
+                        <td><span class="badge" style="background: ${b.bg}; color: ${b.color}; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${b.texto}</span></td>
                         <td style="text-align: right;">
                             <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${v.Validacion_ID})" title="Ver detalle">
                                 <i class="fas fa-eye"></i>
@@ -432,13 +441,20 @@
             const vigenciaFin = d.fechaLimite ? formatearFecha(d.fechaLimite) : '—';
             const folio = `COT-${new Date().getFullYear()}-${v.Validacion_ID.toString().padStart(4, '0')}`;
 
+            const estatusVal = (v.Estatus || '').toLowerCase();
+            const estatusLabel = estatusVal === 'autorizada' ? 'Autorizada' : (estatusVal === 'rechazada' ? 'Rechazada' : 'Pendiente');
+
             $('#modalFolio').text(`RESUMEN DE COTIZACIÓN - ${folio}`);
-            $('#modalTitulo').text(`${folio} | ${razon.toUpperCase()}`);
+            $('#modalTitulo').text(`${folio} | ${razon.toUpperCase()} — ${estatusLabel}`);
             $('#infoRazonSocial').text(razon);
             $('#infoRFC').text(rfc);
             $('#infoVendedor').text(vendedor);
             $('#infoFecha').text(fechaCreacion);
             $('#infoVigencia').text(`${vigenciaInicio} al ${vigenciaFin}`);
+
+            // Mostrar/ocultar botones de acción según estatus
+            const mostrarAcciones = estatusVal === 'pendiente';
+            $('.btn-rechazar-custom, .btn-autorizar-custom').toggle(mostrarAcciones);
 
             renderizarCards();
             grupoActivo = 'MATRIZ';
@@ -661,8 +677,12 @@
                     }).then(r => r.json()).then(res => {
                         if (res.success) {
                             Swal.fire('Autorizada', `${res.message}\nFolio: ${res.folio}`, 'success').then(() => {
-                                cerrarDetalle();
-                                cargarPendientes();
+                                if (res.redirectUrl) {
+                                    window.location.href = res.redirectUrl;
+                                } else {
+                                    cerrarDetalle();
+                                    cargarPendientes();
+                                }
                             });
                         } else {
                             Swal.fire('Error', res.error, 'error');

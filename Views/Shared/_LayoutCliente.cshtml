@@ -46,13 +46,9 @@
                 </div>
                 <div class="overflow-hidden">
                     <div class="user-name text-truncate">@(User.Identity?.Name ?? "Cliente")</div>
-                    @using (Html.BeginForm("Logout", "Acceso", FormMethod.Post, new { style = "margin:0" }))
-                    {
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn-logout">
-                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar sesión
-                        </button>
-                    }
+                    <a href="@Url.Action("Logout", "Acceso")" class="btn-logout" style="text-decoration: none;">
+                        <i class="fas fa-sign-out-alt me-1"></i>Cerrar sesión
+                    </a>
                 </div>
             </div>
         </div>

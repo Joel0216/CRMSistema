@@ -107,6 +107,12 @@ namespace CRMSistema.Models.ViewModels
         [Display(Name = "Motivo de rechazo")]
         public string MotivoRechazo { get; set; }
 
+        [Display(Name = "Estatus cotización")]
+        public string EstatusCotizacion { get; set; }
+
+        [Display(Name = "Motivo rechazo cotización")]
+        public string MotivoRechazoCotizacion { get; set; }
+
         [Display(Name = "Vendedor")]
         public int? VendedorId { get; set; }
         public string VendedorNombre { get; set; }

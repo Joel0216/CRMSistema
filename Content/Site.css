@@ -642,8 +642,8 @@ textarea.form-input { resize: vertical; }
   width: 100%;
 }
 
-/* Crecimiento comercial: tarjeta más compacta */
-#pastelA, #pastelB { max-height: 115px !important; }
+/* Crecimiento comercial: pastel del mes actual */
+#pastelA { max-height: none !important; height: 100% !important; }
 
 .status-list { display: flex; flex-direction: column; gap: 12px; }
 .status-row { display: flex; flex-direction: column; gap: 6px; }

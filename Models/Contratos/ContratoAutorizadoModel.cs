@@ -21,7 +21,21 @@ namespace CRMSistema.Models.Contratos
         public string RFC { get; set; }
         public string Calle { get; set; }
         public string Num_Ext { get; set; }
+        public string Num_Int { get; set; }
         public string Colonia { get; set; }
         public string Municipio { get; set; }
+        public string CP { get; set; }
+        public string Estado { get; set; }
+        public string Telefono { get; set; }
+        public string Correo { get; set; }
+        public string Contacto { get; set; }
+        public string Nombre_Comercial { get; set; }
+        public string Tipo_Persona { get; set; }
+        public string Referencias { get; set; }
+        public string Folio_Catastral { get; set; }
+        public string Dias_Disponibles { get; set; }
+        public string Horario { get; set; }
+        public string Ruta { get; set; }
+        public string VendedorNombre { get; set; }
     }
 }

@@ -8,8 +8,12 @@
 {
     <div class="login-error">@Model.Error</div>
 }
+@if (Request.QueryString["error"] == "session_expired")
+{
+    <div class="login-error">Su sesión cambió o el token de seguridad expiró. Inicie sesión nuevamente.</div>
+}
 
-@using (Html.BeginForm("LoginCliente", "Acceso", FormMethod.Post, new { @class = "login-form" }))
+@using (Html.BeginForm("LoginCliente", "Acceso", FormMethod.Post, new { @class = "login-form", id = "loginClienteForm" }))
 {
     @Html.AntiForgeryToken()
 
@@ -33,3 +37,19 @@
         Cliente demo: cliente / cliente123
     </p>
 }
+
+<script>
+    (function () {
+        var form = document.getElementById('loginClienteForm');
+        if (!form) return;
+        form.addEventListener('submit', function (e) {
+            var user = (form.querySelector('[name="Usuario"]') || {}).value || '';
+            var pass = (form.querySelector('[name="Password"]') || {}).value || '';
+            if (!user.trim() || !pass.trim()) {
+                e.preventDefault();
+                alert('Debes ingresar usuario y contraseña.');
+                return false;
+            }
+        });
+    })();
+</script>

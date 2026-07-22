@@ -183,6 +183,10 @@
                 $('[id^=fotoSlot], #docCatastralSlot').css('cursor', 'default').removeAttr('onclick');
                 $('#btnAccionesDetalle').css('display', 'flex');
                 $('#seccionEstadoDetalle').show();
+                $('#seccionCotizacionDetalle').show();
+                if ($('#motivoRechazoDetalle').length && $('#hdnEstatusProspecto').val().toLowerCase() === 'rechazado') {
+                    $('#motivoRechazoDetalle').show();
+                }
                 if ($('#hdnFotoFachada').val()) { $('#fotoPreview1').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoFachada').val()); $('#fotoPlaceholder1').hide(); }
                 if ($('#hdnFotoAcceso').val()) { $('#fotoPreview2').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoAcceso').val()); $('#fotoPlaceholder2').hide(); }
                 if ($('#hdnFotoReferencia').val()) { $('#fotoPreview3').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoReferencia').val()); $('#fotoPlaceholder3').hide(); }
@@ -297,7 +301,7 @@
         $('#viewContactoNombre').text(c.NombreContacto || '--');
         $('#viewContactoCorreo').text(c.Correo || '--');
         $('#viewContactoTelefono').text(c.Telefono || '--');
-        $('#viewContactoRep').text(c.RepresentanteLegal ? 'S&iacute;' : 'No');
+        $('#viewContactoRep').text(c.RepresentanteLegal ? 'Sí' : 'No');
         $('.modal-contacto-titulo').text('VER CONTACTO');
         $('#modalContactoEdit').hide();
         $('#modalContactoView').show();
@@ -778,14 +782,25 @@
         };
 
         if (asunto === 'Reenvío de Cotización') {
+            // Precalcular referencia y vigencia para enviar siempre valores no nulos.
+            var now = new Date();
+            var yyyy = now.getFullYear();
+            var mm = String(now.getMonth() + 1).padStart(2, '0');
+            var dd = String(now.getDate()).padStart(2, '0');
+            payload.cotizacion_ref = 'COT-' + yyyy + '-' + mm + '-' + dd;
+            payload.vigencia_inicio = yyyy + '-' + mm + '-' + dd;
+            var fin = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+            payload.vigencia_fin = fin.getFullYear() + '-' + String(fin.getMonth() + 1).padStart(2, '0') + '-' + String(fin.getDate()).padStart(2, '0');
+            payload.password_temporal = ''; // no aplica
+
             Swal.fire({
                 icon: 'success',
                 title: 'REENVÍO DE COTIZACIÓN',
                 html: '<div style="text-align: left; font-size: 14px;">' +
                       'Se enviar&aacute; la cotizaci&oacute;n a <b>' + (nombre || '') + '</b>.<br><br>' +
                       '<b>Correo electr&oacute;nico:</b> ' + (correo || 'No especificado') + '<br>' +
-                      '<b>Cotizaci&oacute;n:</b> (Se generar&aacute; autom&aacute;ticamente)<br>' +
-                      '<b>Vigencia:</b> (Se calcular&aacute; autom&aacute;ticamente)' +
+                      '<b>Cotizaci&oacute;n:</b> ' + (payload.cotizacion_ref || 'Se generar&aacute; autom&aacute;ticamente') + '<br>' +
+                      '<b>Vigencia:</b> ' + (payload.vigencia_inicio || '') + ' al ' + (payload.vigencia_fin || '') +
                       '</div>',
                 showCancelButton: true,
                 confirmButtonText: 'ENVIAR',
@@ -793,7 +808,7 @@
                 cancelButtonText: 'Cancelar'
             }).then(function (res2) {
                 if (res2.isConfirmed) {
-                    $.post(window.urlNotificacion, { id: id, req: payload }, function (res) {
+                    $.post(window.urlNotificacion, { id: id, req: JSON.stringify(payload) }, function (res) {
                         if (res.success) {
                             Swal.fire('Enviado', 'Notificaci&oacute;n enviada correctamente.', 'success');
                         } else {
@@ -805,6 +820,10 @@
         } else if (asunto === 'Finalizar datos de registro') {
             var randPass = Math.floor(10000000 + Math.random() * 90000000) + 'ABC!';
             payload.password_temporal = randPass;
+            payload.cotizacion_ref = ''; // no aplica
+            payload.vigencia_inicio = '';
+            payload.vigencia_fin = '';
+
             Swal.fire({
                 icon: 'success',
                 title: 'FINALIZAR DATOS DE REGISTRO',
@@ -820,7 +839,7 @@
                 cancelButtonText: 'Cancelar'
             }).then(function (res2) {
                 if (res2.isConfirmed) {
-                    $.post(window.urlNotificacion, { id: id, req: payload }, function (res) {
+                    $.post(window.urlNotificacion, { id: id, req: JSON.stringify(payload) }, function (res) {
                         if (res.success) {
                             Swal.fire('Enviado', 'Notificaci&oacute;n enviada correctamente.', 'success');
                         } else {
@@ -1021,6 +1040,90 @@
             if (accion === 'rechazar') accionRechazar(id);
             else if (accion === 'asignar') accionAsignarVendedor(id);
             else if (accion === 'baja') accionDarDeBaja(id);
+        });
+
+        // Envío vía AJAX cuando el formulario está dentro del modal (evita recargar el layout completo).
+        $(document).on('submit', '#frmProspecto', function (e) {
+            var $form = $(this);
+            // Solo interceptar si el formulario está dentro del contenedor del modal.
+            if ($form.closest('#modalProspectoContainer').length === 0) {
+                return true; // permitir envío normal en la página completa
+            }
+
+            e.preventDefault();
+
+            var esNuevo = ($form.attr('action') || '').toLowerCase().indexOf('nuevo') !== -1;
+
+            // Validación mínima de campos requeridos
+            var camposFaltantes = [];
+            if (!$('#Nombre').val().trim()) camposFaltantes.push('Razón Social / Nombre completo');
+            if (!$('#TipoPersona').val().trim()) camposFaltantes.push('Tipo de persona');
+            if (!$('#Telefono').val().trim()) camposFaltantes.push('Teléfono de contacto');
+            if (!$('#Email').val().trim()) camposFaltantes.push('Correo electrónico');
+            if (!$('#Contacto').val().trim()) camposFaltantes.push('Nombre completo de contacto');
+
+            if (camposFaltantes.length > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos requeridos',
+                    html: 'Por favor completa los siguientes campos:<br><br>• ' + camposFaltantes.join('<br>• '),
+                    confirmButtonColor: '#7b3f1a'
+                });
+                return false;
+            }
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    // Si la respuesta no es JSON (p. ej. redirección seguida por jQuery), recargar.
+                    if (typeof res === 'string') {
+                        window.location.href = window.urlBase || '/Prospectos';
+                        return;
+                    }
+                    if (res && res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: esNuevo ? 'Prospecto registrado' : 'Prospecto actualizado',
+                            text: res.message || '',
+                            confirmButtonColor: '#7b3f1a'
+                        }).then(function () {
+                            cerrarModalPrincipal();
+                            if (window.location.pathname.toLowerCase().indexOf('prospectos') !== -1) {
+                                location.reload();
+                            } else {
+                                window.location.href = window.urlBase || '/Prospectos';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: (res && res.error) ? res.error : 'No se pudo guardar el prospecto.',
+                            confirmButtonColor: '#7b3f1a'
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'Error de comunicación con el servidor.';
+                    if (xhr.responseText) {
+                        // Si la respuesta contiene el formulario, reemplazar el modal con la vista de errores.
+                        if (xhr.responseText.indexOf('frmProspecto') !== -1) {
+                            $('#modalProspectoContainer').html(xhr.responseText);
+                            return;
+                        }
+                        msg = 'Error del servidor: ' + xhr.status + ' ' + xhr.statusText;
+                    }
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#7b3f1a' });
+                }
+            });
+
+            return false;
         });
     });
 })();

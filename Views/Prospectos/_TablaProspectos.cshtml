@@ -57,9 +57,11 @@
                             <td>
                                 @{
                                     string statusClass = "badge-prospecto";
-                                    if (p.Estatus == "Nuevo" || p.Estatus == "Aprobado") { statusClass = "badge-prospecto"; }
-                                    else if (p.Estatus == "Cotizado" || p.Estatus == "En seguimiento") { statusClass = "badge-cotizacion"; }
-                                    else if (p.Estatus == "Inactivo") { statusClass = "badge-cerrado"; }
+                                    if (p.Estatus == "Nuevo") { statusClass = "badge-prospecto"; }
+                                    else if (p.Estatus == "En revisión" || p.Estatus == "En seguimiento" || p.Estatus == "Cotizado") { statusClass = "badge-cotizacion"; }
+                                    else if (p.Estatus == "Aprobado" || p.Estatus == "Autorizado") { statusClass = "badge-aprobado"; }
+                                    else if (p.Estatus == "Rechazado" || p.Estatus == "Adeudo") { statusClass = "badge-rechazado"; }
+                                    else if (p.Estatus == "Inactivo") { statusClass = "badge-inactivo"; }
                                     else { statusClass = "badge-perdido"; }
                                 }
                                 <span class="badge @statusClass">@p.Estatus</span>

@@ -65,6 +65,17 @@ namespace CRMSistema.Controllers.Cotizador
         }
 
         [HttpPost]
+        public ActionResult UpdateBorrador(int id, string datos)
+        {
+            try
+            {
+                _dal.ActualizarBorrador(id, datos);
+                return Json(new { success = true });
+            }
+            catch (Exception ex) { return Json(new { success = false, error = ex.Message }); }
+        }
+
+        [HttpPost]
         public ActionResult DeleteBorrador(int id)
         {
             try
@@ -75,6 +86,29 @@ namespace CRMSistema.Controllers.Cotizador
             catch (Exception ex) { return Json(new { success = false, error = ex.Message }); }
         }
 
+
+        [HttpGet]
+        public ActionResult GetValidacionPorBorrador(int borradorId)
+        {
+            try
+            {
+                var validacion = _dal.ObtenerValidacionPorBorrador(borradorId);
+                return Content(JsonConvert.SerializeObject(new { success = true, validacion }), "application/json");
+            }
+            catch (Exception ex) { return Content(JsonConvert.SerializeObject(new { success = false, error = ex.Message }), "application/json"); }
+        }
+
+        [HttpGet]
+        public ActionResult GetValidacionesPorBorrador(int id)
+        {
+            try
+            {
+                var validaciones = _dal.ObtenerValidacionesPorProspecto(id);
+                return Content(JsonConvert.SerializeObject(new { success = true, data = validaciones }), "application/json");
+            }
+            catch (Exception ex) { return Content(JsonConvert.SerializeObject(new { success = false, error = ex.Message }), "application/json"); }
+        }
+
         [HttpPost]
         public ActionResult EnviarCotizacion(EnviarCotizacionRequest req)
         {
@@ -83,6 +117,32 @@ namespace CRMSistema.Controllers.Cotizador
                 var rand = new Random();
                 string password_temporal = rand.Next(10000000, 99999999).ToString() + "x!";
                 _dal.EnviarCotizacion(req.prospecto_id, req.email, req.nombre, password_temporal);
+
+                // Cuando una cotización autorizada se envía al cliente, asegurar que exista
+                // el trato y los servicios cotizados para alimentar el módulo de contratos.
+                var validaciones = _dal.ObtenerValidacionesPorProspecto(req.prospecto_id);
+                var validacion = validaciones?
+                    .Where(v => (v.Estatus ?? "").Equals("Autorizada", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(v => v.Validacion_ID)
+                    .FirstOrDefault();
+                if (validacion == null)
+                    validacion = validaciones?.OrderByDescending(v => v.Validacion_ID).FirstOrDefault();
+
+                if (validacion != null)
+                {
+                    var cDal = new CRMSistema.DAL.Contratos.ContratosDAL();
+                    var contrato = cDal.ObtenerPorValidacionId(validacion.Validacion_ID);
+                    var folio = contrato?.Folio ?? $"COT-{DateTime.Now:yyyy}-{validacion.Validacion_ID.ToString().PadLeft(4, '0')}";
+                    decimal total;
+                    _tratosDal.SincronizarTratoDesdeCotizacion(req.prospecto_id, folio, validacion.Datos_Cotizacion, out total);
+
+                    if (contrato != null)
+                    {
+                        try { cDal.ActualizarEstatus(contrato.Contrato_ID, "Enviado"); }
+                        catch (Exception exStatus) { System.Diagnostics.Debug.WriteLine("Error actualizando contrato a Enviado: " + exStatus.Message); }
+                    }
+                }
+
                 return Json(new { success = true, message = "Cotización enviada y estatus actualizado.", password_temporal });
             }
             catch (Exception ex) { return Json(new { success = false, error = ex.Message }); }
@@ -125,7 +185,13 @@ namespace CRMSistema.Controllers.Cotizador
             {
                 var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
                 var data = pDal.ObtenerTodos();
-                return Content(Newtonsoft.Json.JsonConvert.SerializeObject(data), "application/json");
+                // Ignorar prospectos sin ID válido y advertir en trace.
+                var validos = data.Where(r => (r.id ?? 0) != 0).ToList();
+                if (validos.Count < data.Count)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GetProspectos] {data.Count - validos.Count} prospecto(s) con ID 0 fueron omitidos. Revisar SP_Prospectos_Create/GetAll.");
+                }
+                return Content(Newtonsoft.Json.JsonConvert.SerializeObject(validos), "application/json");
             }
             catch (Exception ex) { return Content(Newtonsoft.Json.JsonConvert.SerializeObject(new { error = ex.Message }), "application/json"); }
         }

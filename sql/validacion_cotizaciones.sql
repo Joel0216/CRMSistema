@@ -75,7 +75,7 @@ BEGIN
     LEFT JOIN dbo.empresas e ON e.Empresa_ID = p.Empresa_ID
     LEFT JOIN dbo.Usuarios u ON u.UsuarioId = p.Vendedor_ID
     WHERE v.Estatus = 'Pendiente'
-    ORDER BY v.Fecha_Creacion DESC;
+    ORDER BY v.Fecha_Actualizacion DESC, v.Fecha_Creacion DESC;
 END
 GO
 
@@ -181,5 +181,64 @@ BEGIN
     -- Asegurar que el SP existente soporte los nuevos estatus.
     -- Si ya existe, no se recrea para no romper otras dependencias.
     PRINT 'SP_Prospectos_UpdateEstatus ya existe.';
+END
+GO
+
+-- ============================================================
+-- SP para insertar servicios cotizados (alineado con C#)
+-- ============================================================
+IF OBJECT_ID('dbo.SP_ServiciosCotizados_Insert', 'P') IS NOT NULL DROP PROCEDURE dbo.SP_ServiciosCotizados_Insert;
+GO
+CREATE PROCEDURE dbo.SP_ServiciosCotizados_Insert
+    @Trato_ID INT,
+    @Tipo_Residuo NVARCHAR(250),
+    @Frecuencia NVARCHAR(50),
+    @Periodicidad_Pago NVARCHAR(50),
+    @Volumen_Estimado DECIMAL(18,2) = NULL,
+    @Precio_Unitario DECIMAL(18,2) = NULL,
+    @Dias_Asignados NVARCHAR(100),
+    @Porcentaje_Adicional DECIMAL(5,2) = NULL,
+    @Porcentaje_Descuento DECIMAL(5,2) = NULL,
+    @Sucursal_ID NVARCHAR(50) = NULL,
+    @Tipo_Unidad NVARCHAR(100) = NULL,
+    @Tipo_Cobro NVARCHAR(100) = NULL,
+    @Recolectores INT = NULL,
+    @Turno NVARCHAR(50) = NULL,
+    @Ruta NVARCHAR(250) = NULL,
+    @Costo_Tonelada DECIMAL(18,2) = NULL,
+    @Costo_Disposicion DECIMAL(18,2) = NULL
+AS
+BEGIN
+    INSERT INTO dbo.crm_servicios_cotizados
+        (Trato_ID, Tipo_Residuo, Frecuencia, Periodicidad_Pago, Volumen_Estimado,
+         Precio_Unitario, Dias_Asignados, Porcentaje_Adicional, Porcentaje_Descuento,
+         Sucursal_ID, Tipo_Unidad, Tipo_Cobro, Recolectores, Turno, Ruta,
+         Costo_Tonelada, Costo_Disposicion, Fecha_Creacion)
+    VALUES
+        (@Trato_ID, @Tipo_Residuo, @Frecuencia, @Periodicidad_Pago, @Volumen_Estimado,
+         @Precio_Unitario, @Dias_Asignados, @Porcentaje_Adicional, @Porcentaje_Descuento,
+         @Sucursal_ID, @Tipo_Unidad, @Tipo_Cobro, @Recolectores, @Turno, @Ruta,
+         @Costo_Tonelada, @Costo_Disposicion, GETDATE());
+
+    SELECT CAST(SCOPE_IDENTITY() AS BIGINT) AS ID;
+END
+GO
+
+-- ============================================================
+-- SP para obtener servicios cotizados de un trato (completo)
+-- ============================================================
+IF OBJECT_ID('dbo.SP_ServiciosCotizados_GetByTrato', 'P') IS NOT NULL DROP PROCEDURE dbo.SP_ServiciosCotizados_GetByTrato;
+GO
+CREATE PROCEDURE dbo.SP_ServiciosCotizados_GetByTrato
+    @Trato_ID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id, trato_id, tipo_residuo, frecuencia, periodicidad_pago, volumen_estimado, precio_unitario,
+           dias_asignados, porcentaje_adicional, porcentaje_descuento, sucursal_id, Tipo_Unidad,
+           Tipo_Cobro, Recolectores, Turno, Ruta, Limpieza_Extra, Costo_Renta, Combustible,
+           Recorrido_Servicio, Costo_Tonelada, Costo_Disposicion, Capacidad_Toneladas, fecha_creacion
+    FROM dbo.crm_servicios_cotizados
+    WHERE trato_id = @Trato_ID;
 END
 GO

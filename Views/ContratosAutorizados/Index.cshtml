@@ -4,6 +4,190 @@
     ViewBag.ActiveMenu = "ContratosAutorizados";
 }
 
+<style>
+    .detalle-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.55);
+        align-items: center;
+        justify-content: center;
+        z-index: 1040;
+        padding: 0;
+    }
+    .detalle-overlay.show { display: flex; }
+
+    .detalle-box {
+        background: white;
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    @@media (min-width: 768px) {
+        .detalle-box {
+            border-radius: 14px;
+            width: 1150px;
+            max-width: 96%;
+            max-height: 96vh;
+            height: auto;
+        }
+    }
+
+    @@media (min-width: 1400px) {
+        .detalle-box {
+            width: 1400px;
+        }
+    }
+
+    .detalle-body {
+        padding: 28px 32px;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .seccion-titulo {
+        color: #D84315;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        margin-top: 24px;
+    }
+
+    .campo-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .campo-readonly {
+        width: 100%;
+        padding: 6px 10px;
+        font-size: 12px;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        background: #FAFAFA;
+        color: #424242;
+    }
+
+    .servicios-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #4E342E;
+        font-size: 11px;
+        text-align: left;
+        margin-bottom: 24px;
+    }
+    .servicios-tabla thead { background: #8D6E63; color: white; }
+    .servicios-tabla th, .servicios-tabla td { padding: 8px; border: 1px solid #4E342E; }
+    .servicios-tabla tbody { background: #fff; color: #333; }
+
+    .badge-tipo {
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .badge-dia {
+        padding: 1px 4px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 10px;
+    }
+
+    .chip-servicio {
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #424242;
+        display: inline-block;
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+
+    .doc-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #424242;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        position: relative;
+    }
+
+    .timeline-dot {
+        position: relative;
+        z-index: 2;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 4px solid #fff;
+        box-shadow: 0 0 0 1px #E0E0E0;
+    }
+
+    .suspension-box {
+        border: 1px solid #EF9A9A;
+        border-radius: 8px;
+        padding: 16px;
+        background: #FFEBEE;
+        margin-bottom: 24px;
+    }
+
+    .summary-box {
+        width: 400px;
+        margin-left: auto;
+        border: 1px solid #C4A574;
+        border-radius: 8px;
+        padding: 16px;
+        background: #FFFDE7;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        background: #3E2723;
+        color: white;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: bold;
+        margin: 16px -16px -16px -16px;
+        border-radius: 0 0 8px 8px;
+    }
+</style>
+
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="section-title mb-0" style="text-transform: uppercase;">Contratos Autorizados</h2>
@@ -32,44 +216,164 @@
 </div>
 
 <!-- Modal Detalle -->
-<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none;">
-            <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none;">
-                <h5 class="modal-title" style="font-size: 16px; text-transform: uppercase;">Detalle del Contrato</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div id="modalDetalle" class="detalle-overlay" onclick="if(event.target === this) cerrarDetalle()">
+    <div class="detalle-box">
+        <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none; flex-shrink: 0;">
+            <h5 class="modal-title" id="modalTitulo" style="font-size: 16px; text-transform: uppercase;">DETALLE DEL CONTRATO</h5>
+            <button type="button" class="btn btn-sm" onclick="cerrarDetalle()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+        </div>
+        <div class="detalle-body">
+            <!-- Banner Estado -->
+            <div id="bannerEstado" class="mb-4" style="border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                <div id="bannerIcono" style="border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px;">✓</div>
+                <div>
+                    <div id="bannerTitulo" style="font-weight: 800; font-size: 14px;">CLIENTE ACTIVO</div>
+                    <div id="bannerSub" style="font-size: 12px;">Al cliente no se le detectó adeudo en su servicio.</div>
+                </div>
             </div>
-            <div class="modal-body" style="padding: 24px;">
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Folio</label>
-                        <div id="detFolio" style="font-weight: 600;"></div>
+
+            <div class="seccion-titulo">DATOS DEL CONTRATO</div>
+            <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">RAZÓN SOCIAL</label>
+                    <input type="text" class="campo-readonly" id="detRazonSocial" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">CIF / RFC</label>
+                    <input type="text" class="campo-readonly" id="detRFC" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">TIPO DE PERSONA</label>
+                    <input type="text" class="campo-readonly" id="detTipoPersona" value="Moral" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">DOMICILIO DE SERVICIO</label>
+                    <input type="text" class="campo-readonly" id="detDomicilioServicio" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">DOMICILIO FISCAL</label>
+                    <input type="text" class="campo-readonly" id="detDomicilioFiscal" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">DOMICILIO DE COBRO</label>
+                    <input type="text" class="campo-readonly" id="detDomicilioCobro" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">VIGENCIA INICIO</label>
+                    <input type="text" class="campo-readonly" id="detVigenciaInicio" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">VIGENCIA FIN</label>
+                    <input type="text" class="campo-readonly" id="detVigenciaFin" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">PAGO MENSUAL</label>
+                    <input type="text" class="campo-readonly" id="detPagoMensual" readonly>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">SERVICIOS CONTRATADOS Y DÍAS ASIGNADOS</div>
+            <div id="serviciosChips" class="mb-4"></div>
+
+            <div class="row mb-3">
+                <div class="col-md-8 mb-2">
+                    <label class="campo-label">RUTA ASIGNADA</label>
+                    <input type="text" class="campo-readonly" id="detRuta" readonly>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">HORARIO DE SERVICIO</label>
+                    <input type="text" class="campo-readonly" id="detHorario" readonly>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">DOCUMENTOS DEL EXPEDIENTE</div>
+            <div class="row mb-4" id="documentosExpediente">
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> INE</div></div>
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> Comprobante Fiscal</div></div>
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> Carta de responsabilidad</div></div>
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> Comprobante de Domicilio</div></div>
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> Comprobante de pago</div></div>
+                <div class="col-md-4"><div class="doc-item"><span style="color: #388E3C; font-size: 16px;">✔</span> Recibo CFDI</div></div>
+            </div>
+
+            <div class="seccion-titulo">FLUJO DEL CONTRATO</div>
+            <div id="timelineContrato" class="mb-4" style="padding-left: 8px;">
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #388E3C;"></div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: #424242;">Cotización aceptada por el cliente</div>
+                        <div id="timelineFechaAceptada" style="font-size: 11px; color: #9E9E9E;"></div>
                     </div>
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Razón Social</label>
-                        <div id="detRazonSocial" style="font-weight: 600;"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Programación Confirmada por Operaciones</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Documentación cargada</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Envío de Contrato</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Contrato Firmado</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Pago Verificado por Cobranza</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Pago Facturado</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Factura enviada</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #FFE082;"></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #424242;">Primer servicio realizado</div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">SUSPENSIÓN DE SERVICIO</div>
+            <div class="suspension-box">
+                <div style="color: #C62828; font-weight: 700; font-size: 13px; margin-bottom: 12px;">Suspensión de servicio</div>
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-3">
+                        <label class="d-flex align-items-center gap-2" style="font-size: 12px; font-weight: 600;">
+                            <input type="checkbox" id="chkSuspender"> Suspender
+                        </label>
                     </div>
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">RFC</label>
-                        <div id="detRFC" style="font-weight: 600;"></div>
+                    <div class="col-md-4">
+                        <select class="form-input" id="selMotivoSuspension" style="padding: 4px;">
+                            <option value="">-- Seleccionar motivo --</option>
+                            <option value="Falta de pago">Falta de pago</option>
+                            <option value="Cierre temporal">Cierre temporal</option>
+                            <option value="Otro">Otro</option>
+                        </select>
                     </div>
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Monto Mensual</label>
-                        <div id="detMonto" style="font-weight: 600;"></div>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <span style="font-size: 12px; font-weight: 600; margin-right: 8px;">Servicio a suspender:</span>
+                        <select class="form-input" id="selServicioSuspender" style="width: 200px; padding: 4px;">
+                            <option value="">-- Todos los servicios --</option>
+                        </select>
                     </div>
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Fecha de Autorización</label>
-                        <div id="detFecha" style="font-weight: 600;"></div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Estatus</label>
-                        <div id="detEstatus"></div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-sm" style="background: #FFCDD2; color: #C62828; border: 1px solid #E57373; font-weight: 600;" onclick="aplicarSuspension()">
+                            X Aplicar suspensión
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid #eee;">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid #eee; justify-content: flex-end; flex-shrink: 0; gap: 12px;">
+            <button type="button" class="btn btn-outline-secondary" onclick="cerrarDetalle()">Cerrar</button>
         </div>
     </div>
 </div>
@@ -77,6 +381,10 @@
 @section Scripts {
     <script>
         let contratos = [];
+        let contratoActual = null;
+        let prospectoActual = null;
+        let sucursalesActual = [];
+        let serviciosActual = [];
 
         const formatMXN = (num) => {
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
@@ -84,6 +392,12 @@
 
         $(document).ready(function() {
             cargarContratos();
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $('#modalDetalle').hasClass('show')) {
+                    cerrarDetalle();
+                }
+            });
         });
 
         function cargarContratos() {
@@ -110,16 +424,26 @@
                 return;
             }
 
+            const badgeEstatus = (estatus) => {
+                const e = (estatus || 'Activo').toLowerCase();
+                if (e === 'enviado') return { bg: '#E3F2FD', color: '#1565C0', texto: 'Enviado' };
+                if (e === 'firmado') return { bg: '#E8F5E9', color: '#2E7D32', texto: 'Firmado' };
+                if (e === 'moroso') return { bg: '#FFEBEE', color: '#C62828', texto: 'Moroso' };
+                if (e === 'inactivo') return { bg: '#EEEEEE', color: '#616161', texto: 'Inactivo' };
+                return { bg: '#FFF3E0', color: '#E65100', texto: 'Por firmar' };
+            };
+
             let html = '';
             contratos.forEach(c => {
                 const fecha = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—';
+                const b = badgeEstatus(c.Estatus);
                 html += `
                     <tr>
                         <td style="font-weight: 600;">${c.Folio || '—'}</td>
                         <td>${c.RazonSocial || '—'}</td>
                         <td class="text-muted">${c.RFC || '—'}</td>
                         <td class="text-muted">${formatMXN(c.Monto_Mensual)}</td>
-                        <td><span class="badge" style="background: #E8F5E9; color: #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${c.Estatus || 'Activo'}</span></td>
+                        <td><span class="badge" style="background: ${b.bg}; color: ${b.color}; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${b.texto}</span></td>
                         <td style="text-align: right;">
                             <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${c.Contrato_ID})" title="Ver detalle">
                                 <i class="fas fa-eye"></i>
@@ -132,18 +456,162 @@
         }
 
         function verDetalle(id) {
-            const c = contratos.find(x => x.Contrato_ID === id);
-            if (!c) return;
+            contratoActual = contratos.find(x => x.Contrato_ID === id);
+            if (!contratoActual) return;
 
-            $('#detFolio').text(c.Folio || '—');
-            $('#detRazonSocial').text(c.RazonSocial || '—');
-            $('#detRFC').text(c.RFC || '—');
-            $('#detMonto').text(formatMXN(c.Monto_Mensual));
-            $('#detFecha').text(c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—');
-            $('#detEstatus').html(`<span class="badge" style="background: #E8F5E9; color: #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${c.Estatus || 'Activo'}</span>`);
+            fetch('@Url.Action("GetDetalle", "ContratosAutorizados")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        prospectoActual = res.prospecto || {};
+                        sucursalesActual = res.sucursales || [];
+                        serviciosActual = res.servicios || [];
+                        mostrarDetalle();
+                        $('#modalDetalle').addClass('show');
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                })
+                .catch(console.error);
+        }
 
-            const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
-            modal.show();
+        function getProp(obj, key1, key2, key3) {
+            if (!obj) return '';
+            if (obj[key1] !== undefined && obj[key1] !== null) return obj[key1];
+            if (key2 && obj[key2] !== undefined && obj[key2] !== null) return obj[key2];
+            if (key3 && obj[key3] !== undefined && obj[key3] !== null) return obj[key3];
+            return '';
+        }
+
+        function mostrarDetalle() {
+            const c = contratoActual;
+            const p = prospectoActual || {};
+
+            $('#modalTitulo').text('DETALLE DEL CONTRATO - ' + (c.Folio || ''));
+            $('#detRazonSocial').val(getProp(p, 'nombre', 'RazonSocial') || c.RazonSocial || '—');
+            $('#detRFC').val(getProp(p, 'rfc', 'RFC') || c.RFC || '—');
+            $('#detTipoPersona').val(getProp(p, 'tipoPersona', 'Tipo_Persona') || 'Moral');
+
+            const domicilio = [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ') || '—';
+            $('#detDomicilioServicio').val(domicilio);
+            $('#detDomicilioFiscal').val(domicilio);
+            $('#detDomicilioCobro').val(domicilio);
+
+            const fechaAut = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion) : new Date();
+            const fechaFin = new Date(fechaAut);
+            fechaFin.setFullYear(fechaFin.getFullYear() + 1);
+
+            $('#detVigenciaInicio').val(fechaAut.toLocaleDateString('es-MX'));
+            $('#detVigenciaFin').val(fechaFin.toLocaleDateString('es-MX'));
+
+            const totalMensual = calcularTotalMensual();
+            $('#detPagoMensual').val(formatMXN(totalMensual));
+
+            $('#detRuta').val(getProp(p, 'ruta', 'Ruta') || 'Por asignar');
+            $('#detHorario').val(getProp(p, 'horario', 'Horario') || 'Por asignar');
+
+            // Banner estado
+            const estatus = (c.Estatus || 'Activo').toLowerCase();
+            let banner = { bg: '#E8F5E9', border: '#A5D6A7', color: '#2E7D32', titulo: 'CLIENTE ACTIVO', sub: 'Al cliente no se le detectó adeudo en su servicio.' };
+            if (estatus === 'moroso') {
+                banner = { bg: '#FFEBEE', border: '#EF9A9A', color: '#C62828', titulo: 'CLIENTE MOROSO', sub: 'El cliente tiene adeudos pendientes de pago.' };
+            } else if (estatus === 'inactivo') {
+                banner = { bg: '#EEEEEE', border: '#BDBDBD', color: '#616161', titulo: 'CLIENTE INACTIVO', sub: 'El contrato se encuentra inactivo.' };
+            }
+            $('#bannerEstado').css({ background: banner.bg, border: `1px solid ${banner.border}` });
+            $('#bannerIcono').css({ background: banner.color, color: 'white' });
+            $('#bannerTitulo').css({ color: banner.color });
+            $('#bannerTitulo').text(banner.titulo);
+            $('#bannerSub').text(banner.sub);
+
+            $('#timelineFechaAceptada').text(c.Fecha_Autorizacion ? fechaAut.toLocaleDateString('es-MX') : '');
+
+            renderizarServiciosChips();
+            renderizarSelectSuspension();
+        }
+
+        function renderizarServiciosChips() {
+            const items = serviciosActual.map(normalizarServicio);
+            if (items.length === 0) {
+                $('#serviciosChips').html('<span class="text-muted" style="font-size: 12px;">Sin servicios agregados</span>');
+                return;
+            }
+
+            let html = '';
+            items.forEach(s => {
+                const tipo = s.tipo_servicio || ((s.tipo_residuo || '').toUpperCase().includes('ESPECIAL') ? 'RME' : 'RSU');
+                const dias = s.dias_asignados.map(d => d.substring(0, 3)).join(' ');
+                html += `<span class="chip-servicio">Recolección ${tipo} | ${dias || 'Por definir'} | ${s.frecuencia || 'Semanal'} x${s.volumen_estimado || 1}</span>`;
+            });
+            $('#serviciosChips').html(html);
+        }
+
+        function renderizarSelectSuspension() {
+            const items = serviciosActual.map(normalizarServicio);
+            let html = '<option value="">-- Todos los servicios --</option>';
+            items.forEach((s, i) => {
+                const tipo = s.tipo_servicio || ((s.tipo_residuo || '').toUpperCase().includes('ESPECIAL') ? 'RME' : 'RSU');
+                html += `<option value="${s.id || i}">Recolección ${tipo}</option>`;
+            });
+            $('#selServicioSuspender').html(html);
+        }
+
+        function normalizarServicio(s) {
+            const diasAsignados = Array.isArray(s.dias_asignados)
+                ? s.dias_asignados
+                : (s.dias_asignados || '').toString().split(',').filter(Boolean);
+
+            const rawTipo = (s.tipo_residuo || s.tipo_servicio || '').toString().toUpperCase();
+            const tipo = rawTipo.includes('RSU') ? 'RSU' : 'RME';
+            const isRsu = tipo === 'RSU';
+
+            const bolsas = isRsu ? Number(s.volumen_estimado || s.bolsas || 0) : 0;
+            const recolectores = !isRsu ? Number(s.recolectores || s.volumen_estimado || 0) : 0;
+
+            const costoTonelada = Number(s.costo_tonelada || 0);
+            const costoDisposicion = Number(s.costo_disposicion || 0);
+            const precioUnitarioDb = Number(s.precio_unitario || 0);
+
+            const precioUnitario = isRsu
+                ? (precioUnitarioDb || 18.60)
+                : ((costoTonelada + costoDisposicion) || precioUnitarioDb);
+
+            const diasPorSemana = diasAsignados.length || 1;
+            const porcentaje = Number(s.porcentaje_adicional || 0) / 100;
+            const descuento = Number(s.porcentaje_descuento || 0) / 100;
+
+            let subtotal = 0;
+            if (isRsu) {
+                const bolsasMensuales = (bolsas * diasPorSemana * 52) / 12;
+                subtotal = bolsasMensuales * precioUnitario * (1 + porcentaje) * (1 - descuento);
+            } else {
+                const viajesMensuales = recolectores * diasPorSemana * 4;
+                subtotal = precioUnitario * viajesMensuales * (1 + porcentaje) * (1 - descuento);
+            }
+
+            return {
+                ...s,
+                tipo_servicio: tipo,
+                dias_asignados: diasAsignados,
+                bolsas,
+                recolectores,
+                precio_unitario_calculado: precioUnitario,
+                subtotal
+            };
+        }
+
+        function calcularTotalMensual() {
+            const items = serviciosActual.map(normalizarServicio);
+            const subtotal = items.reduce((sum, s) => sum + s.subtotal, 0);
+            return subtotal * 1.16;
+        }
+
+        function cerrarDetalle() {
+            $('#modalDetalle').removeClass('show');
+        }
+
+        function aplicarSuspension() {
+            Swal.fire('Aviso', 'Funcionalidad de suspensión en desarrollo', 'info');
         }
     </script>
 }

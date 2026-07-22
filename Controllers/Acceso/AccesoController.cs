@@ -42,6 +42,12 @@ namespace CRMSistema.Controllers.Acceso
             if (!ModelState.IsValid)
                 return View(model);
 
+            if (string.IsNullOrWhiteSpace(model.Usuario) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                model.Error = "Debes ingresar usuario y contraseña.";
+                return View(model);
+            }
+
             // Modo desarrollo sin BD: credenciales de prueba
             if (_modoDevSinBd)
             {
@@ -53,6 +59,9 @@ namespace CRMSistema.Controllers.Acceso
                     Session["Rol"] = model.Usuario.ToLowerInvariant().Contains("admin") ? "admin" : "vendedor";
                     return RedirectToAction("Index", "Dashboard");
                 }
+
+                model.Error = "Usuario o contraseña incorrectos.";
+                return View(model);
             }
 
             // Validación contra base de datos
@@ -70,14 +79,6 @@ namespace CRMSistema.Controllers.Acceso
             }
             catch (Exception ex)
             {
-                // En desarrollo, si falla la BD y el flag está activo, permite acceso directo
-                if (_modoDevSinBd)
-                {
-                    FormsAuthentication.SetAuthCookie(model.Usuario, model.Recordarme);
-                    Session["UsuarioNombre"] = model.Usuario;
-                    Session["Rol"] = "admin";
-                    return RedirectToAction("Index", "Dashboard");
-                }
                 model.Error = "No se pudo conectar a la base de datos: " + ex.Message;
                 return View(model);
             }
@@ -96,9 +97,16 @@ namespace CRMSistema.Controllers.Acceso
             if (!ModelState.IsValid)
                 return View(model);
 
-            // TODO: implementar validación de cliente contra tabla Clientes/Usuarios
-            if (_modoDevSinBd ||
-                (model.Usuario.Equals("cliente", StringComparison.OrdinalIgnoreCase) && model.Password == "cliente123"))
+            if (string.IsNullOrWhiteSpace(model.Usuario) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                model.Error = "Debes ingresar usuario y contraseña.";
+                return View(model);
+            }
+
+            // TODO: implementar validación de cliente contra tabla Clientes/Usuarios.
+            // Mientras tanto solo se permite la cuenta de demostración cliente/cliente123;
+            // el modo desarrollo NO habilita credenciales arbitrarias en el portal.
+            if (model.Usuario.Equals("cliente", StringComparison.OrdinalIgnoreCase) && model.Password == "cliente123")
             {
                 FormsAuthentication.SetAuthCookie(model.Usuario, model.Recordarme);
                 Session["UsuarioNombre"] = model.Usuario;

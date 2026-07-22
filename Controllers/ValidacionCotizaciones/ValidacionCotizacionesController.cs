@@ -15,6 +15,7 @@ namespace CRMSistema.Controllers.ValidacionCotizaciones
     public class ValidacionCotizacionesController : BaseController
     {
         private readonly CotizacionesDAL _dal = new CotizacionesDAL();
+        private readonly TratosDAL _tratosDal = new TratosDAL();
         private readonly ApiProspectosDAL _prospectosDal = new ApiProspectosDAL();
 
         public ActionResult Index()
@@ -35,6 +36,19 @@ namespace CRMSistema.Controllers.ValidacionCotizaciones
                     return ToInt(val);
             }
             return 0;
+        }
+
+        private string ValorProspecto(object p, params string[] claves)
+        {
+            if (p == null) return null;
+            var dic = p as IDictionary<string, object>;
+            if (dic == null) return null;
+            foreach (var clave in claves)
+            {
+                if (dic.TryGetValue(clave, out var val) && val != null)
+                    return val.ToString();
+            }
+            return null;
         }
 
         private object ProspectoLimpio(object p)
@@ -121,7 +135,16 @@ namespace CRMSistema.Controllers.ValidacionCotizaciones
         {
             try
             {
+                var validacion = _dal.ObtenerValidacionPorId(req.validacion_id ?? 0);
+                if (validacion == null)
+                    return JsonContent(new { success = false, error = "Validación no encontrada." });
+
                 _dal.ActualizarEstatusValidacion(req.validacion_id ?? 0, "Rechazada", req.motivo, User.Identity.Name);
+
+                // Actualizar estatus del prospecto a Rechazado y guardar motivo
+                var usuarioId = Session["UsuarioId"] as int?;
+                _prospectosDal.Rechazar(validacion.Prospecto_ID, req.motivo ?? "Sin motivo especificado", usuarioId);
+
                 return JsonContent(new { success = true, message = "Cotización rechazada." });
             }
             catch (Exception ex)
@@ -141,35 +164,44 @@ namespace CRMSistema.Controllers.ValidacionCotizaciones
 
                 _dal.ActualizarEstatusValidacion(id, "Autorizada", null, User.Identity.Name);
 
-                decimal monto = 0;
-                try
-                {
-                    var datos = JObject.Parse(validacion.Datos_Cotizacion ?? "{}");
-                    var totales = datos["totales"];
-                    if (totales != null)
-                        monto = totales["total"] != null ? Convert.ToDecimal(totales["total"]) : 0;
-                }
-                catch { }
-
                 var folio = $"COT-{DateTime.Now:yyyy}-{id.ToString().PadLeft(4, '0')}";
+
+                // Crear trato y servicios cotizados para alimentar el módulo de contratos.
+                decimal totalMensual;
+                _tratosDal.SincronizarTratoDesdeCotizacion(validacion.Prospecto_ID, folio, validacion.Datos_Cotizacion, out totalMensual);
+
                 var cDal = new CRMSistema.DAL.Contratos.ContratosDAL();
-                cDal.CrearContratoAutorizado(new Models.Contratos.ContratoAutorizadoModel
+                int contratoId = cDal.CrearContratoAutorizado(new Models.Contratos.ContratoAutorizadoModel
                 {
                     Prospecto_ID = validacion.Prospecto_ID,
                     Validacion_ID = id,
                     Folio = folio,
-                    Monto_Mensual = monto,
+                    Monto_Mensual = totalMensual,
                     Autorizado_Por = User.Identity.Name
                 });
 
+                // Asegurar que el monto refleje el cálculo actual (por si cambiaron precios).
+                if (contratoId > 0)
+                    cDal.ActualizarMontoMensual(contratoId, totalMensual);
+
+                // Actualizar estatus del prospecto a Autorizado (no enviar aún al cliente).
                 try
                 {
-                    var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
-                    pDal.ActualizarEstatus(validacion.Prospecto_ID, "Aprobado");
+                    _prospectosDal.ActualizarEstatus(validacion.Prospecto_ID, "Autorizado");
                 }
-                catch { }
+                catch (Exception exEstatus)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error actualizando estatus a Autorizado: " + exEstatus.Message);
+                }
 
-                return JsonContent(new { success = true, message = "Cotización autorizada y contrato creado.", folio });
+                // Redirigir al generador para que el usuario envíe la cotización al cliente.
+                var urlGenerador = Url.Action("Generar", "Cotizador", new {
+                    prospectoId = validacion.Prospecto_ID,
+                    borradorId = validacion.Borrador_ID,
+                    autorizada = 1
+                });
+
+                return JsonContent(new { success = true, message = "Cotización autorizada. Redirigiendo al generador...", folio, redirectUrl = urlGenerador });
             }
             catch (Exception ex)
             {

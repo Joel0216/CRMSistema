@@ -119,10 +119,9 @@ namespace CRMSistema.Controllers.Dashboard
                 model.TiposInmueble = _dal.ObtenerTiposInmueble()
                     .Select(r => new TipoInmuebleDto { tipo = ToString(r.tipo), cantidad = ToInt(r.cantidad, 0) }).ToList();
 
-                var distEstatus = _dal.ObtenerEstatusDistribucion()
+                // Distribución por estatus: solo del mes actual para que se “limpie” cada mes desde cero
+                var distEstatus = _dal.ObtenerEstatusDistribucionPorMes(inicioMes, finMes)
                     .Select(r => new EstatusDistribucionDto { estatus = ToString(r.estatus), cantidad = ToInt(r.cantidad, 0) }).ToList();
-                if (distEstatus.Count == 0)
-                    distEstatus = CalcularEstatusDistribucionDesdeProspectos();
                 model.EstatusDistribucion = CompletarEstatusDistribucion(distEstatus);
 
                 var pipeline = _dal.ObtenerPipeline()
@@ -188,7 +187,7 @@ namespace CRMSistema.Controllers.Dashboard
 
         private List<EstatusDistribucionDto> CompletarEstatusDistribucion(List<EstatusDistribucionDto> datos)
         {
-            var ordenEstatus = new[] { "Nuevo", "En seguimiento", "Cotizado", "Pendiente", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
+            var ordenEstatus = new[] { "Nuevo", "En revisión", "En seguimiento", "Cotizado", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
             var datosLimpios = (datos ?? new List<EstatusDistribucionDto>())
                 .Where(x => !string.IsNullOrWhiteSpace(x.estatus))
                 .Select(x => new EstatusDistribucionDto { estatus = x.estatus.Trim(), cantidad = x.cantidad })
@@ -337,9 +336,13 @@ namespace CRMSistema.Controllers.Dashboard
             model.EstatusDistribucion = new List<EstatusDistribucionDto>
             {
                 new EstatusDistribucionDto { estatus = "Nuevo", cantidad = 10 },
+                new EstatusDistribucionDto { estatus = "En revisión", cantidad = 5 },
                 new EstatusDistribucionDto { estatus = "En seguimiento", cantidad = 12 },
                 new EstatusDistribucionDto { estatus = "Cotizado", cantidad = 8 },
-                new EstatusDistribucionDto { estatus = "Aprobado", cantidad = 3 }
+                new EstatusDistribucionDto { estatus = "Aprobado", cantidad = 3 },
+                new EstatusDistribucionDto { estatus = "Rechazado", cantidad = 2 },
+                new EstatusDistribucionDto { estatus = "Adeudo", cantidad = 1 },
+                new EstatusDistribucionDto { estatus = "Inactivo", cantidad = 4 }
             };
 
             model.Pipeline = new List<PipelineDto>

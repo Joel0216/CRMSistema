@@ -74,6 +74,15 @@ namespace CRMSistema.DAL.Cotizador
                 new SqlParameter("@Borrador_ID", borradorId));
         }
 
+        public void ActualizarBorrador(int borradorId, string datosJson)
+        {
+            AdoHelper.Execute(
+                "UPDATE crm_cotizaciones_borradores SET Datos_Borrador = @Datos_Borrador WHERE Borrador_ID = @Borrador_ID",
+                CommandType.Text,
+                new SqlParameter("@Borrador_ID", borradorId),
+                new SqlParameter("@Datos_Borrador", datosJson));
+        }
+
         public void EnviarCotizacion(int prospectoId, string email, string nombre, string passwordTemporal)
         {
             AdoHelper.Execute("SP_Cotizaciones_Enviar", CommandType.StoredProcedure,
@@ -98,17 +107,14 @@ namespace CRMSistema.DAL.Cotizador
                 cmd.Parameters.AddWithValue("@Dias_Asignados", model.dias_asignados);
                 cmd.Parameters.AddWithValue("@Porcentaje_Adicional", (object)model.porcentaje_adicional ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Porcentaje_Descuento", (object)model.porcentaje_descuento ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Sucursal_ID", model.sucursal_id);
-                cmd.Parameters.AddWithValue("@Tipo_Unidad", model.tipo_unidad);
-                cmd.Parameters.AddWithValue("@Tipo_Cobro", model.tipo_cobro);
+                cmd.Parameters.AddWithValue("@Sucursal_ID", (object)model.sucursal_id ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Tipo_Unidad", (object)model.tipo_unidad ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Tipo_Cobro", (object)model.tipo_cobro ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Recolectores", (object)model.recolectores ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Turno", model.turno);
-                cmd.Parameters.AddWithValue("@Ruta", model.ruta);
-                cmd.Parameters.AddWithValue("@Recorrido_Servicio", (object)model.recorrido_km ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Turno", (object)model.turno ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Ruta", (object)model.ruta ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Costo_Tonelada", (object)model.costo_tonelada ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Costo_Disposicion", (object)model.costo_disposicion ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Costo_Renta", (object)model.costo_renta_base ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Capacidad_Toneladas", (object)model.capacidad_toneladas ?? DBNull.Value);
 
                 db.Open();
                 return Convert.ToInt64(cmd.ExecuteScalar() ?? 0);
@@ -174,6 +180,30 @@ namespace CRMSistema.DAL.Cotizador
         {
             return AdoHelper.QuerySingle<CotizacionValidacionModel>("SP_CotizacionesValidacion_GetByProspecto", CommandType.StoredProcedure,
                 new SqlParameter("@Prospecto_ID", prospectoId));
+        }
+
+        public List<CotizacionValidacionModel> ObtenerValidacionesPorProspecto(int prospectoId)
+        {
+            return AdoHelper.Query<CotizacionValidacionModel>(
+                "SELECT * FROM crm_cotizaciones_validacion WHERE Prospecto_ID = @Prospecto_ID ORDER BY Validacion_ID DESC",
+                CommandType.Text,
+                new SqlParameter("@Prospecto_ID", prospectoId));
+        }
+
+        public CotizacionValidacionModel ObtenerValidacionPorBorrador(int borradorId)
+        {
+            // Preferir la validación autorizada más reciente; si no hay autorizadas,
+            // devolver la última cualquiera para mantener compatibilidad con el flujo de revisión.
+            var autorizada = AdoHelper.QuerySingle<CotizacionValidacionModel>(
+                "SELECT TOP 1 * FROM crm_cotizaciones_validacion WHERE Borrador_ID = @Borrador_ID AND Estatus = 'Autorizada' ORDER BY Validacion_ID DESC",
+                CommandType.Text,
+                new SqlParameter("@Borrador_ID", borradorId));
+            if (autorizada != null) return autorizada;
+
+            return AdoHelper.QuerySingle<CotizacionValidacionModel>(
+                "SELECT TOP 1 * FROM crm_cotizaciones_validacion WHERE Borrador_ID = @Borrador_ID ORDER BY Validacion_ID DESC",
+                CommandType.Text,
+                new SqlParameter("@Borrador_ID", borradorId));
         }
 
         public void ActualizarEstatusValidacion(int id, string estatus, string motivoRechazo, string usuarioValida)

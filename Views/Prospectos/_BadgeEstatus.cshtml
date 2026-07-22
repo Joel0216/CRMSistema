@@ -5,39 +5,50 @@
     var bg = "#E3F2FD";
     var color = "#1565C0";
     var border = "#90CAF9";
-    switch (estatus.ToLower())
+
+    switch (estatus.ToLower().Trim())
     {
         case "nuevo":
-            clase = "badge-nuevo";
+            clase = "badge-Nuevo";
             bg = "#E3F2FD"; color = "#1565C0"; border = "#90CAF9";
             break;
+
+        case "en revisión":
+            clase = "badge-En revisión";
+            bg = "#FFF3E0"; color = "#E6D400"; border = "#E6DD74";
+            break;
+
         case "en seguimiento":
-            clase = "badge-seguimiento";
+            clase = "badge-En seguimiento";
             bg = "#FFF3E0"; color = "#E65100"; border = "#FFCC80";
             break;
+
         case "cotizado":
-            clase = "badge-cotizado";
-            bg = "#E3F2FD"; color = "#1565C0"; border = "#90CAF9";
+            clase = "badge-Cotizado";
+            bg = "#E8F5E9"; color = "#23797D"; border = "#4D757D";
             break;
-        case "adeudo":
-            clase = "badge-adeudo";
-            bg = "#FFEBEE"; color = "#C62828"; border = "#EF9A9A";
-            break;
-        case "inactivo":
-            clase = "badge-inactivo";
-            bg = "#E8DDD2"; color = "#6B4A30"; border = "#DDD0C0";
-            break;
-        case "rechazado":
-            clase = "badge-rechazado";
-            bg = "#FFEBEE"; color = "#C62828"; border = "#EF9A9A";
-            break;
+
         case "aprobado":
-            clase = "badge-aprobado";
+        case "autorizada":
+        case "autorizado":
+            clase = "badge-Aprobado";
             bg = "#E8F5E9"; color = "#2E7D32"; border = "#A5D6A7";
             break;
-        default:
-            clase = "badge-nuevo";
-            bg = "#E3F2FD"; color = "#1565C0"; border = "#90CAF9";
+
+        case "adeudo":
+            clase = "badge-Adeudo";
+            bg = "#F3E5F5"; color = "#7B1FA2"; border = "#E1BEE7";
+            break;
+
+        case "rechazado":
+        case "rechazada":
+            clase = "badge-Rechazado";
+            bg = "#FFEBEE"; color = "#C62828"; border = "#EF9A9A";
+            break;
+
+        case "inactivo":
+            clase = "badge-Inactivo";
+            bg = "#ECEFF1"; color = "#455A64"; border = "#CFD8DC";
             break;
     }
 }

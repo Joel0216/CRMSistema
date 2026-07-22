@@ -22,12 +22,14 @@
     <select class="form-input" id="cbxEstatus" style="width: 200px;">
         <option value="">Todos los estatus</option>
         <option value="Nuevo">Nuevo</option>
+        <option value="En revisión">En revisión</option>
         <option value="En seguimiento">En seguimiento</option>
         <option value="Cotizado">Cotizado</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Autorizado">Autorizado</option>
+        <option value="Rechazado">Rechazado</option>
         <option value="Adeudo">Adeudo</option>
         <option value="Inactivo">Inactivo</option>
-        <option value="Rechazado">Rechazado</option>
-        <option value="Aprobado">Aprobado</option>
     </select>
 </div>
 
@@ -56,15 +58,15 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
         // Provide the globals required by prospectos.js
         window.urlPartialDetalle = '@Url.Action("PartialDetalle", "Prospectos")';
         window.estatusLista = [];
         window.vendedores = [];
     </script>
-    <script src="~/Scripts/prospectos.js?v=21"></script>
-    
+    <script src="~/Scripts/prospectos.js?v=22"></script>
+
     <script>
         let allProspectos = [];
 
@@ -79,7 +81,14 @@
             fetch('@Url.Action("GetProspectos", "Cotizador")')
                 .then(r => r.json())
                 .then(data => {
-                    allProspectos = data || [];
+                    console.log('[Cotizador] Respuesta cruda de GetProspectos:', data);
+                    if (data && data.error) {
+                        console.error(data.error);
+                        $('#tbProspectos').html('<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                        return;
+                    }
+                    const raw = Array.isArray(data) ? data : [];
+                    allProspectos = raw.map(normalizarProspecto).filter(p => p !== null);
                     renderTable();
                 })
                 .catch(e => {
@@ -88,11 +97,66 @@
                 });
         }
 
+        // El endpoint devuelve columnas con distintos nombres/mapeos (p. ej. Prospecto_ID, Nombre_Empresa, etc.).
+        // Esta función convierte cada fila al formato que espera la interfaz del cotizador.
+        function normalizarProspecto(p) {
+            if (!p || typeof p !== 'object') {
+                console.warn('[Cotizador] Fila invalida recibida:', p);
+                return null;
+            }
+
+            const keys = Object.keys(p);
+            const get = function (names) {
+                for (let name of names) {
+                    const key = keys.find(k => k.toLowerCase() === name.toLowerCase());
+                    if (key && p[key] !== null && p[key] !== undefined && p[key] !== '') {
+                        return p[key];
+                    }
+                }
+                return null;
+            };
+
+            const id = get(['id', 'Id', 'ID', 'Prospecto_ID', 'prospecto_id', 'ProspectoId', 'prospectoId']);
+            const nombre = get(['nombre', 'Nombre', 'Nombre_Empresa', 'Nombre_Comercial_Empresa', 'Nombre_Comercial', 'Nombre_Prospecto', 'nombreComercial', 'NombreComercial', 'empresa', 'Empresa']);
+            const rfc = get(['rfc', 'RFC', 'Rfc']);
+            const calle = get(['calle', 'Calle']);
+            const numExt = get(['numExt', 'NumExt', 'Num_Ext', 'num_ext']);
+            const colonia = get(['colonia', 'Colonia']);
+            const municipio = get(['municipio', 'Municipio']);
+            const estatus = get(['estatus', 'Estatus']);
+            const vendedorNombre = get(['vendedorNombre', 'VendedorNombre', 'vendedor', 'Vendedor', 'nombre_vendedor', 'Nombre_Vendedor']);
+            const contacto = get(['contacto', 'Contacto', 'Nombre_Prospecto', 'nombre_prospecto']);
+
+            const normalizado = {
+                id: id,
+                nombre: nombre || 'Sin nombre',
+                rfc: rfc,
+                calle: calle,
+                numExt: numExt,
+                colonia: colonia,
+                municipio: municipio,
+                estatus: estatus || 'Nuevo',
+                vendedorNombre: vendedorNombre,
+                contacto: contacto
+            };
+
+            if (!normalizado.id) {
+                console.warn('[Cotizador] No se pudo normalizar ID para fila:', p, 'Keys:', keys);
+            }
+            return normalizado;
+        }
+
         function getBadge(e) {
             const m = {
-                'Nuevo': 'badge-prospecto', 'En seguimiento': 'badge-cotizacion',
-                'Cotizado': 'badge-cotizacion', 'Adeudo': 'badge-perdido', 'Inactivo': 'badge-cerrado',
-                'Rechazado': 'badge-perdido', 'Aprobado': 'badge-prospecto'
+                'Nuevo': 'badge-prospecto',
+                'En revisión': 'badge-cotizacion',
+                'En seguimiento': 'badge-cotizacion',
+                'Cotizado': 'badge-cotizacion',
+                'Aprobado': 'badge-aprobado',
+                'Autorizado': 'badge-aprobado',
+                'Rechazado': 'badge-rechazado',
+                'Adeudo': 'badge-adeudo',
+                'Inactivo': 'badge-inactivo'
             };
             return m[e] || 'badge-prospecto';
         }
@@ -102,12 +166,10 @@
             const estatus = $('#cbxEstatus').val();
 
             const filtrados = allProspectos.filter(p => {
-                const nombre = (p.nombre || p.Nombre || '').toLowerCase();
-                const contacto = (p.contacto || p.Contacto || '').toLowerCase();
-                const pEstatus = p.estatus || p.Estatus;
-
+                const nombre = (p.nombre || '').toLowerCase();
+                const contacto = (p.contacto || '').toLowerCase();
                 const matchText = !filtro || nombre.includes(filtro) || contacto.includes(filtro);
-                const matchEstatus = !estatus || pEstatus === estatus;
+                const matchEstatus = !estatus || p.estatus === estatus;
                 return matchText && matchEstatus;
             });
 
@@ -118,30 +180,23 @@
                 html = `<tr><td colspan="7" class="text-center py-4" style="color: var(--text3);">Sin resultados</td></tr>`;
             } else {
                 filtrados.forEach(p => {
-                    const id = p.id || p.Id;
-                    const rfc = p.rfc || p.Rfc || '—';
-                    const calle = p.calle || p.Calle;
-                    const num = p.numExt || p.NumExt;
-                    const col = p.colonia || p.Colonia;
-                    const mun = p.municipio || p.Municipio;
-                    const vend = p.vendedorNombre || p.VendedorNombre;
-                    const est = p.estatus || p.Estatus;
-                    
-                    const dirStr = [calle, num ? `#${num}` : '', col, mun].filter(Boolean).join(', ') || '—';
+                    const rfc = p.rfc || '—';
+                    const num = p.numExt;
+                    const dirStr = [p.calle, num ? `#${num}` : '', p.colonia, p.municipio].filter(Boolean).join(', ') || '—';
 
                     html += `
                         <tr>
-                            <td>${id}</td>
-                            <td style="font-weight: 600;">${p.nombre || p.Nombre || ''}</td>
+                            <td>${p.id}</td>
+                            <td style="font-weight: 600;">${p.nombre}</td>
                             <td class="text-center" style="font-size: 12px;">
-                                ${vend ? `<span style="background:#E3F2FD; color:#1565C0; padding:4px 8px; border-radius:12px; font-weight:600;">${vend}</span>` : '<span style="color:#999;">Sin asignar</span>'}
+                                ${p.vendedorNombre ? `<span style="background:#E3F2FD; color:#1565C0; padding:4px 8px; border-radius:12px; font-weight:600;">${p.vendedorNombre}</span>` : '<span style="color:#999;">Sin asignar</span>'}
                             </td>
                             <td class="text-muted">${rfc}</td>
                             <td class="text-muted" style="font-size: 12px;">${dirStr}</td>
-                            <td><span class="badge ${getBadge(est)}">${est}</span></td>
+                            <td><span class="badge ${getBadge(p.estatus)}">${p.estatus}</span></td>
                             <td style="text-align: right;">
                                 <div class="d-flex justify-content-end gap-2">
-                                    <button class="btn-custom btn-ghost-custom btn-sm-custom" onclick="abrirModalCotizador(${id}, '${(p.nombre || p.Nombre || '').replace(/'/g, "\\'")}')" title="Ver Prospecto">
+                                    <button class="btn-custom btn-ghost-custom btn-sm-custom" onclick="abrirModalCotizador(${p.id}, '${(p.nombre || '').replace(/'/g, "\\'")}')" title="Ver Prospecto">
                                         <i class="fas fa-eye" style="color: var(--text3);"></i>
                                     </button>
                                 </div>
@@ -158,13 +213,55 @@
             window.location.href = '@Url.Action("Generar", "Cotizador")' + '?prospectoId=' + id;
         }
 
+        // Si el prospecto tiene un borrador autorizado (no enviado), abre directamente ese.
+        function generarOAbrirAutorizado(prospectoId) {
+            Promise.all([
+                fetch('@Url.Action("GetBorradores", "Cotizador")/' + prospectoId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()),
+                fetch('@Url.Action("GetValidacionesPorBorrador", "Cotizador")/' + prospectoId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json())
+            ]).then(([resBorradores, resValidaciones]) => {
+                let autorizadoSinEnviar = null;
+                if (resBorradores.success && resBorradores.data && resValidaciones.success && resValidaciones.data) {
+                    const borradores = resBorradores.data;
+                    const validaciones = resValidaciones.data;
+                    for (const b of borradores) {
+                        const bId = b.Borrador_ID || b.borrador_id;
+                        const v = validaciones.find(x => (x.Borrador_ID || x.borrador_id) == bId);
+                        const datos = leerDatosBorrador(b);
+                        const esAutorizado = v && (v.Estatus || '').toLowerCase() === 'autorizada';
+                        const yaEnviado = datos && datos.enviadoACliente === true;
+                        if (esAutorizado && !yaEnviado) {
+                            autorizadoSinEnviar = bId;
+                            break;
+                        }
+                    }
+                }
+
+                if (autorizadoSinEnviar) {
+                    window.location.href = `@Url.Action("Generar", "Cotizador")?prospectoId=${prospectoId}&borradorId=${autorizadoSinEnviar}&autorizada=1`;
+                } else {
+                    window.location.href = '@Url.Action("Generar", "Cotizador")?prospectoId=' + prospectoId;
+                }
+            }).catch(e => {
+                console.error(e);
+                goToGenerar(prospectoId);
+            });
+        }
+
+        function leerDatosBorrador(b) {
+            const raw = b.Datos_Borrador || b.datos_borrador || '';
+            if (!raw) return null;
+            try {
+                return typeof raw === 'string' ? JSON.parse(raw) : raw;
+            } catch (e) { return null; }
+        }
+
         function verBorradores(id) {
-            const prospecto = allProspectos.find(p => p.id == id || p.Id == id);
-            const nombreStr = prospecto ? (prospecto.nombre || prospecto.Nombre) : '';
+            const prospecto = allProspectos.find(p => p.id == id);
+            const nombreStr = prospecto ? prospecto.nombre : '';
 
             Promise.all([
                 fetch('@Url.Action("GetBorradores", "Cotizador")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()),
-                fetch('@Url.Action("GetPendientes", "ValidacionCotizaciones")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json())
+                fetch('@Url.Action("GetValidacionesPorBorrador", "Cotizador")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json())
             ]).then(([resBorradores, resValidaciones]) => {
                 if (resBorradores.success && resBorradores.data && resBorradores.data.length > 0) {
                     const validaciones = (resValidaciones.success && resValidaciones.data) ? resValidaciones.data : [];
@@ -173,19 +270,51 @@
                     resBorradores.data.forEach(b => {
                         const bId = b.Borrador_ID || b.borrador_id;
                         const bDate = (b.Fecha_Creacion || b.fecha_creacion).replace('T', ', ');
-                        const enRevision = validaciones.some(v => (v.Borrador_ID || v.borrador_id) == bId && (v.Estatus || '').toLowerCase() === 'pendiente');
+                        const validacion = validaciones.find(v => (v.Borrador_ID || v.borrador_id) == bId);
+                        const estatusValidacion = (validacion && validacion.Estatus) ? validacion.Estatus.toString() : '';
+                        const motivoRechazo = (validacion && validacion.Motivo_Rechazo) ? validacion.Motivo_Rechazo.toString() : '';
+                        let badgeValidacion = '';
+                        if (estatusValidacion.toLowerCase() === 'pendiente') {
+                            badgeValidacion = `<span style="background: #FFE0B2; color: #E65100; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">Pendiente</span>`;
+                        } else if (estatusValidacion.toLowerCase() === 'rechazada') {
+                            badgeValidacion = `<span style="background: #FFEBEE; color: #C62828; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">Rechazada</span>`;
+                        } else if (estatusValidacion.toLowerCase() === 'autorizada') {
+                            badgeValidacion = `<span style="background: #E8F5E9; color: #2E7D32; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">Autorizada</span>`;
+                        }
+
+                        const datos = leerDatosBorrador(b);
+                        const enviadoACliente = datos && datos.enviadoACliente === true;
+                        const esAutorizada = estatusValidacion.toLowerCase() === 'autorizada';
+
+                        if (enviadoACliente) {
+                            badgeValidacion += (badgeValidacion ? ' ' : '') + `<span style="background: #E3F2FD; color: #1565C0; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;"><i class="fas fa-lock"></i> Enviada al cliente</span>`;
+                        }
+
+                        let btnAccion = '';
+                        if (enviadoACliente) {
+                            btnAccion = `<button disabled style="background: #f5f5f5; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: not-allowed;" title="No se puede editar una cotización ya enviada al cliente">
+                                <i class="fas fa-lock"></i> Solo lectura
+                              </button>`;
+                        } else if (esAutorizada) {
+                            btnAccion = `<button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}&autorizada=1'" style="background: #2E7D32; border: 1px solid #2E7D32; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-paper-plane"></i> Enviar a cliente
+                              </button>`;
+                        } else {
+                            btnAccion = `<button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-pencil-alt"></i> Continuar Editando
+                              </button>`;
+                        }
 
                         htmlCards += `
                             <div style="border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 12px; text-align: left; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <div style="font-weight: bold; color: #333; font-size: 14px;">Borrador #${bId}</div>
-                                    ${enRevision ? `<span style="background: #FFE0B2; color: #E65100; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">Pendiente</span>` : ''}
+                                    ${badgeValidacion}
                                 </div>
+                                ${motivoRechazo ? `<div style="color: #C62828; font-size: 12px; margin-bottom: 8px;"><strong>Motivo:</strong> ${motivoRechazo}</div>` : ''}
                                 <div style="color: #888; font-size: 12px; margin-bottom: 16px;">${bDate}</div>
                                 <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                                    <button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-pencil-alt"></i> Continuar Editando
-                                    </button>
+                                    ${btnAccion}
                                     <button onclick="eliminarBorrador(${bId}, ${id})" style="background: #fff; border: 1px solid #E74C3C; color: #E74C3C; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
@@ -242,9 +371,15 @@
 
         window.currentProspectoId = 0;
         function abrirModalCotizador(id, nombre) {
-            window.currentProspectoId = id;
+            var idNum = parseInt(id, 10);
+            if (isNaN(idNum) || idNum <= 0) {
+                console.error('[Cotizador] ID inválido recibido en abrirModalCotizador:', id);
+                Swal.fire('Error', 'No se pudo determinar el prospecto seleccionado.', 'error');
+                return;
+            }
+            window.currentProspectoId = idNum;
             if (typeof window.abrirModalDetalle === 'function') {
-                window.abrirModalDetalle(id);
+                window.abrirModalDetalle(idNum);
             } else {
                 Swal.fire('Error', 'No se pudieron cargar los scripts del modal.', 'error');
             }
@@ -252,15 +387,13 @@
 
         $(document).ajaxComplete(function(event, xhr, settings) {
             if (settings.url.indexOf('PartialDetalle') !== -1) {
-                // Change modal actions for Cotizador
                 $('#btnAccionesDetalle').html(`
                     <button type="button" class="btn-custom btn-outline-custom" onclick="verBorradores(window.currentProspectoId)" style="color: #5D4037; border-color: #5D4037;">Ver borradores de cotización</button>
-                    <button type="button" class="btn-custom btn-primary-custom" onclick="goToGenerar(window.currentProspectoId)" style="background: #5D4037; color: white; border: none;">Generar Cotización</button>
+                    <button type="button" class="btn-custom btn-primary-custom" onclick="generarOAbrirAutorizado(window.currentProspectoId)" style="background: #5D4037; color: white; border: none;">Generar / Enviar Cotización</button>
                 `);
-                
-                // Show status section in Cotizador context
+
                 $('#seccionEstadoDetalle').show();
-                $('.modal-title-custom').text('VISUALIZAR PROSPECTO');
+                $('.modal-title').text('VISUALIZAR PROSPECTO');
             }
         });
     </script>
