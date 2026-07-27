@@ -39,6 +39,11 @@ namespace CRMSistema.DAL.Contratos
                 new SqlParameter("@Estatus", (object)estatus ?? DBNull.Value));
         }
 
+        public List<ContratoAutorizadoModel> ObtenerContratosPorAutorizar()
+        {
+            return AdoHelper.Query<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetPending", CommandType.StoredProcedure);
+        }
+
         public ContratoAutorizadoModel ObtenerPorId(int contratoId)
         {
             return AdoHelper.QuerySingle<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetById", CommandType.StoredProcedure,
@@ -47,24 +52,22 @@ namespace CRMSistema.DAL.Contratos
 
         public ContratoAutorizadoModel ObtenerPorValidacionId(int validacionId)
         {
-            return AdoHelper.QuerySingle<ContratoAutorizadoModel>(
-                "SELECT TOP 1 * FROM dbo.crm_contratos_autorizados WHERE Validacion_ID = @Validacion_ID ORDER BY Contrato_ID DESC",
-                CommandType.Text,
+            return AdoHelper.QuerySingle<ContratoAutorizadoModel>("SP_ContratosAutorizados_GetByValidacion", CommandType.StoredProcedure,
                 new SqlParameter("@Validacion_ID", validacionId));
         }
 
-        public void ActualizarEstatus(int contratoId, string estatus)
+        public void ActualizarEstatus(int contratoId, string estatus, string motivoRechazo = null, string usuarioRechaza = null)
         {
             AdoHelper.Execute("SP_ContratosAutorizados_UpdateEstatus", CommandType.StoredProcedure,
                 new SqlParameter("@Contrato_ID", contratoId),
-                new SqlParameter("@Estatus", estatus ?? ""));
+                new SqlParameter("@Estatus", estatus ?? ""),
+                new SqlParameter("@Motivo_Rechazo", (object)motivoRechazo ?? DBNull.Value),
+                new SqlParameter("@Usuario_Rechaza", (object)usuarioRechaza ?? DBNull.Value));
         }
 
         public void ActualizarMontoMensual(int contratoId, decimal monto)
         {
-            AdoHelper.Execute(
-                "UPDATE dbo.crm_contratos_autorizados SET Monto_Mensual = @Monto_Mensual WHERE Contrato_ID = @Contrato_ID",
-                CommandType.Text,
+            AdoHelper.Execute("SP_ContratosAutorizados_UpdateMontoMensual", CommandType.StoredProcedure,
                 new SqlParameter("@Contrato_ID", contratoId),
                 new SqlParameter("@Monto_Mensual", monto));
         }

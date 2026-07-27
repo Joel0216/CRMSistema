@@ -91,6 +91,7 @@ namespace CRMSistema.Models.Dashboard
         public decimal monto { get; set; }
         public string fase { get; set; }
         public string tieneSucursales { get; set; }
+        public string vendedorNombre { get; set; }
         public object fecha { get; set; }
     }
 

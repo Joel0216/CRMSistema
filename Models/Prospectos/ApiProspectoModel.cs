@@ -29,6 +29,8 @@ namespace CRMSistema.Models.Prospectos
         public string concesionaria { get; set; }
         public string referencias { get; set; }
         public string folioCatastral { get; set; }
+        public string domicilioFiscal { get; set; }
+        public string domicilioRecoleccion { get; set; }
         public string foto_comprobante { get; set; }
         public string foto_fachada { get; set; }
         public string foto_acceso { get; set; }

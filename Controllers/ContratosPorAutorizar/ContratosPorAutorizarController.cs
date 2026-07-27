@@ -11,10 +11,10 @@ using CRMSistema.Models.Contratos;
 using CRMSistema.Models.Usuarios;
 using Newtonsoft.Json;
 
-namespace CRMSistema.Controllers.ContratosAutorizados
+namespace CRMSistema.Controllers.ContratosPorAutorizar
 {
-    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
-    public class ContratosAutorizadosController : BaseController
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
+    public class ContratosPorAutorizarController : BaseController
     {
         private readonly ContratosDAL _dal = new ContratosDAL();
         private readonly ApiProspectosDAL _prospectosDal = new ApiProspectosDAL();
@@ -23,17 +23,17 @@ namespace CRMSistema.Controllers.ContratosAutorizados
 
         public ActionResult Index()
         {
-            ViewBag.Title = "Contratos Autorizados";
-            ViewBag.ActiveMenu = "ContratosAutorizados";
+            ViewBag.Title = "Contratos por Autorizar";
+            ViewBag.ActiveMenu = "ContratosPorAutorizar";
             return View();
         }
 
         [HttpGet]
-        public ActionResult GetContratos()
+        public ActionResult GetPendientes()
         {
             try
             {
-                var data = _dal.ObtenerContratosAutorizados()
+                var data = _dal.ObtenerContratosPorAutorizar()
                     .Where(PuedeVerContrato)
                     .Select(c => new
                     {
@@ -43,6 +43,9 @@ namespace CRMSistema.Controllers.ContratosAutorizados
                         c.Folio,
                         c.Monto_Mensual,
                         c.Estatus,
+                        c.Motivo_Rechazo,
+                        c.Usuario_Rechaza,
+                        Fecha_Rechazo = FormatearFecha(c.Fecha_Rechazo),
                         Fecha_Autorizacion = FormatearFecha(c.Fecha_Autorizacion),
                         c.RazonSocial,
                         c.RFC,
@@ -145,6 +148,9 @@ namespace CRMSistema.Controllers.ContratosAutorizados
                         contrato.Folio,
                         contrato.Monto_Mensual,
                         contrato.Estatus,
+                        contrato.Motivo_Rechazo,
+                        contrato.Usuario_Rechaza,
+                        Fecha_Rechazo = FormatearFecha(contrato.Fecha_Rechazo),
                         Fecha_Autorizacion = FormatearFecha(contrato.Fecha_Autorizacion),
                         contrato.RazonSocial,
                         contrato.RFC,
@@ -179,7 +185,51 @@ namespace CRMSistema.Controllers.ContratosAutorizados
             }
         }
 
+        [HttpPost]
+        public ActionResult Autorizar(int id)
+        {
+            try
+            {
+                var contrato = _dal.ObtenerPorId(id);
+                if (contrato == null)
+                    return Json(new { success = false, error = "Contrato no encontrado." });
+
+                _dal.ActualizarEstatus(id, "Activo");
+                return Json(new { success = true, message = "Contrato autorizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Rechazar(ContratoRechazoRequest req)
+        {
+            try
+            {
+                var contrato = _dal.ObtenerPorId(req.contrato_id);
+                if (contrato == null)
+                    return Json(new { success = false, error = "Contrato no encontrado." });
+
+                if (string.IsNullOrWhiteSpace(req.motivo))
+                    return Json(new { success = false, error = "Debes indicar el motivo de rechazo." });
+
+                _dal.ActualizarEstatus(req.contrato_id, "Rechazado", req.motivo, User.Identity.Name);
+                return Json(new { success = true, message = "Contrato rechazado y devuelto al vendedor." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
+
         #region Helpers
+
+        private static string FormatearFecha(DateTime? fecha)
+        {
+            return fecha?.ToString("yyyy-MM-ddTHH:mm:ss");
+        }
 
         private static string FormatearFecha(DateTime fecha)
         {

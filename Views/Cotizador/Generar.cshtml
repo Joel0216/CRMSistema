@@ -571,7 +571,7 @@
                         return `<span style="background: ${bg}; color: ${col}; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">${d.substring(0,3)}</span>`;
                     }).join(' ');
 
-                    const pu = isRSU ? formatMXN(18.60) : formatMXN(getPrecioUnitarioRME(it));
+                    const pu = isRSU ? formatMXN(getPrecioUnitarioRSU(it)) : formatMXN(getPrecioUnitarioRME(it));
                     const puColor = isRSU ? '#333' : '#2E7D32';
 
                     html += `
@@ -608,6 +608,10 @@
             return (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
         }
 
+        function getPrecioUnitarioRSU(i) {
+            return Number(i.precio_unitario) || 18.60;
+        }
+
         function calcularSubtotalItem(i) {
             const adicional = (i.porcentaje_adicional || 0) / 100;
             const descuento = (i.porcentaje_descuento || 0) / 100;
@@ -615,7 +619,7 @@
             if (i.tipo_servicio === 'RSU') {
                 const diasPorSemana = Array.isArray(i.dias_asignados) ? i.dias_asignados.length : 1;
                 const bolsasMensuales = (i.bolsas * diasPorSemana * 52) / 12;
-                base = bolsasMensuales * 18.60;
+                base = bolsasMensuales * getPrecioUnitarioRSU(i);
             } else {
                 const viajesMensuales = i.recolectores * i.dias_asignados.length * 4;
                 const costo_por_viaje = getPrecioUnitarioRME(i);
@@ -772,7 +776,7 @@
                 newItem.codigo_control = cod;
                 newItem.tipo_residuo = serv ? serv.descripcion : 'RSU';
                 newItem.bolsas = Number($('#mdlBolsas').val()) || 1;
-                newItem.precio_unitario = 18.60;
+                newItem.precio_unitario = serv ? Number(serv.precio) : 18.60;
                 
             } else {
                 newItem.tipo_residuo = 'Residuos de Manejo Especial';
@@ -1088,7 +1092,7 @@
                         }
 
                         let diasHtml = it.dias_asignados.map(d => `<span class="${badgeDay}">${d.substring(0,3)}</span>`).join('');
-                        const pu = isRSU ? formatMXN(18.60) : formatMXN(getPrecioUnitarioRME(it));
+                        const pu = isRSU ? formatMXN(getPrecioUnitarioRSU(it)) : formatMXN(getPrecioUnitarioRME(it));
                         const sub = formatMXN(calcularSubtotalItem(it));
                         const subColor = '#2E7D32';
 
@@ -1193,7 +1197,7 @@
                                 frecuencia: 'Mensual',
                                 periodicidad_pago: 'Mensual',
                                 volumen_estimado: it.tipo_servicio === 'RSU' ? it.bolsas : it.recolectores,
-                                precio_unitario: it.tipo_servicio === 'RSU' ? 18.60 : getPrecioUnitarioRME(it),
+                                precio_unitario: it.tipo_servicio === 'RSU' ? getPrecioUnitarioRSU(it) : getPrecioUnitarioRME(it),
                                 dias_asignados: it.dias_asignados.join(','),
                                 porcentaje_adicional: it.porcentaje_adicional,
                                 porcentaje_descuento: it.porcentaje_descuento,

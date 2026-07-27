@@ -13,6 +13,9 @@ namespace CRMSistema.Models.Contratos
         public string Folio { get; set; }
         public decimal? Monto_Mensual { get; set; }
         public string Estatus { get; set; }
+        public string Motivo_Rechazo { get; set; }
+        public string Usuario_Rechaza { get; set; }
+        public DateTime? Fecha_Rechazo { get; set; }
         public DateTime Fecha_Autorizacion { get; set; }
         public string Autorizado_Por { get; set; }
 

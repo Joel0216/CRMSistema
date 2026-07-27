@@ -109,7 +109,9 @@
     <Compile Include="Controllers\Prospectos\ProspectosController.cs" />
     <Compile Include="Controllers\Cotizador\CotizadorController.cs" />
     <Compile Include="Controllers\Contratos\ContratosController.cs" />
+    <Compile Include="Controllers\ContratosPorAutorizar\ContratosPorAutorizarController.cs" />
     <Compile Include="Controllers\ContratosAutorizados\ContratosAutorizadosController.cs" />
+    <Compile Include="Controllers\RutasCotizadas\RutasCotizadasController.cs" />
     <Compile Include="Controllers\Manifiestos\ManifiestosController.cs" />
     <Compile Include="Controllers\ValidacionCotizaciones\ValidacionCotizacionesController.cs" />
     <Compile Include="Controllers\Usuarios\UsuariosController.cs" />
@@ -138,10 +140,17 @@
     <Compile Include="Models\Cotizador\TratoModel.cs" />
     <Compile Include="Models\Cotizador\UnidadRmeDto.cs" />
     <Compile Include="Models\Dashboard\DashboardKpiDto.cs" />
+    <Compile Include="Models\Usuarios\AppRoles.cs" />
+    <Compile Include="Models\Usuarios\RolDto.cs" />
+    <Compile Include="Models\Usuarios\RolHelper.cs" />
+    <Compile Include="Models\Usuarios\UsuarioCrudRequest.cs" />
     <Compile Include="Models\Usuarios\UsuarioDto.cs" />
     <Compile Include="Models\Contratos\ContratoAutorizadoModel.cs" />
     <Compile Include="Models\Contratos\ContratoDto.cs" />
+    <Compile Include="Models\Contratos\ContratoRechazoRequest.cs" />
+    <Compile Include="Models\Contratos\GuardarServiciosRequest.cs" />
     <Compile Include="Models\Manifiestos\ManifiestoDto.cs" />
+    <Compile Include="Filters\AuthorizeRoleAttribute.cs" />
     <Compile Include="Filters\JsonExceptionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -155,6 +164,12 @@
     <Content Include="Scripts\*.js" />
     <Content Include="Global.asax" />
     <Content Include="sql\validacion_cotizaciones.sql" />
+    <Content Include="sql\prospectos_direccion_update.sql" />
+    <Content Include="sql\limpiar_pruebas_crm.sql" />
+    <Content Include="sql\limpiar_todo_completo.sql" />
+    <Content Include="sql\seed_catalogos_crm.sql" />
+    <Content Include="sql\usuarios_roles.sql" />
+    <Content Include="sql\seed_usuario_superadmin.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -186,7 +201,9 @@
     <Content Include="Views\Cotizador\Index.cshtml" />
     <Content Include="Views\Cotizador\Generar.cshtml" />
     <Content Include="Views\Contratos\Index.cshtml" />
+    <Content Include="Views\ContratosPorAutorizar\Index.cshtml" />
     <Content Include="Views\ContratosAutorizados\Index.cshtml" />
+    <Content Include="Views\RutasCotizadas\Index.cshtml" />
     <Content Include="Views\Manifiestos\Index.cshtml" />
     <Content Include="Views\ValidacionCotizaciones\Index.cshtml" />
     <Content Include="Views\Cliente\Index.cshtml" />

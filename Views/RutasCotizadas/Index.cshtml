@@ -1,0 +1,719 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Rutas Cotizadas";
+    ViewBag.ActiveMenu = "RutasCotizadas";
+}
+
+<style>
+    .kpi-ruta {
+        background: white;
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        padding: 18px 22px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .kpi-ruta .valor {
+        font-size: 32px;
+        font-weight: 800;
+        color: #5D4037;
+        line-height: 1;
+    }
+    .kpi-ruta .etiqueta {
+        font-size: 12px;
+        color: #757575;
+        margin-top: 6px;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .panel-detalle {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 720px;
+        height: 100vh;
+        background: #FAFAFA;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+        z-index: 1050;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .panel-detalle.show { display: flex; }
+
+    .panel-detalle-header {
+        background: #4E342E;
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .panel-detalle-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+    .panel-detalle-footer {
+        background: white;
+        border-top: 1px solid #E0E0E0;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .seccion-card {
+        background: white;
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+    .seccion-titulo {
+        font-size: 12px;
+        font-weight: 800;
+        color: #5D4037;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #757575;
+    }
+    .timeline-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #BDBDBD;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #BDBDBD;
+    }
+    .timeline-dot.active { background: #2E7D32; box-shadow: 0 0 0 1px #2E7D32; }
+    .timeline-dot.warning { background: #F9A825; box-shadow: 0 0 0 1px #F9A825; }
+    .timeline-line {
+        flex: 1;
+        height: 2px;
+        background: #E0E0E0;
+        min-width: 30px;
+    }
+
+    .sugerencia-box {
+        background: #E8F5E9;
+        border: 1px solid #A5D6A7;
+        border-radius: 10px;
+        padding: 16px;
+    }
+    .metricas-sugerencia {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metrica-sg {
+        text-align: center;
+        background: white;
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .metrica-sg .num { font-size: 18px; font-weight: 800; color: #2E7D32; }
+    .metrica-sg .txt { font-size: 10px; color: #757575; text-transform: uppercase; }
+
+    .capacidad-barra {
+        height: 14px;
+        background: #E0E0E0;
+        border-radius: 7px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    .capacidad-fill {
+        height: 100%;
+        background: #2E7D32;
+        border-radius: 7px;
+        transition: width 0.4s ease;
+    }
+
+    .tabla-rutas {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .tabla-rutas th, .tabla-rutas td {
+        padding: 8px;
+        border: 1px solid #E0E0E0;
+        text-align: center;
+    }
+    .tabla-rutas th { background: #F5F5F5; font-weight: 700; color: #5D4037; }
+
+    .mapa-calor td {
+        font-weight: 700;
+        color: white;
+    }
+
+    .badge-dia {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    .badge-servicio {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-right: 6px;
+        margin-bottom: 6px;
+    }
+
+    .historial-item {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 12px;
+    }
+    .historial-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4E342E;
+        margin-top: 4px;
+        flex-shrink: 0;
+    }
+
+    .overlay-backdrop {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 1040;
+    }
+    .overlay-backdrop.show { display: block; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="section-title mb-0" style="text-transform: uppercase;">Rutas Cotizadas</h2>
+        <p class="section-sub mb-0" id="lblCount">Cargando...</p>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="kpi-ruta">
+            <div class="valor" id="kpiUnidadesDisponibles">24</div>
+            <div class="etiqueta">Unidades Disponibles</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-ruta">
+            <div class="valor" id="kpiUnidadesActivas">6</div>
+            <div class="etiqueta">Unidades Activas</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-ruta">
+            <div class="valor" id="kpiOperadoresRuta">8</div>
+            <div class="etiqueta">Operadores en Ruta</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-ruta">
+            <div class="valor" id="kpiServiciosNuevos">3</div>
+            <div class="etiqueta">Servicios Nuevos por Asignar</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="table-wrap">
+        <table class="table" id="tblRutas">
+            <thead>
+                <tr>
+                    <th>Folio Cotización</th>
+                    <th>Cliente</th>
+                    <th>Domicilio de Servicio</th>
+                    <th>Días Disponibles</th>
+                    <th>Servicio(s)</th>
+                    <th>Días Asignados</th>
+                    <th>Operador</th>
+                    <th>Estatus</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbRutas">
+                <tr><td colspan="9" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Backdrop -->
+<div id="overlayBackdrop" class="overlay-backdrop" onclick="cerrarDetalle()"></div>
+
+<!-- Panel lateral detalle -->
+<div id="panelDetalle" class="panel-detalle">
+    <div class="panel-detalle-header">
+        <div>
+            <div id="detTitulo" style="font-size: 15px; font-weight: 700; text-transform: uppercase;">COT-2026-001 | GRUPO BACHOCO S.A. DE C.V.</div>
+            <div id="detSubtitulo" style="font-size: 11px; opacity: 0.9;">Cotización creada el 24/05/2026 por Juan Pérez (Ventas)</div>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="cerrarDetalle()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+    </div>
+
+    <div class="panel-detalle-body">
+        <!-- Estado del proceso -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">Estado del Proceso</div>
+            <div class="timeline">
+                <span>Pendiente de validación operativa</span>
+                <div class="timeline-dot active"></div>
+                <div class="timeline-line"></div>
+                <span>En revisión</span>
+                <div class="timeline-dot warning"></div>
+                <div class="timeline-line"></div>
+                <span>Aprobado / Asignado</span>
+                <div class="timeline-dot"></div>
+                <div class="timeline-line"></div>
+                <span>Requiere ajuste comercial</span>
+                <div class="timeline-dot"></div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- Datos del cliente -->
+            <div class="col-md-6">
+                <div class="seccion-card h-100">
+                    <div class="seccion-titulo">Datos del Cliente y Cotización</div>
+                    <div class="mb-2"><span class="campo-label">Cliente</span><input type="text" class="campo-readonly" id="detCliente" readonly></div>
+                    <div class="mb-2"><span class="campo-label">RFC</span><input type="text" class="campo-readonly" id="detRFC" readonly></div>
+                    <div class="mb-2"><span class="campo-label">Dirección</span><input type="text" class="campo-readonly" id="detDireccion" readonly></div>
+                    <div class="mb-2"><span class="campo-label">Lat / Long</span><input type="text" class="campo-readonly" id="detCoordenadas" readonly></div>
+                    <div class="mb-2"><span class="campo-label">Observaciones de recolección</span><textarea class="campo-readonly" id="detObservaciones" rows="2" readonly></textarea></div>
+                </div>
+            </div>
+
+            <!-- Sugerencia operativa -->
+            <div class="col-md-6">
+                <div class="seccion-card h-100">
+                    <div class="seccion-titulo">Sugerencia Operativa</div>
+                    <div class="sugerencia-box">
+                        <div class="row g-2">
+                            <div class="col-6"><span class="campo-label">Ruta sugerida</span><input type="text" class="campo-readonly" id="sgRuta" readonly></div>
+                            <div class="col-6"><span class="campo-label">Unidad sugerida</span><input type="text" class="campo-readonly" id="sgUnidad" readonly></div>
+                            <div class="col-6"><span class="campo-label">Operador sugerido</span><input type="text" class="campo-readonly" id="sgOperador" readonly></div>
+                        </div>
+                        <div class="metricas-sugerencia">
+                            <div class="metrica-sg"><div class="num" id="sgProbabilidad">94%</div><div class="txt">Prob. Cumplimiento</div></div>
+                            <div class="metrica-sg"><div class="num" id="sgCapacidad">10%</div><div class="txt">Cap. Restante Prom.</div></div>
+                            <div class="metrica-sg"><div class="num" id="sgDistancia">1.8 km</div><div class="txt">Distancia Adic. Est.</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios cotizados -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">Servicios Cotizados y Días Requeridos</div>
+            <table class="servicios-tabla">
+                <thead>
+                    <tr>
+                        <th>Servicio</th>
+                        <th>Tipo de Residuo</th>
+                        <th>Frecuencia</th>
+                        <th>Cantidad</th>
+                        <th>Días Seleccionados</th>
+                    </tr>
+                </thead>
+                <tbody id="detServicios"></tbody>
+            </table>
+        </div>
+
+        <!-- Asignación de ruta -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">Asignación de Ruta y Capacidad</div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="campo-label">Ruta</label>
+                    <select class="form-select form-select-sm" id="selRuta">
+                        <option value="Ruta Norte">Ruta Norte</option>
+                        <option value="Ruta Centro">Ruta Centro</option>
+                        <option value="Ruta Sur">Ruta Sur</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="campo-label">Unidad</label>
+                    <select class="form-select form-select-sm" id="selUnidad">
+                        <option value="U-03 | RSU Norte">U-03 | RSU Norte</option>
+                        <option value="U-05 | RSU Centro">U-05 | RSU Centro</option>
+                        <option value="U-07 | RME Sur">U-07 | RME Sur</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="campo-label">Operador</label>
+                    <select class="form-select form-select-sm" id="selOperador">
+                        <option value="Operador 1">Operador 1</option>
+                        <option value="José Hernández">José Hernández</option>
+                        <option value="Jorge Pech">Jorge Pech</option>
+                        <option value="Esteban Huitz">Esteban Huitz</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span style="font-size: 12px; font-weight: 700;">Capacidad Actual de la Ruta</span>
+                    <span style="font-size: 12px; font-weight: 700;" id="txtCapacidad">75% → 90%</span>
+                </div>
+                <div class="capacidad-barra">
+                    <div class="capacidad-fill" id="barCapacidad" style="width: 75%;"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1" style="font-size: 10px; color: #757575;">
+                    <span>0% Óptima</span>
+                    <span>70% Óptima</span>
+                    <span>90% Saturada</span>
+                    <span>100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disponibilidad de rutas -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">Disponibilidad y Ocupación por Día</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <table class="tabla-rutas">
+                        <thead>
+                            <tr><th>Ruta</th><th>Ocupación</th><th>Distancia Adic.</th><th>Recomendación</th></tr>
+                        </thead>
+                        <tbody id="detRutas"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="tabla-rutas mapa-calor">
+                        <thead>
+                            <tr><th>Ruta</th><th>Lun</th><th>Mar</th><th>Mie</th><th>Jue</th><th>Vie</th><th>Sab</th><th>Dom</th></tr>
+                        </thead>
+                        <tbody id="detOcupacion"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones e historial -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="seccion-card h-100">
+                    <div class="seccion-titulo">Observaciones Operativas</div>
+                    <textarea class="form-control form-control-sm" id="txtObservaciones" rows="4" placeholder="Escribe aquí alguna observación o indicación especial..."></textarea>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="seccion-card h-100">
+                    <div class="seccion-titulo">Historial de Cambios</div>
+                    <div id="detHistorial"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-detalle-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="cerrarDetalle()">Cerrar</button>
+        <button type="button" class="btn btn-danger" onclick="rechazarSolicitud()">Rechazar</button>
+        <button type="button" class="btn btn-outline-primary" onclick="rechazarSolicitud()">Reasignar</button>
+        <button type="button" class="btn btn-success" onclick="aprobarRuta()">
+            <i class="fas fa-check me-1"></i> Aprobar y Asignar Ruta
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let rutasData = [];
+        let rutaActual = null;
+
+        $(document).ready(function() {
+            cargarPendientes();
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $('#panelDetalle').hasClass('show')) {
+                    cerrarDetalle();
+                }
+            });
+        });
+
+        function cargarPendientes() {
+            fetch('@Url.Action("GetPendientes", "RutasCotizadas")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        rutasData = res.data || [];
+                        renderizarTabla();
+                    } else {
+                        $('#tbRutas').html(`<tr><td colspan="9" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    $('#tbRutas').html('<tr><td colspan="9" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                });
+        }
+
+        function renderizarTabla() {
+            $('#lblCount').text(`${rutasData.length} cotizaciones pendientes por asignar`);
+            if (rutasData.length === 0) {
+                $('#tbRutas').html('<tr><td colspan="9" class="text-center py-4">No hay rutas cotizadas pendientes.</td></tr>');
+                return;
+            }
+
+            const colorTipo = {
+                'RSU': { bg: '#E3F2FD', color: '#1565C0', label: 'RSU' },
+                'RME': { bg: '#FFF3E0', color: '#E65100', label: 'RME' }
+            };
+
+            const colorDia = {
+                'Lun': '#1565C0', 'Mar': '#2E7D32', 'Mie': '#F9A825',
+                'Jue': '#6A1B9A', 'Vie': '#C62828', 'Sab': '#757575', 'Dom': '#757575', 'Diario': '#2E7D32'
+            };
+
+            let html = '';
+            rutasData.forEach(r => {
+                const diasHtml = (r.diasDisponibles || []).map(d =>
+                    `<span class="badge-dia" style="background:${colorDia[d] || '#757575'};color:white;">${d}</span>`
+                ).join('');
+
+                const serviciosHtml = (r.servicios || []).map(s => {
+                    const c = colorTipo[s.tipo] || { bg: '#EEEEEE', color: '#424242', label: s.tipo };
+                    return `<span class="badge-servicio" style="background:${c.bg};color:${c.color};">${c.label}</span>`;
+                }).join('');
+
+                const asignadosHtml = (r.diasAsignados && r.diasAsignados.length > 0)
+                    ? r.diasAsignados.map(d => `<span class="badge-dia" style="background:#2E7D32;color:white;">${d}</span>`).join('')
+                    : '<span class="text-muted" style="font-size:11px;">—</span>';
+
+                const estatusClass = r.estatus === 'Asignado' ? 'success' : 'warning';
+                const estatusText = r.estatus === 'Asignado' ? 'Asignado' : 'Pendiente';
+                const btnText = r.estatus === 'Asignado' ? 'Cambiar Operador' : 'Asignar Ruta';
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 700;">${r.folio}</td>
+                        <td>${r.cliente}</td>
+                        <td class="text-muted">${r.domicilio}</td>
+                        <td>${diasHtml}</td>
+                        <td>${serviciosHtml}</td>
+                        <td>${asignadosHtml}</td>
+                        <td>${r.operador || '—'}</td>
+                        <td><span class="badge bg-${estatusClass}" style="font-size: 11px;">${estatusText}</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm" style="background:#5D4037;color:white;border:none;border-radius:6px;" onclick="abrirDetalle(${r.id})">
+                                ${btnText} <i class="fas fa-chevron-right ms-1"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tbRutas').html(html);
+        }
+
+        function abrirDetalle(id) {
+            rutaActual = rutasData.find(x => x.id === id);
+            if (!rutaActual) return;
+
+            fetch('@Url.Action("GetDetalle", "RutasCotizadas")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        mostrarDetalle(res);
+                        $('#overlayBackdrop').addClass('show');
+                        $('#panelDetalle').addClass('show');
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                })
+                .catch(console.error);
+        }
+
+        function mostrarDetalle(res) {
+            const r = res.item;
+            const sg = res.sugerencia;
+
+            $('#detTitulo').text(`${r.folio} | ${r.cliente}`);
+            $('#detSubtitulo').text(`Cotización creada el ${r.fechaCotizacion} por ${r.creador}`);
+
+            $('#detCliente').val(r.cliente);
+            $('#detRFC').val(r.rfc);
+            $('#detDireccion').val(r.domicilio);
+            $('#detCoordenadas').val(`${r.latitud}, ${r.longitud}`);
+            $('#detObservaciones').val(r.observaciones || '');
+
+            $('#sgRuta').val(sg.ruta);
+            $('#sgUnidad').val(sg.unidad);
+            $('#sgOperador').val(sg.operador);
+            $('#sgProbabilidad').text(sg.probabilidadCumplimiento + '%');
+            $('#sgCapacidad').text(sg.capacidadRestante + '%');
+            $('#sgDistancia').text(sg.distanciaAdicional + ' km');
+
+            // Servicios
+            let servHtml = '';
+            (r.servicios || []).forEach(s => {
+                const diasSel = (r.diasDisponibles || []).map(d => `<span class="badge-dia" style="background:#1565C0;color:white;">${d}</span>`).join(' ');
+                servHtml += `
+                    <tr>
+                        <td>${s.nombre}</td>
+                        <td>${s.tipo}</td>
+                        <td>${s.frecuencia}</td>
+                        <td>${s.cantidad}</td>
+                        <td>${diasSel}</td>
+                    </tr>`;
+            });
+            $('#detServicios').html(servHtml);
+
+            // Disponibilidad de rutas
+            let rutasHtml = '';
+            (res.rutas || []).forEach(x => {
+                let recColor = '#2E7D32';
+                if (x.recomendacion === 'No recomendado') recColor = '#C62828';
+                if (x.recomendacion === 'Precaución') recColor = '#F9A825';
+                rutasHtml += `
+                    <tr>
+                        <td style="font-weight:700;">${x.nombre}</td>
+                        <td>${x.ocupacion}%</td>
+                        <td>${x.distancia} km</td>
+                        <td style="color:${recColor};font-weight:700;">${x.recomendacion}</td>
+                    </tr>`;
+            });
+            $('#detRutas').html(rutasHtml);
+
+            // Ocupación por día
+            let ocpHtml = '';
+            (res.ocupacion || []).forEach(x => {
+                const color = getColorCalor(x.despues);
+                ocpHtml += `
+                    <tr>
+                        <td style="background:#F5F5F5;color:#5D4037;font-weight:700;">${x.dia}</td>
+                        <td style="background:${getColorCalor(x.actual)};">${x.actual}%</td>
+                        <td colspan="6" style="background:${color};">${x.despues}%</td>
+                    </tr>`;
+            });
+            $('#detOcupacion').html(ocpHtml);
+
+            // Capacidad barra
+            const actual = 75;
+            const despues = 90;
+            $('#txtCapacidad').text(`${actual}% → ${despues}%`);
+            $('#barCapacidad').css('width', `${despues}%`).css('background', despues > 85 ? '#C62828' : despues > 70 ? '#F9A825' : '#2E7D32');
+
+            // Historial
+            let histHtml = '';
+            (res.historial || []).forEach(h => {
+                histHtml += `
+                    <div class="historial-item">
+                        <div class="historial-dot"></div>
+                        <div>
+                            <div style="font-weight:700;color:#424242;">${h.accion}</div>
+                            <div style="font-size:11px;color:#757575;">${h.fecha} · ${h.usuario}</div>
+                        </div>
+                    </div>`;
+            });
+            $('#detHistorial').html(histHtml);
+        }
+
+        function getColorCalor(valor) {
+            if (valor < 70) return '#2E7D32';
+            if (valor < 90) return '#F9A825';
+            return '#C62828';
+        }
+
+        function cerrarDetalle() {
+            $('#panelDetalle').removeClass('show');
+            $('#overlayBackdrop').removeClass('show');
+            rutaActual = null;
+        }
+
+        function aprobarRuta() {
+            if (!rutaActual) return;
+
+            const datos = {
+                id: rutaActual.id,
+                ruta: $('#selRuta').val(),
+                unidad: $('#selUnidad').val(),
+                operador: $('#selOperador').val(),
+                observaciones: $('#txtObservaciones').val()
+            };
+
+            fetch('@Url.Action("AsignarRuta", "RutasCotizadas")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify(datos)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire('Ruta asignada', res.message, 'success').then(() => {
+                        cerrarDetalle();
+                        cargarPendientes();
+                    });
+                } else {
+                    Swal.fire('Error', res.error, 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'No se pudo asignar la ruta.', 'error');
+            });
+        }
+
+        function rechazarSolicitud() {
+            if (!rutaActual) return;
+
+            Swal.fire({
+                title: '¿Rechazar solicitud?',
+                input: 'textarea',
+                inputLabel: 'Motivo (requerirá ajuste comercial)',
+                inputPlaceholder: 'Escribe el motivo...',
+                showCancelButton: true,
+                confirmButtonText: 'Rechazar',
+                confirmButtonColor: '#C62828',
+                cancelButtonText: 'Cancelar'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                fetch('@Url.Action("Rechazar", "RutasCotizadas")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ id: rutaActual.id, motivo: result.value || '' })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire('Rechazada', res.message, 'info').then(() => {
+                            cerrarDetalle();
+                            cargarPendientes();
+                        });
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    Swal.fire('Error', 'No se pudo rechazar la solicitud.', 'error');
+                });
+            });
+        }
+    </script>
+}

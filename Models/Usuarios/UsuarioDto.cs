@@ -9,6 +9,9 @@ namespace CRMSistema.Models.Usuarios
         public string nombre { get; set; }
         public string apellido { get; set; }
         public string correo { get; set; }
+        public string usuario { get; set; }
         public string rol { get; set; }
+        public int? rolId { get; set; }
+        public bool activo { get; set; }
     }
 }

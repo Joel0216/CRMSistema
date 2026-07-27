@@ -238,9 +238,11 @@
     </div>
     <select class="form-input" id="cbxEstatus" style="width: 200px;">
         <option value="">Todos los estatus</option>
+        <option value="Por Autorizar">Por Autorizar</option>
         <option value="Activo">Por firmar</option>
         <option value="Enviado">Enviado</option>
         <option value="Firmado">Firmado</option>
+        <option value="Rechazado">Rechazado</option>
     </select>
 </div>
 
@@ -273,6 +275,11 @@
             <button type="button" class="btn btn-sm" onclick="cerrarModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
         </div>
         <div class="contrato-body">
+            <div id="alertaRechazo" class="alert alert-danger mb-3" style="display: none; font-size: 12px;">
+                <strong><i class="fas fa-exclamation-circle"></i> Contrato rechazado:</strong> <span id="txtMotivoRechazo"></span>
+                <div style="font-size: 11px; color: #888; margin-top: 4px;">Rechazado por <span id="txtUsuarioRechazo"></span> — <span id="txtFechaRechazo"></span></div>
+            </div>
+
             <div class="row mb-3">
                 <div class="col-md-4 mb-2">
                     <label class="campo-label">Folio de Contrato</label>
@@ -312,7 +319,7 @@
                 </div>
                 <div class="col-md-4 mb-2">
                     <label class="campo-label">CORREO DE ATENCIÓN</label>
-                    <input type="text" class="campo-readonly" value="" readonly>
+                    <input type="text" class="campo-readonly" id="detCorreoAtencion" value="" readonly>
                 </div>
             </div>
 
@@ -400,8 +407,183 @@
                 <button type="button" class="btn-reenviar" onclick="reenviarContrato()">
                     <i class="fas fa-redo"></i> RE-ENVIAR
                 </button>
-                <button type="button" class="btn-enviar" onclick="enviarContrato()">
+                <button type="button" class="btn-enviar" onclick="enviarContrato()" id="btnEnviarContrato">
                     <i class="fas fa-paper-plane"></i> ENVIAR CONTRATO
+                </button>
+                <button type="button" class="btn-enviar" onclick="enviarRevision()" id="btnEnviarRevision" style="display:none; background:#E65100;">
+                    <i class="fas fa-user-check"></i> ENVIAR A REVISIÓN
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Servicios -->
+<div id="modalEditarServicios" class="contrato-overlay" onclick="if(event.target === this) cerrarModalEditar()">
+    <div class="contrato-box">
+        <div class="modal-header" style="background: #3E2723; color: white; border-bottom: none; flex-shrink: 0;">
+            <h5 class="modal-title" style="font-size: 16px; text-transform: uppercase;">EDITAR SERVICIOS COTIZADOS</h5>
+            <button type="button" class="btn btn-sm" onclick="cerrarModalEditar()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+        </div>
+        <div class="contrato-body">
+            <div class="alert alert-warning" style="font-size: 12px;">
+                <i class="fas fa-info-circle"></i> Solo se pueden editar los servicios cotizados y los datos del cliente. Los datos del prestador no se modificarán.
+            </div>
+
+            <!-- DATOS DEL CLIENTE EDITABLES -->
+            <div class="seccion-titulo" style="margin-top:0;">DATOS DEL CLIENTE</div>
+            <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">RAZÓN SOCIAL</label>
+                    <input type="text" class="form-control form-control-sm" id="editRazonSocial">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">RFC</label>
+                    <input type="text" class="form-control form-control-sm" id="editRFC">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">NOMBRE COMERCIAL</label>
+                    <input type="text" class="form-control form-control-sm" id="editNombreComercial">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">REPRESENTANTE LEGAL</label>
+                    <input type="text" class="form-control form-control-sm" id="editRepresentante">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">DOMICILIO FISCAL</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="editDomicilioFiscal">
+                        <button type="button" class="btn btn-outline-secondary" onclick="abrirModalDireccion()" title="Editar dirección y documentos">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">DOMICILIO DE RECOLECCIÓN</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="editDomicilioRecoleccion">
+                        <button type="button" class="btn btn-outline-secondary" onclick="abrirModalDireccion()" title="Editar dirección y documentos">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">TELÉFONO DE CONTACTO</label>
+                    <input type="text" class="form-control form-control-sm" id="editTelefono" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="15">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">CORREO COMERCIAL</label>
+                    <input type="email" class="form-control form-control-sm" id="editCorreo">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="campo-label">FOLIO CATASTRAL</label>
+                    <input type="text" class="form-control form-control-sm" id="editFolioCatastral" readonly>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">SERVICIOS COTIZADOS</div>
+            <div id="editarServiciosContainer"></div>
+
+            <div class="summary-box mt-4">
+                <div class="summary-row"><span>SUBTOTAL SERVICIOS</span><span id="editSubtotal" style="font-weight: bold;">$0.00</span></div>
+                <div class="summary-row"><span>IVA (16%)</span><span id="editIVA" style="font-weight: bold;">$0.00</span></div>
+                <div class="summary-row"><span>DESCUENTO</span><span id="editDescuento" style="font-weight: bold; color: #C62828;">-$0.00</span></div>
+                <div class="summary-total"><span>TOTAL MENSUAL ESTIMADO</span><span id="editTotal">$0.00</span></div>
+            </div>
+        </div>
+        <div class="contrato-footer">
+            <div class="grupo-botones">
+                <button type="button" class="btn btn-outline-secondary" onclick="cerrarModalEditar()">Cancelar</button>
+            </div>
+            <div class="grupo-botones">
+                <button type="button" class="btn-enviar" onclick="guardarServiciosEditados()">
+                    <i class="fas fa-save"></i> Guardar y reenviar a autorización
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Dirección y Documentos -->
+<div id="modalEditarDireccion" class="contrato-overlay" onclick="if(event.target === this) cerrarModalDireccion()">
+    <div class="contrato-box" style="width: 900px;">
+        <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none; flex-shrink: 0;">
+            <h5 class="modal-title" style="font-size: 16px; text-transform: uppercase;">EDITAR DIRECCIÓN Y DOCUMENTOS</h5>
+            <button type="button" class="btn btn-sm" onclick="cerrarModalDireccion()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
+        </div>
+        <div class="contrato-body">
+            <div class="seccion-titulo" style="margin-top:0;">DOMICILIO FISCAL <span class="text-muted" style="font-size:11px; font-weight:400;">(solo lectura)</span></div>
+            <div class="row mb-3" style="opacity: 0.85;">
+                <div class="col-md-6 mb-2"><label class="campo-label">CALLE</label><input type="text" class="form-control form-control-sm" id="dirFiscalCalle" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">NÚM. EXT.</label><input type="text" class="form-control form-control-sm" id="dirFiscalNumExt" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">NÚM. INT.</label><input type="text" class="form-control form-control-sm" id="dirFiscalNumInt" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">C.P.</label><input type="text" class="form-control form-control-sm" id="dirFiscalCP" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">COLONIA</label><input type="text" class="form-control form-control-sm" id="dirFiscalColonia" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">MUNICIPIO</label><input type="text" class="form-control form-control-sm" id="dirFiscalMunicipio" readonly style="background:#f0f0f0;"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">ESTADO</label><input type="text" class="form-control form-control-sm" id="dirFiscalEstado" readonly style="background:#f0f0f0;"></div>
+            </div>
+
+            <div class="seccion-titulo">DOMICILIO DE RECOLECCIÓN</div>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-2"><label class="campo-label">CALLE</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionCalle"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">NÚM. EXT.</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionNumExt"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">NÚM. INT.</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionNumInt"></div>
+                <div class="col-md-2 mb-2"><label class="campo-label">C.P.</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionCP" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="10"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">COLONIA</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionColonia"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">MUNICIPIO</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionMunicipio"></div>
+                <div class="col-md-4 mb-2"><label class="campo-label">ESTADO</label><input type="text" class="form-control form-control-sm" id="dirRecoleccionEstado"></div>
+            </div>
+
+            <div class="seccion-titulo">FOLIO CATASTRAL Y ARCHIVOS</div>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <label class="campo-label">FOLIO CATASTRAL</label>
+                    <input type="text" class="form-control form-control-sm" id="dirFolioCatastral" placeholder="Escribe el folio catastral">
+                </div>
+            </div>
+
+            <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Sube las fotografías y el documento catastral del domicilio de recolección.</p>
+            <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                    <div class="archivo-slot" onclick="document.getElementById('dirFotoFachada').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 16px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                        <div id="slotFotoFachada"><div style="font-size: 28px; color: #C4A574; margin-bottom: 6px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 12px; color: #5C3819;">Foto 1 - Fachada</div><div style="font-size: 10px; color: #999; margin-top: 4px;">Haz clic para subir</div></div>
+                        <img id="previewFotoFachada" src="#" alt="Vista previa" style="display:none; max-width:100%; max-height:120px; border-radius:8px; object-fit:cover;" />
+                        <input type="file" class="form-control form-control-sm" id="dirFotoFachada" accept="image/*" style="display:none;" onchange="previewArchivoDir(this, 'previewFotoFachada', 'slotFotoFachada')">
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="archivo-slot" onclick="document.getElementById('dirFotoAcceso').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 16px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                        <div id="slotFotoAcceso"><div style="font-size: 28px; color: #C4A574; margin-bottom: 6px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 12px; color: #5C3819;">Foto 2 - Acceso</div><div style="font-size: 10px; color: #999; margin-top: 4px;">Haz clic para subir</div></div>
+                        <img id="previewFotoAcceso" src="#" alt="Vista previa" style="display:none; max-width:100%; max-height:120px; border-radius:8px; object-fit:cover;" />
+                        <input type="file" class="form-control form-control-sm" id="dirFotoAcceso" accept="image/*" style="display:none;" onchange="previewArchivoDir(this, 'previewFotoAcceso', 'slotFotoAcceso')">
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="archivo-slot" onclick="document.getElementById('dirFotoReferencia').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 16px; text-align: center; background: #FFFAF5; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative;">
+                        <div id="slotFotoReferencia"><div style="font-size: 28px; color: #C4A574; margin-bottom: 6px;"><i class="fas fa-image"></i></div><div style="font-weight: 700; font-size: 12px; color: #5C3819;">Foto 3 - Referencia</div><div style="font-size: 10px; color: #999; margin-top: 4px;">Haz clic para subir</div></div>
+                        <img id="previewFotoReferencia" src="#" alt="Vista previa" style="display:none; max-width:100%; max-height:120px; border-radius:8px; object-fit:cover;" />
+                        <input type="file" class="form-control form-control-sm" id="dirFotoReferencia" accept="image/*" style="display:none;" onchange="previewArchivoDir(this, 'previewFotoReferencia', 'slotFotoReferencia')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6 mb-2">
+                    <div class="archivo-slot" onclick="document.getElementById('dirDocumentoCatastral').click()" style="border: 2px dashed #C4A574; border-radius: 12px; padding: 20px; text-align: center; background: #FFFAF5; cursor: pointer; position: relative;">
+                        <div id="slotDocumentoCatastral"><div style="font-size: 28px; color: #C4A574; margin-bottom: 6px;"><i class="fas fa-file-pdf"></i></div><div style="font-weight: 700; font-size: 13px; color: #5C3819;">Carta Catastral</div><div style="font-size: 11px; color: #999; margin-top: 4px;">PDF, JPG o PNG. Haz clic para subir.</div></div>
+                        <div id="previewDocumentoCatastral" style="display:none; font-size:13px; color:#5C3819; font-weight:600;"><i class="fas fa-check-circle" style="color:#27AE60; margin-right:6px;"></i><span id="nombreDocumentoCatastral"></span></div>
+                        <input type="file" class="form-control form-control-sm" id="dirDocumentoCatastral" accept=".pdf,image/*" style="display:none;" onchange="previewDocumentoDir(this, 'previewDocumentoCatastral', 'slotDocumentoCatastral', 'nombreDocumentoCatastral')">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contrato-footer">
+            <div class="grupo-botones">
+                <button type="button" class="btn btn-outline-secondary" onclick="cerrarModalDireccion()">Cancelar</button>
+            </div>
+            <div class="grupo-botones">
+                <button type="button" class="btn-enviar" onclick="guardarDireccionProspecto()">
+                    <i class="fas fa-save"></i> Guardar dirección y archivos
                 </button>
             </div>
         </div>
@@ -424,7 +606,7 @@
             telefono: '999 000 0000',
             domicilio: 'CARRETERA MERIDA - CHALMUCH KM. 1.3',
             representante: '',
-            correo: '',
+            correo: 'atencion@saneamientosana.com',
             contacto: '',
             extension: '',
             datosPoder: ''
@@ -479,15 +661,23 @@
             filtrados.forEach(c => {
                 const fecha = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—';
                 const estatus = c.Estatus || 'Activo';
-                const badge = estatus === 'Activo' ? { bg: '#FFF3E0', color: '#E65100', texto: 'Por firmar' }
-                    : estatus === 'Enviado' ? { bg: '#E3F2FD', color: '#1565C0', texto: 'Enviado' }
-                    : { bg: '#E8F5E9', color: '#2E7D32', texto: estatus };
+                const eLower = estatus.toLowerCase();
+                const badge = eLower === 'por autorizar' ? { bg: '#FFF3E0', color: '#E65100', texto: 'Por Autorizar' }
+                    : eLower === 'activo' ? { bg: '#FFF3E0', color: '#E65100', texto: 'Por firmar' }
+                    : eLower === 'enviado' ? { bg: '#E3F2FD', color: '#1565C0', texto: 'Enviado' }
+                    : eLower === 'firmado' ? { bg: '#E8F5E9', color: '#2E7D32', texto: 'Firmado' }
+                    : eLower === 'rechazado' ? { bg: '#FFEBEE', color: '#C62828', texto: 'Rechazado' }
+                    : { bg: '#EEEEEE', color: '#616161', texto: estatus };
+
+                const esEditable = eLower === 'rechazado' || eLower === 'por autorizar';
+                const motivoRechazo = eLower === 'rechazado' && c.Motivo_Rechazo ? `<div style="font-size:10px;color:#C62828;margin-top:2px;">${c.Motivo_Rechazo}</div>` : '';
+                const btnEditar = esEditable ? `<button class="btn btn-sm" style="background: transparent; border: none; color: ${eLower === 'rechazado' ? '#C62828' : '#E65100'};" onclick="editarServicios(${c.Contrato_ID})" title="Editar servicios"><i class="fas fa-edit"></i></button>` : '';
 
                 html += `
                     <tr>
                         <td style="font-weight: 600;">${c.Folio || '—'}</td>
                         <td>${fecha}</td>
-                        <td>${c.RazonSocial || '—'}</td>
+                        <td>${c.RazonSocial || '—'}${motivoRechazo}</td>
                         <td class="text-muted">${c.RFC || '—'}</td>
                         <td class="text-muted">${formatMXN(c.Monto_Mensual)}</td>
                         <td><span class="badge" style="background: ${badge.bg}; color: ${badge.color}; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${badge.texto}</span></td>
@@ -495,6 +685,7 @@
                             <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verContrato(${c.Contrato_ID})" title="Ver contrato">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            ${btnEditar}
                         </td>
                     </tr>
                 `;
@@ -539,18 +730,40 @@
             $('#detFecha').val(c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—');
             $('#detEstatus').val(c.Estatus || 'Activo');
 
+            const estatusLower = (c.Estatus || '').toLowerCase();
+            if (estatusLower === 'rechazado') {
+                $('#alertaRechazo').show();
+                $('#txtMotivoRechazo').text(c.Motivo_Rechazo || 'Sin motivo especificado');
+                $('#txtUsuarioRechazo').text(c.Usuario_Rechaza || 'supervisor');
+                $('#txtFechaRechazo').text(c.Fecha_Rechazo ? new Date(c.Fecha_Rechazo).toLocaleDateString('es-MX') : '—');
+            } else {
+                $('#alertaRechazo').hide();
+            }
+
+            if (estatusLower === 'activo') {
+                $('#btnEnviarContrato').show();
+                $('#btnEnviarRevision').hide();
+            } else {
+                $('#btnEnviarContrato').hide();
+                $('#btnEnviarRevision').show();
+            }
+
             $('#detRazonSocial').val(getProp(p, 'nombre', 'RazonSocial') || c.RazonSocial || '—');
             $('#detRFC').val(getProp(p, 'rfc', 'RFC') || c.RFC || '—');
-            $('#detNombreComercial').val(getProp(p, 'nombreComercial', 'Nombre_Comercial') || c.RazonSocial || '—');
-            $('#detRepresentante').val(getProp(p, 'contacto', 'Nombre_Prospecto') || '—');
+            $('#detNombreComercial').val(getProp(p, 'nombreComercial', 'Nombre_Comercial') || c.Nombre_Comercial || c.RazonSocial || '—');
+            $('#detRepresentante').val(getProp(p, 'contacto', 'Nombre_Prospecto') || c.Contacto || '—');
 
-            const domicilio = [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ') || '—';
-            $('#detDomicilioFiscal').val(domicilio);
-            $('#detDomicilioRecoleccion').val(domicilio);
+            const domFiscal = getProp(p, 'domicilioFiscal', 'Domicilio_Fiscal')
+                || [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ')
+                || '—';
+            const domRecoleccion = getProp(p, 'domicilioRecoleccion', 'Domicilio_Recoleccion') || domFiscal;
+            $('#detDomicilioFiscal').val(domFiscal);
+            $('#detDomicilioRecoleccion').val(domRecoleccion);
 
-            $('#detTelefono').val(getProp(p, 'telefono', 'Telefono') || '—');
-            $('#detCorreo').val(getProp(p, 'email', 'Correo') || '—');
-            $('#detFolioCatastral').val(getProp(p, 'folioCatastral', 'Folio_Catastral') || '—');
+            $('#detTelefono').val(getProp(p, 'telefono', 'Telefono') || c.Telefono || '—');
+            $('#detCorreo').val(getProp(p, 'email', 'Correo') || c.Correo || '—');
+            $('#detFolioCatastral').val(getProp(p, 'folioCatastral', 'Folio_Catastral') || c.Folio_Catastral || '—');
+            $('#detCorreoAtencion').val(SANA_DATA.correo);
 
             renderizarServicios();
         }
@@ -666,8 +879,8 @@
                 : (s.dias_asignados || '').toString().split(',').filter(Boolean);
 
             const rawTipo = (s.tipo_residuo || s.tipo_servicio || '').toString().toUpperCase();
-            const tipo = rawTipo.includes('RSU') ? 'RSU' : 'RME';
-            const isRsu = tipo === 'RSU';
+            const isRsu = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(s.costo_tonelada) || 0) === 0 && (Number(s.costo_disposicion) || 0) === 0));
+            const tipo = isRsu ? 'RSU' : 'RME';
 
             const bolsas = isRsu ? Number(s.volumen_estimado || s.bolsas || 0) : 0;
             const recolectores = !isRsu ? Number(s.recolectores || s.volumen_estimado || 0) : 0;
@@ -727,6 +940,471 @@
             $('#modalContrato').removeClass('show');
         }
 
+        // ─────────────────────────────────────────────────────────
+        // EDICIÓN DE SERVICIOS COTIZADOS (solo contratos rechazados)
+        // ─────────────────────────────────────────────────────────
+        let serviciosEditando = [];
+        let contratoEditandoId = null;
+
+        let catalogosEditar = { serviciosResiduos: [], unidadesRme: [] };
+
+        function editarServicios(id) {
+            contratoEditandoId = id;
+            const c = contratos.find(x => x.Contrato_ID === id);
+            if (!c) return;
+
+            fetch('@Url.Action("GetDetalle", "Contratos")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        prospectoActual = res.prospecto || {};
+                        sucursalesActual = res.sucursales || [];
+                        serviciosEditando = JSON.parse(JSON.stringify(res.servicios || []));
+                        catalogosEditar = res.catalogos || { serviciosResiduos: [], unidadesRme: [] };
+                        llenarCamposClienteEdicion();
+                        mostrarEdicionServicios();
+                        $('#modalEditarServicios').addClass('show');
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                })
+                .catch(console.error);
+        }
+
+        function parsearDireccion(texto) {
+            const limpio = (texto || '').replace(/^C\.P\.\s*/i, '').trim();
+            const partes = limpio.split(',').map(x => x.trim()).filter(Boolean);
+            const dir = { calle: '', numExt: '', numInt: '', colonia: '', municipio: '', cp: '', estado: '' };
+            if (partes.length === 0) return dir;
+            dir.calle = partes[0] || '';
+            let i = 1;
+            if (partes[i] && partes[i].startsWith('#')) { dir.numExt = partes[i].replace('#', '').trim(); i++; }
+            else if (partes[i] && /^\d+[A-Z]?$/i.test(partes[i])) { dir.numExt = partes[i]; i++; }
+            if (partes[i] && partes[i].toUpperCase().startsWith('INT. ')) { dir.numInt = partes[i].replace(/int\.\s*/i, '').trim(); i++; }
+            if (partes[i]) { dir.colonia = partes[i]; i++; }
+            if (partes[i]) { dir.municipio = partes[i]; i++; }
+            if (partes[i] && partes[i].toUpperCase().startsWith('C.P.')) { dir.cp = partes[i].replace(/c\.p\.\s*/i, '').trim(); i++; }
+            if (partes[i]) { dir.estado = partes[i]; }
+            return dir;
+        }
+
+        function formatearDireccion(calle, numExt, numInt, colonia, municipio, cp, estado) {
+            const partes = [];
+            if (calle) partes.push(calle.trim());
+            if (numExt) partes.push('#' + numExt.trim());
+            if (numInt) partes.push('Int. ' + numInt.trim());
+            if (colonia) partes.push(colonia.trim());
+            if (municipio) partes.push(municipio.trim());
+            if (cp) partes.push('C.P. ' + cp.trim());
+            if (estado) partes.push(estado.trim());
+            return partes.join(', ');
+        }
+
+        function llenarCamposClienteEdicion() {
+            const p = prospectoActual || {};
+            const c = contratoActual || contratos.find(x => x.Contrato_ID === contratoEditandoId) || {};
+            $('#editRazonSocial').val(getProp(p, 'nombre', 'RazonSocial') || c.RazonSocial || '');
+            $('#editRFC').val(getProp(p, 'rfc', 'RFC') || c.RFC || '');
+            $('#editNombreComercial').val(getProp(p, 'nombreComercial', 'Nombre_Comercial') || c.Nombre_Comercial || c.RazonSocial || '');
+            $('#editRepresentante').val(getProp(p, 'contacto', 'Nombre_Prospecto') || c.Contacto || '');
+
+            const domFiscal = getProp(p, 'domicilioFiscal', 'Domicilio_Fiscal')
+                || [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ')
+                || '';
+            $('#editDomicilioFiscal').val(domFiscal);
+            $('#editDomicilioRecoleccion').val(getProp(p, 'domicilioRecoleccion', 'Domicilio_Recoleccion') || domFiscal);
+            $('#editTelefono').val(getProp(p, 'telefono', 'Telefono') || c.Telefono || '');
+            $('#editCorreo').val(getProp(p, 'email', 'Correo') || c.Correo || '');
+            $('#editFolioCatastral').val(getProp(p, 'folioCatastral', 'Folio_Catastral') || c.Folio_Catastral || '');
+        }
+
+        function abrirModalDireccion() {
+            const fiscal = parsearDireccion($('#editDomicilioFiscal').val());
+            const rec = parsearDireccion($('#editDomicilioRecoleccion').val());
+            $('#dirFiscalCalle').val(fiscal.calle);
+            $('#dirFiscalNumExt').val(fiscal.numExt);
+            $('#dirFiscalNumInt').val(fiscal.numInt);
+            $('#dirFiscalColonia').val(fiscal.colonia);
+            $('#dirFiscalMunicipio').val(fiscal.municipio);
+            $('#dirFiscalCP').val(fiscal.cp);
+            $('#dirFiscalEstado').val(fiscal.estado);
+            $('#dirRecoleccionCalle').val(rec.calle);
+            $('#dirRecoleccionNumExt').val(rec.numExt);
+            $('#dirRecoleccionNumInt').val(rec.numInt);
+            $('#dirRecoleccionColonia').val(rec.colonia);
+            $('#dirRecoleccionMunicipio').val(rec.municipio);
+            $('#dirRecoleccionCP').val(rec.cp);
+            $('#dirRecoleccionEstado').val(rec.estado);
+            $('#dirFolioCatastral').val($('#editFolioCatastral').val());
+            $('#dirFotoFachada, #dirFotoAcceso, #dirFotoReferencia, #dirDocumentoCatastral').val('');
+            ['previewFotoFachada', 'previewFotoAcceso', 'previewFotoReferencia'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+                document.getElementById(id).src = '#';
+            });
+            ['slotFotoFachada', 'slotFotoAcceso', 'slotFotoReferencia'].forEach(id => document.getElementById(id).style.display = 'block');
+            document.getElementById('previewDocumentoCatastral').style.display = 'none';
+            document.getElementById('slotDocumentoCatastral').style.display = 'block';
+            $('#modalEditarDireccion').addClass('show');
+        }
+
+        function cerrarModalDireccion() {
+            $('#modalEditarDireccion').removeClass('show');
+        }
+
+        function previewArchivoDir(input, imgId, placeholderId) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(imgId).src = e.target.result;
+                document.getElementById(imgId).style.display = 'block';
+                document.getElementById(placeholderId).style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewDocumentoDir(input, previewId, placeholderId, nombreId) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById(nombreId).textContent = file.name;
+            document.getElementById(previewId).style.display = 'block';
+            document.getElementById(placeholderId).style.display = 'none';
+        }
+
+        function guardarDireccionProspecto() {
+            if (!contratoEditandoId) return;
+
+            // El domicilio fiscal es solo lectura: se conserva el valor actual del contrato.
+            const domFiscal = $('#editDomicilioFiscal').val() || '';
+
+            const domRecoleccion = formatearDireccion(
+                $('#dirRecoleccionCalle').val(), $('#dirRecoleccionNumExt').val(), $('#dirRecoleccionNumInt').val(),
+                $('#dirRecoleccionColonia').val(), $('#dirRecoleccionMunicipio').val(), $('#dirRecoleccionCP').val(), $('#dirRecoleccionEstado').val());
+
+            const folio = $('#dirFolioCatastral').val() || '';
+
+            const formData = new FormData();
+            formData.append('contrato_id', contratoEditandoId);
+            formData.append('fiscal_calle', $('#dirFiscalCalle').val());
+            formData.append('fiscal_num_ext', $('#dirFiscalNumExt').val());
+            formData.append('fiscal_num_int', $('#dirFiscalNumInt').val());
+            formData.append('fiscal_colonia', $('#dirFiscalColonia').val());
+            formData.append('fiscal_municipio', $('#dirFiscalMunicipio').val());
+            formData.append('fiscal_cp', $('#dirFiscalCP').val());
+            formData.append('fiscal_estado', $('#dirFiscalEstado').val());
+            formData.append('recoleccion_calle', $('#dirRecoleccionCalle').val());
+            formData.append('recoleccion_num_ext', $('#dirRecoleccionNumExt').val());
+            formData.append('recoleccion_num_int', $('#dirRecoleccionNumInt').val());
+            formData.append('recoleccion_colonia', $('#dirRecoleccionColonia').val());
+            formData.append('recoleccion_municipio', $('#dirRecoleccionMunicipio').val());
+            formData.append('recoleccion_cp', $('#dirRecoleccionCP').val());
+            formData.append('recoleccion_estado', $('#dirRecoleccionEstado').val());
+            formData.append('folio_catastral', folio);
+
+            const agregarArchivo = (id, nombre) => {
+                const input = document.getElementById(id);
+                if (input && input.files.length > 0) formData.append(nombre, input.files[0]);
+            };
+            agregarArchivo('dirFotoFachada', 'foto_fachada');
+            agregarArchivo('dirFotoAcceso', 'foto_acceso');
+            agregarArchivo('dirFotoReferencia', 'foto_referencia');
+            agregarArchivo('dirDocumentoCatastral', 'documento_catastral');
+
+            fetch('@Url.Action("GuardarDireccionProspecto", "Contratos")', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    $('#editDomicilioFiscal').val(domFiscal);
+                    $('#editDomicilioRecoleccion').val(domRecoleccion);
+                    $('#editFolioCatastral').val(folio);
+                    cerrarModalDireccion();
+                    Swal.fire('Guardado', res.message, 'success');
+                } else {
+                    Swal.fire('Error', res.error || 'No se pudo guardar', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Error de red al guardar dirección.', 'error');
+            });
+        }
+
+        function mostrarEdicionServicios() {
+            const grupos = [
+                { id: 'MATRIZ', nombre: 'MATRIZ' },
+                ...sucursalesActual.map((s, idx) => ({
+                    id: String(getProp(s, 'id', 'Sucursal_ID')),
+                    nombre: `SUCURSAL ${String(idx + 1).padStart(3, '0')} - ${getProp(s, 'nombre_sucursal', 'Nombre_Sucursal')}`
+                }))
+            ];
+
+            const serviciosDeGrupo = (g) => serviciosEditando.filter(s => {
+                const sid = String(s.sucursal_id || '');
+                if (g.id === 'MATRIZ') return !sid || sid === 'MATRIZ' || sid === 'null' || sid === '';
+                return sid === g.id;
+            });
+
+            let html = '';
+            grupos.forEach(g => {
+                const items = serviciosDeGrupo(g);
+                if (items.length === 0) return;
+
+                html += `
+                    <div style="margin-bottom: 8px; font-weight: bold; font-size: 14px;">${g.nombre.toUpperCase()}</div>
+                    <table class="servicios-tabla">
+                        <thead>
+                            <tr>
+                                <th>TIPO</th>
+                                <th>SERVICIO / UNIDAD</th>
+                                <th style="text-align: center;">DÍAS / COBRO / TURNO</th>
+                                <th style="text-align: center;">CANT.</th>
+                                <th style="text-align: center;">PRECIO UNIT.</th>
+                                <th style="text-align: center;">% ADIC.</th>
+                                <th style="text-align: center;">% DESC.</th>
+                                <th style="text-align: center;">SUBTOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map((it, idxGlobal) => {
+                                const idx = serviciosEditando.indexOf(it);
+                                const tipoInfo = determinarTipoServicio(it);
+                                const isRSU = tipoInfo.isRSU;
+                                const dias = Array.isArray(it.dias_asignados) ? it.dias_asignados : (it.dias_asignados || '').toString().split(',').filter(Boolean);
+                                const diasOpciones = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => {
+                                    const checked = dias.includes(d) ? 'checked' : '';
+                                    return `<label style="display:inline-flex;align-items:center;gap:2px;font-size:10px;margin-right:4px;"><input type="checkbox" ${checked} onchange="toggleDiaEdicion(${idx}, '${d}', this.checked)" style="width:auto;"> ${d.substring(0,3)}</label>`;
+                                }).join('');
+                                const cantidad = isRSU ? (it.volumen_estimado || 0) : (it.recolectores || 0);
+                                const pu = tipoInfo.precioUnitario;
+                                const subtotal = calcularSubtotalEdicion(it);
+                                const adic = it.porcentaje_adicional || 0;
+                                const desc = it.porcentaje_descuento || 0;
+
+                                let campoServicio = '';
+                                let campoCobroTurno = '';
+
+                                if (isRSU) {
+                                    const opciones = (catalogosEditar.serviciosResiduos || []).map(s => {
+                                        const selected = (s.descripcion || '').toUpperCase() === (it.tipo_residuo || '').toUpperCase() ? 'selected' : '';
+                                        return `<option value="${s.descripcion}" ${selected}>${s.descripcion}</option>`;
+                                    }).join('');
+                                    campoServicio = `
+                                        <label style="font-size:9px;color:#666;">TIPO DE RESIDUO</label>
+                                        <select class="form-select form-select-sm" onchange="actualizarServicioEdicion(${idx}, 'tipo_residuo', this.value)" style="min-width:140px;"><option value="">-- Selecciona --</option>${opciones}</select>`;
+                                } else {
+                                    const opcionesUnidad = (catalogosEditar.unidadesRme || []).map(u => {
+                                        const selected = (u.Nombre_Unidad || '') === (it.tipo_unidad || '') ? 'selected' : '';
+                                        return `<option value="${u.Nombre_Unidad}" ${selected}>${u.Nombre_Unidad} - ${formatMXN(u.Costo_Unitario)}</option>`;
+                                    }).join('');
+                                    campoServicio = `
+                                        <label style="font-size:9px;color:#666;">TIPO DE UNIDAD</label>
+                                        <select class="form-select form-select-sm" onchange="cambiarUnidadRme(${idx}, this.value)" style="min-width:140px;"><option value="">-- Selecciona --</option>${opcionesUnidad}</select>`;
+                                    campoCobroTurno = `
+                                        <div style="display:flex;gap:4px;justify-content:center;">
+                                            <select class="form-select form-select-sm" onchange="actualizarServicioEdicion(${idx}, 'tipo_cobro', this.value)" style="min-width:90px;">
+                                                <option value="VIAJE" ${(it.tipo_cobro || 'VIAJE') === 'VIAJE' ? 'selected' : ''}>VIAJE</option>
+                                                <option value="PESO" ${(it.tipo_cobro || '') === 'PESO' ? 'selected' : ''}>PESO</option>
+                                            </select>
+                                            <select class="form-select form-select-sm" onchange="actualizarServicioEdicion(${idx}, 'turno', this.value)" style="min-width:90px;">
+                                                ${['MAÑANA','TARDE','NOCHE'].map(t => `<option value="${t}" ${(it.turno || '').toUpperCase() === t ? 'selected' : ''}>${t}</option>`).join('')}
+                                            </select>
+                                        </div>`;
+                                }
+
+                                return `
+                                    <tr>
+                                        <td><span class="badge-tipo" style="background: ${isRSU ? '#F57F17' : '#4CAF50'};">${isRSU ? 'RSU' : 'RME'}</span></td>
+                                        <td style="font-weight: 600;">${campoServicio}</td>
+                                        <td style="text-align: center;">
+                                            <div style="display:flex;flex-wrap:wrap;justify-content:center;">${diasOpciones}</div>
+                                            ${!isRSU ? campoCobroTurno : ''}
+                                        </td>
+                                        <td style="text-align: center;"><input type="number" class="form-control form-control-sm" value="${cantidad}" onchange="actualizarServicioEdicion(${idx}, '${isRSU ? 'volumen_estimado' : 'recolectores'}', this.value)" style="width:70px;display:inline;" min="1" step="1"></td>
+                                        <td style="text-align: center; font-weight: 600;">${formatMXN(pu)}</td>
+                                        <td style="text-align: center;"><input type="number" class="form-control form-control-sm" value="${adic}" onchange="actualizarServicioEdicion(${idx}, 'porcentaje_adicional', this.value)" style="width:60px;display:inline;" min="0" step="0.01"> %</td>
+                                        <td style="text-align: center;"><input type="number" class="form-control form-control-sm" value="${desc}" onchange="actualizarServicioEdicion(${idx}, 'porcentaje_descuento', this.value)" style="width:60px;display:inline;" min="0" max="100" step="0.01"> %</td>
+                                        <td style="text-align: center; font-weight: bold; color: #2E7D32;">${formatMXN(subtotal)}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            });
+
+            if (html === '') {
+                html = '<p class="text-muted">Sin servicios cotizados para editar.</p>';
+            }
+
+            $('#editarServiciosContainer').html(html);
+            renderTotalesEdicion();
+        }
+
+        function determinarTipoServicio(s) {
+            const rawTipo = (s.tipo_residuo || s.tipo_servicio || '').toString().toUpperCase();
+            const isRSU = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(s.costo_tonelada) || 0) === 0 && (Number(s.costo_disposicion) || 0) === 0));
+            const costoT = Number(s.costo_tonelada || 0);
+            const costoD = Number(s.costo_disposicion || 0);
+            const precioUnitario = isRSU
+                ? (Number(s.precio_unitario) || 18.60)
+                : (costoT + costoD || Number(s.precio_unitario) || 0);
+            return { isRSU, precioUnitario, rawTipo };
+        }
+
+        function cambiarUnidadRme(idx, nombreUnidad) {
+            const u = (catalogosEditar.unidadesRme || []).find(x => x.Nombre_Unidad === nombreUnidad);
+            if (u) {
+                serviciosEditando[idx].tipo_unidad = nombreUnidad;
+                serviciosEditando[idx].costo_tonelada = u.Costo_Unitario || 0;
+                serviciosEditando[idx].costo_disposicion = 0;
+            } else {
+                serviciosEditando[idx].tipo_unidad = nombreUnidad;
+                serviciosEditando[idx].costo_tonelada = 0;
+            }
+            mostrarEdicionServicios();
+        }
+
+        function actualizarServicioEdicion(idx, campo, valor) {
+            if (campo === 'tipo_residuo' || campo === 'tipo_unidad' || campo === 'tipo_cobro' || campo === 'turno' || campo === 'ruta') {
+                serviciosEditando[idx][campo] = valor;
+            } else {
+                let v = Number(valor) || 0;
+                if (campo === 'porcentaje_descuento' && v > 100) v = 100;
+                serviciosEditando[idx][campo] = v;
+            }
+            mostrarEdicionServicios();
+        }
+
+        function toggleDiaEdicion(idx, dia, checked) {
+            const it = serviciosEditando[idx];
+            let dias = Array.isArray(it.dias_asignados)
+                ? it.dias_asignados
+                : (it.dias_asignados || '').toString().split(',').filter(Boolean);
+            dias = dias.filter(d => d !== dia);
+            if (checked) dias.push(dia);
+            it.dias_asignados = dias.join(',');
+            mostrarEdicionServicios();
+        }
+
+        function calcularSubtotalEdicion(s) {
+            const tipoInfo = determinarTipoServicio(s);
+            const dias = Array.isArray(s.dias_asignados)
+                ? s.dias_asignados
+                : (s.dias_asignados || '').toString().split(',').filter(Boolean);
+            const diasPorSemana = dias.length || 1;
+            const adicional = (Number(s.porcentaje_adicional) || 0) / 100;
+            const descuento = (Number(s.porcentaje_descuento) || 0) / 100;
+            let base = 0;
+
+            if (tipoInfo.isRSU) {
+                const bolsas = Number(s.volumen_estimado || 0);
+                const bolsasMensuales = (bolsas * diasPorSemana * 52) / 12;
+                base = bolsasMensuales * tipoInfo.precioUnitario;
+            } else {
+                const rec = Number(s.recolectores || 0);
+                const viajesMensuales = rec * diasPorSemana * 4;
+                base = viajesMensuales * tipoInfo.precioUnitario;
+            }
+
+            return base * (1 + adicional) * (1 - descuento);
+        }
+
+        function renderTotalesEdicion() {
+            const subtotal = serviciosEditando.reduce((sum, s) => sum + calcularSubtotalEdicion(s), 0);
+            const descuento = serviciosEditando.reduce((sum, s) => {
+                const desc = (Number(s.porcentaje_descuento) || 0) / 100;
+                if (desc <= 0 || desc >= 1) return sum;
+                const sub = calcularSubtotalEdicion(s);
+                return sum + (sub / (1 - desc) - sub);
+            }, 0);
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+
+            $('#editSubtotal').text(formatMXN(subtotal + descuento));
+            $('#editIVA').text(formatMXN(iva));
+            $('#editDescuento').text('-' + formatMXN(descuento));
+            $('#editTotal').text(formatMXN(total));
+        }
+
+        function guardarServiciosEditados() {
+            if (!contratoEditandoId || serviciosEditando.length === 0) return;
+
+            const payloadServicios = serviciosEditando.map(s => ({
+                id: s.id || 0,
+                trato_id: s.trato_id || 0,
+                tipo_residuo: s.tipo_residuo || '',
+                frecuencia: s.frecuencia || 'Semanal',
+                periodicidad_pago: s.periodicidad_pago || 'Mensual',
+                volumen_estimado: s.volumen_estimado,
+                precio_unitario: Number(s.precio_unitario) || (((Number(s.costo_tonelada) || 0) === 0 && (Number(s.costo_disposicion) || 0) === 0) ? 18.60 : ((Number(s.costo_tonelada) || 0) + (Number(s.costo_disposicion) || 0))),
+                dias_asignados: Array.isArray(s.dias_asignados) ? s.dias_asignados.join(',') : (s.dias_asignados || ''),
+                porcentaje_adicional: s.porcentaje_adicional || 0,
+                porcentaje_descuento: s.porcentaje_descuento || 0,
+                sucursal_id: s.sucursal_id,
+                tipo_unidad: s.tipo_unidad,
+                tipo_cobro: s.tipo_cobro,
+                recolectores: s.recolectores,
+                turno: s.turno,
+                ruta: s.ruta || 'Por asignar',
+                costo_tonelada: s.costo_tonelada,
+                costo_disposicion: s.costo_disposicion
+            }));
+
+            const payload = {
+                contrato_id: contratoEditandoId,
+                servicios: payloadServicios,
+                cliente: {
+                    razon_social: $('#editRazonSocial').val(),
+                    rfc: $('#editRFC').val(),
+                    nombre_comercial: $('#editNombreComercial').val(),
+                    representante_legal: $('#editRepresentante').val(),
+                    domicilio_fiscal: $('#editDomicilioFiscal').val(),
+                    domicilio_recoleccion: $('#editDomicilioRecoleccion').val(),
+                    telefono: $('#editTelefono').val(),
+                    correo: $('#editCorreo').val(),
+                    folio_catastral: $('#editFolioCatastral').val()
+                }
+            };
+
+            Swal.fire({
+                title: '¿Guardar cambios?',
+                text: 'El contrato volverá a estatus "Por Autorizar" para revisión del supervisor.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E7D32'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                fetch('@Url.Action("GuardarServicios", "Contratos")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify(payload)
+                }).then(r => r.json()).then(res => {
+                    if (res.success) {
+                        Swal.fire('Guardado', res.message, 'success').then(() => {
+                            cerrarModalEditar();
+                            cargarContratos();
+                        });
+                    } else {
+                        Swal.fire('Error', res.error, 'error');
+                    }
+                }).catch(e => {
+                    console.error(e);
+                    Swal.fire('Error', 'No se pudieron guardar los cambios.', 'error');
+                });
+            });
+        }
+
+        function cerrarModalEditar() {
+            $('#modalEditarServicios').removeClass('show');
+        }
+
         function enviarPreContrato() {
             if (!contratoActual) return;
             Swal.fire('Enviado', 'Pre-Contrato enviado con éxito.', 'success');
@@ -744,7 +1422,11 @@
             const p = prospectoActual || {};
             const nombreCliente = getProp(p, 'nombreComercial', 'Nombre_Comercial') || getProp(p, 'nombre', 'Nombre') || 'Cliente';
             const fechaAut = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—';
-            const domicilio = [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ') || '—';
+            const domicilioFiscal = getProp(p, 'domicilioFiscal', 'Domicilio_Fiscal')
+                || [getProp(p, 'calle', 'Calle'), getProp(p, 'numExt', 'Num_Ext'), getProp(p, 'colonia', 'Colonia'), getProp(p, 'municipio', 'Municipio')].filter(Boolean).join(', ')
+                || '—';
+            const domicilioRecoleccion = getProp(p, 'domicilioRecoleccion', 'Domicilio_Recoleccion') || domicilioFiscal;
+            const representante = getProp(p, 'contacto', 'Nombre_Prospecto') || c.Contacto || '—';
 
             // Servicios
             let serviciosHtml = '';
@@ -781,7 +1463,7 @@
                     <tr>
                         <td>${it.tipo_servicio}</td>
                         <td>${it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial'}</td>
-                        <td>${renderDetalleServicio(it).replace(/style="[^"]*"/g, '')}</td>
+                        <td>${renderDetalleServicio(it).replace(/style="[^"]*"/g, '').replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '<br>')}</td>
                         <td style="text-align:center">${it.dias_asignados.map(d => d.substring(0, 3)).join(' ')}</td>
                         <td style="text-align:right">${formatMXN(it.precio_unitario_calculado)}</td>
                         <td style="text-align:center">${it.porcentaje_adicional || 0}%</td>
@@ -791,11 +1473,18 @@
                 `).join('');
 
                 serviciosHtml += `
-                    <h3 style="color:#D84315; font-size:13px; border-bottom:1px solid #eee; padding-bottom:8px; margin-top:24px;">${g.nombre.toUpperCase()}</h3>
-                    <table style="width:100%; border-collapse:collapse; border:1px solid #4E342E; font-size:11px; margin-bottom:16px;">
+                    <h3 style="color:#D84315; font-size:11px; border-bottom:1px solid #eee; padding-bottom:4px; margin-top:12px; margin-bottom:6px;">${g.nombre.toUpperCase()}</h3>
+                    <table style="width:100%; border-collapse:collapse; border:1px solid #4E342E; font-size:9px; margin-bottom:8px;">
                         <thead style="background:#8D6E63; color:white;">
                             <tr>
-                                <th>TIPO</th><th>SERVICIO</th><th>DETALLES</th><th>DÍAS</th><th>PRECIO UNIT.</th><th>% ADIC.</th><th>% DESC.</th><th>SUBTOTAL</th>
+                                <th style="padding:3px">TIPO</th>
+                                <th style="padding:3px">SERVICIO</th>
+                                <th style="padding:3px">DETALLES</th>
+                                <th style="padding:3px; text-align:center">DÍAS</th>
+                                <th style="padding:3px; text-align:right">P.UNIT.</th>
+                                <th style="padding:3px; text-align:center">%ADIC</th>
+                                <th style="padding:3px; text-align:center">%DESC</th>
+                                <th style="padding:3px; text-align:right">SUBTOTAL</th>
                             </tr>
                         </thead>
                         <tbody>${filas}</tbody>
@@ -813,31 +1502,36 @@
     <meta charset="UTF-8">
     <title>Contrato ${c.Folio || ''}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #333; font-size: 12px; }
-        h1 { font-size: 18px; color: #3E2723; margin-bottom: 4px; }
-        h2 { font-size: 13px; color: #D84315; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-top: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .campo { margin-bottom: 10px; }
-        .campo label { display: block; font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-        .campo span { display: block; padding: 4px 0; font-weight: 600; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .summary { width: 350px; margin-left: auto; border: 1px solid #C4A574; border-radius: 8px; padding: 12px; background: #FFFDE7; margin-top: 16px; }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .summary-total { display: flex; justify-content: space-between; background: #3E2723; color: white; padding: 10px; font-weight: bold; border-radius: 0 0 6px 6px; margin: 12px -12px -12px -12px; }
-        table th, table td { padding: 6px; border: 1px solid #4E342E; }
-        .firmas { display: flex; justify-content: space-around; margin-top: 60px; }
-        .firma { text-align: center; width: 250px; }
-        .linea { border-bottom: 1px solid #333; height: 40px; }
-        @@media print { body { padding: 0; } }
+        @@page { size: letter; margin: 12mm; }
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; font-size: 10px; line-height: 1.3; }
+        h1 { font-size: 14px; color: #3E2723; margin: 0 0 2px 0; }
+        h2 { font-size: 10px; color: #D84315; border-bottom: 1px solid #eee; padding-bottom: 3px; margin: 10px 0 6px 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .campo { margin-bottom: 4px; }
+        .campo label { display: block; font-size: 7px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 1px; }
+        .campo span { display: block; padding: 1px 0; font-weight: 600; font-size: 9px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .summary { width: 260px; margin-left: auto; border: 1px solid #C4A574; border-radius: 6px; padding: 8px; background: #FFFDE7; margin-top: 8px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 9px; }
+        .summary-total { display: flex; justify-content: space-between; background: #3E2723; color: white; padding: 6px; font-weight: bold; border-radius: 0 0 4px 4px; margin: 8px -8px -8px -8px; font-size: 10px; }
+        table th, table td { padding: 3px; border: 1px solid #4E342E; }
+        .condiciones { font-size: 8px; line-height: 1.3; }
+        .condiciones ul { padding-left: 14px; margin: 4px 0; }
+        .condiciones li { margin-bottom: 1px; }
+        .firmas { display: flex; justify-content: space-around; margin-top: 24px; }
+        .firma { text-align: center; width: 200px; }
+        .linea { border-bottom: 1px solid #333; height: 28px; }
+        .print-only-firma-label { font-size: 8px; font-weight: 700; margin-top: 4px; }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
             <h1>CONTRATO ${c.Folio || ''}</h1>
-            <div style="font-size:11px; color:#666;">Fecha de autorización: ${fechaAut}</div>
+            <div style="font-size:9px; color:#666;">Fecha de autorización: ${fechaAut}</div>
         </div>
-        <div style="font-size:11px; color:#666;">Estatus: ${c.Estatus || 'Activo'}</div>
+        <div style="font-size:9px; color:#666;">Estatus: ${c.Estatus || 'Activo'}</div>
     </div>
 
     <h2>DATOS DEL PRESTADOR DE SERVICIOS</h2>
@@ -847,7 +1541,7 @@
         <div class="campo"><label>NOMBRE COMERCIAL</label><span>SANEAMIENTO SANA</span></div>
         <div class="campo"><label>TELÉFONO</label><span>999 000 0000</span></div>
         <div class="campo"><label>DOMICILIO FISCAL</label><span>CARRETERA MERIDA - CHALMUCH KM. 1.3</span></div>
-        <div class="campo"><label>CORREO DE ATENCIÓN</label><span></span></div>
+        <div class="campo"><label>CORREO DE ATENCIÓN</label><span>${SANA_DATA.correo}</span></div>
     </div>
 
     <h2>DATOS DEL CLIENTE</h2>
@@ -855,16 +1549,16 @@
         <div class="campo"><label>RAZÓN SOCIAL</label><span>${getProp(p, 'nombre', 'RazonSocial') || c.RazonSocial || '—'}</span></div>
         <div class="campo"><label>RFC</label><span>${getProp(p, 'rfc', 'RFC') || c.RFC || '—'}</span></div>
         <div class="campo"><label>NOMBRE COMERCIAL</label><span>${getProp(p, 'nombreComercial', 'Nombre_Comercial') || c.RazonSocial || '—'}</span></div>
-        <div class="campo"><label>REPRESENTANTE LEGAL</label><span>${getProp(p, 'contacto', 'Nombre_Prospecto') || '—'}</span></div>
-        <div class="campo"><label>DOMICILIO FISCAL</label><span>${domicilio}</span></div>
-        <div class="campo"><label>DOMICILIO DE RECOLECCIÓN</label><span>${domicilio}</span></div>
-        <div class="campo"><label>TELÉFONO DE CONTACTO</label><span>${getProp(p, 'telefono', 'Telefono') || '—'}</span></div>
-        <div class="campo"><label>CORREO COMERCIAL</label><span>${getProp(p, 'email', 'Correo') || '—'}</span></div>
-        <div class="campo"><label>FOLIO CATASTRAL</label><span>${getProp(p, 'folioCatastral', 'Folio_Catastral') || '—'}</span></div>
+        <div class="campo"><label>REPRESENTANTE LEGAL</label><span>${representante}</span></div>
+        <div class="campo"><label>DOMICILIO FISCAL</label><span>${domicilioFiscal}</span></div>
+        <div class="campo"><label>DOMICILIO DE RECOLECCIÓN</label><span>${domicilioRecoleccion}</span></div>
+        <div class="campo"><label>TELÉFONO DE CONTACTO</label><span>${getProp(p, 'telefono', 'Telefono') || c.Telefono || '—'}</span></div>
+        <div class="campo"><label>CORREO COMERCIAL</label><span>${getProp(p, 'email', 'Correo') || c.Correo || '—'}</span></div>
+        <div class="campo"><label>FOLIO CATASTRAL</label><span>${getProp(p, 'folioCatastral', 'Folio_Catastral') || c.Folio_Catastral || '—'}</span></div>
     </div>
 
     <h2>SERVICIOS COTIZADOS</h2>
-    ${serviciosHtml || '<p style="color:#999;">Sin servicios cotizados.</p>'}
+    ${serviciosHtml || '<p style="color:#999; font-size:9px;">Sin servicios cotizados.</p>'}
 
     <div class="summary">
         <div class="summary-row"><span>SUBTOTAL SERVICIOS (${domiciliosActivos} DOMICILIOS)</span><strong>${formatMXN(subtotalGlobal + descuentoGlobal)}</strong></div>
@@ -874,12 +1568,8 @@
     </div>
 
     <h2>CONDICIONES DEL SERVICIO</h2>
-    <div style="font-size:11px; line-height:1.5;">
-        <p style="font-weight:700;">El costo por bolsa adicional recolectado será:</p>
-        <ul style="list-style-type: upper-alpha; padding-left:20px;">
-            <li>${formatMXN(serviciosActual.length ? normalizarServicio(serviciosActual[0]).precio_unitario_calculado : 18.60)} pesos más I.V.A.</li>
-            <li>Factor: “unidades” equivale a 1 bolsa de 1.20 x 0.90cm.</li>
-            <li>En caso de exceder el volumen de generación establecido, se factura el excedente generado.</li>
+    <div class="condiciones">
+        <ul>
             <li>Contamos con certificaciones de calidad y cumplimiento ambiental.</li>
             <li>Después de 15 días sin firma de autorización, los costos están sujetos a cambio sin previo aviso.</li>
             <li>La primera facturación es por un semestre, posteriormente puede ser mensual o trimestral.</li>
@@ -892,11 +1582,11 @@
     <div class="firmas">
         <div class="firma">
             <div class="linea"></div>
-            <div style="font-size:10px; font-weight:700; margin-top:8px;">NOMBRE DEL REPRESENTANTE<br/>SANEAMIENTO SANA SA DE CV</div>
+            <div class="print-only-firma-label">NOMBRE DEL REPRESENTANTE<br/>SANEAMIENTO SANA SA DE CV</div>
         </div>
         <div class="firma">
             <div class="linea"></div>
-            <div style="font-size:10px; font-weight:700; margin-top:8px;">NOMBRE DEL REPRESENTANTE<br/>EMPRESA A BRINDAR SERVICIO</div>
+            <div class="print-only-firma-label">NOMBRE DEL REPRESENTANTE<br/>EMPRESA A BRINDAR SERVICIO</div>
         </div>
     </div>
 </body>
@@ -936,6 +1626,35 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch('@Url.Action("EnviarContrato", "Contratos")/' + contratoActual.Contrato_ID, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) {
+                            Swal.fire('Enviado', res.message, 'success').then(() => {
+                                cerrarModal();
+                                cargarContratos();
+                            });
+                        } else {
+                            Swal.fire('Error', res.error, 'error');
+                        }
+                    }).catch(console.error);
+                }
+            });
+        }
+
+        function enviarRevision() {
+            if (!contratoActual) return;
+            Swal.fire({
+                title: '¿Enviar a revisión?',
+                text: 'El supervisor revisará el contrato.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#E65100'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('@Url.Action("EnviarARevision", "Contratos")/' + contratoActual.Contrato_ID, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     }).then(r => r.json()).then(res => {

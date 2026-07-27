@@ -67,6 +67,8 @@ namespace CRMSistema.DAL.Prospectos
             Alias("concesionaria", "Concesionaria");
             Alias("referencias", "Referencias");
             Alias("folioCatastral", "Folio_Catastral", "FolioCatastral");
+            Alias("domicilioFiscal", "Domicilio_Fiscal", "DomicilioFiscal");
+            Alias("domicilioRecoleccion", "Domicilio_Recoleccion", "DomicilioRecoleccion");
             Alias("dias_disponibles", "Dias_Disponibles", "DiasDisponibles");
             Alias("horario", "Horario");
             Alias("ruta", "Ruta");
@@ -142,16 +144,13 @@ namespace CRMSistema.DAL.Prospectos
                 var result = cmd.ExecuteScalar();
                 int nuevoId = result != null ? Convert.ToInt32(result) : 0;
 
-                // Fallback: si el SP no devuelve el ID (devuelve 0), recuperarlo de la tabla.
+                // Fallback: si el SP no devuelve el ID (devuelve 0), recuperarlo mediante SP.
                 if (nuevoId == 0)
                 {
-                    using (var idCmd = new SqlCommand(@"SELECT TOP 1 Prospecto_ID FROM crm_prospectos WHERE RFC = @RFC AND Correo = @Correo ORDER BY Prospecto_ID DESC", db))
-                    {
-                        idCmd.Parameters.AddWithValue("@RFC", d.rfc ?? "");
-                        idCmd.Parameters.AddWithValue("@Correo", d.email ?? "");
-                        var idObj = idCmd.ExecuteScalar();
-                        if (idObj != null) nuevoId = Convert.ToInt32(idObj);
-                    }
+                    var fallback = AdoHelper.QuerySingle("SP_Prospectos_GetIdByRfcCorreo", CommandType.StoredProcedure,
+                        new SqlParameter("@RFC", d.rfc ?? ""),
+                        new SqlParameter("@Correo", d.email ?? ""));
+                    if (fallback != null) nuevoId = fallback.id != null ? Convert.ToInt32(fallback.id) : 0;
                 }
                 return nuevoId;
             }
@@ -215,6 +214,73 @@ namespace CRMSistema.DAL.Prospectos
             AdoHelper.Execute("SP_ProspectoContactos_DeleteByProspecto", CommandType.StoredProcedure,
                 new SqlParameter("@Prospecto_ID", id));
             InsertarContactos(id, d.contactos);
+        }
+
+        /// <summary>
+        /// Actualiza solo datos básicos del prospecto y el contacto representante
+        /// sin borrar sucursales ni otros contactos. Usado desde edición de contratos.
+        /// </summary>
+        /// <param name="actualizarDireccionEstructurada">Si es true, también escribe Calle/Num_Ext/etc.</param>
+        public void ActualizarBasicoDesdeContrato(int id, ApiProspectoModel d, string representanteLegal, bool actualizarDireccionEstructurada = false)
+        {
+            using (var db = Db.GetConnection())
+            using (var cmd = new SqlCommand("SP_Empresa_UpdateByProspecto", db))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Prospecto_ID", id);
+                cmd.Parameters.AddWithValue("@Nombre_Empresa", d.nombre ?? "");
+                cmd.Parameters.AddWithValue("@RFC", d.rfc ?? "");
+                db.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            AdoHelper.Execute("SP_Prospectos_UpdateBasicoDesdeContrato", CommandType.StoredProcedure,
+                new SqlParameter("@Prospecto_ID", id),
+                new SqlParameter("@Nombre_Prospecto", representanteLegal ?? d.contacto ?? ""),
+                new SqlParameter("@Nombre_Comercial_Empresa", d.nombre ?? ""),
+                new SqlParameter("@Nombre_Comercial", d.nombreComercial ?? ""),
+                new SqlParameter("@RFC", d.rfc ?? ""),
+                new SqlParameter("@Correo", d.email ?? ""),
+                new SqlParameter("@Telefono", d.telefono ?? ""),
+                new SqlParameter("@Folio_Catastral", d.folioCatastral ?? ""),
+                new SqlParameter("@Domicilio_Fiscal", d.domicilioFiscal ?? ""),
+                new SqlParameter("@Domicilio_Recoleccion", d.domicilioRecoleccion ?? ""),
+                new SqlParameter("@ActualizarDireccion", actualizarDireccionEstructurada ? 1 : 0),
+                new SqlParameter("@Calle", d.calle ?? ""),
+                new SqlParameter("@Num_Ext", d.numExt ?? ""),
+                new SqlParameter("@Num_Int", d.numInt ?? ""),
+                new SqlParameter("@Colonia", d.colonia ?? ""),
+                new SqlParameter("@Municipio", d.municipio ?? ""),
+                new SqlParameter("@CP", d.cp ?? ""),
+                new SqlParameter("@Estado", d.estado ?? ""));
+
+            if (!string.IsNullOrWhiteSpace(representanteLegal))
+            {
+                AdoHelper.Execute("SP_ProspectoContactos_UpsertRepresentanteLegal", CommandType.StoredProcedure,
+                    new SqlParameter("@Prospecto_ID", id),
+                    new SqlParameter("@Nombre_Contacto", representanteLegal),
+                    new SqlParameter("@Correo", d.email ?? ""),
+                    new SqlParameter("@Telefono", d.telefono ?? ""));
+            }
+        }
+
+        /// <summary>
+        /// Actualiza domicilios, folio catastral y archivos (fotos/carta) de un prospecto
+        /// sin tocar contactos ni sucursales. Los archivos nulos conservan el valor actual.
+        /// </summary>
+        public void ActualizarArchivosYFolio(int id, string domicilioFiscal, string domicilioRecoleccion, string folioCatastral,
+            byte[] fotoFachada, byte[] fotoAcceso, byte[] fotoReferencia, byte[] documentoCatastral, string documentoCatastralNombre)
+        {
+            AdoHelper.Execute("SP_Prospectos_UpdateArchivosYFolio", CommandType.StoredProcedure,
+                new SqlParameter("@Prospecto_ID", id),
+                new SqlParameter("@Domicilio_Fiscal", domicilioFiscal ?? ""),
+                new SqlParameter("@Domicilio_Recoleccion", domicilioRecoleccion ?? ""),
+                new SqlParameter("@Folio_Catastral", folioCatastral ?? ""),
+                new SqlParameter("@Foto_Fachada", SqlDbType.VarBinary, -1) { Value = (object)fotoFachada ?? DBNull.Value },
+                new SqlParameter("@Foto_Acceso", SqlDbType.VarBinary, -1) { Value = (object)fotoAcceso ?? DBNull.Value },
+                new SqlParameter("@Foto_Referencia", SqlDbType.VarBinary, -1) { Value = (object)fotoReferencia ?? DBNull.Value },
+                new SqlParameter("@Documento_Catastral", SqlDbType.VarBinary, -1) { Value = (object)documentoCatastral ?? DBNull.Value },
+                new SqlParameter("@Documento_Catastral_Nombre", documentoCatastralNombre ?? ""));
         }
 
         public void ActualizarEstatus(int id, string estatus)
@@ -283,10 +349,8 @@ namespace CRMSistema.DAL.Prospectos
 
         public List<dynamic> ObtenerNotificaciones(int id)
         {
-            return AdoHelper.Query(
-                "SELECT * FROM crm_notificaciones_correo WHERE Prospecto_ID = @Id ORDER BY Fecha_Creacion DESC",
-                CommandType.Text,
-                new SqlParameter("@Id", id));
+            return AdoHelper.Query("SP_Notificaciones_GetByProspecto", CommandType.StoredProcedure,
+                new SqlParameter("@Prospecto_ID", id));
         }
 
         public void InsertarArchivo(int id, ApiArchivoModel req)

@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using CRMSistema.Controllers.Base;
 using CRMSistema.DAL.Dashboard;
 using CRMSistema.Models.Dashboard;
+using CRMSistema.Models.Usuarios;
 using CRMSistema.Models.ViewModels;
 
 namespace CRMSistema.Controllers.Dashboard
@@ -44,24 +45,23 @@ namespace CRMSistema.Controllers.Dashboard
 
                 dynamic kpisData = _dal.ObtenerKPIs(inicioMes, finMes, inicioMesAnt, finMesAnt);
                 bool kpiVacio = kpisData == null ||
-                    (ToDouble(kpisData?.ingMes, 0.0) == 0 && ToInt(kpisData?.prosMes, 0) == 0 &&
-                     ToInt(kpisData?.cotServ, 0) == 0 && ToInt(kpisData?.cotBorr, 0) == 0 &&
-                     ToInt(kpisData?.deudores, 0) == 0 && ToInt(kpisData?.alCorriente, 0) == 0);
+                    (ValDouble(kpisData, "ingMes") == 0 && ValInt(kpisData, "prosMes") == 0 &&
+                     ValInt(kpisData, "cotServ") == 0 && ValInt(kpisData, "cotBorr") == 0 &&
+                     ValInt(kpisData, "deudores") == 0 && ValInt(kpisData, "alCorriente") == 0);
 
-                double ingMes = kpiVacio ? _dal.IngresosMes(inicioMes, finMes) : ToDouble(kpisData?.ingMes, 0.0);
-                double ingAnt = kpiVacio ? _dal.IngresosMes(inicioMesAnt, finMesAnt) : ToDouble(kpisData?.ingAnt, 0.0);
-                int prosMes = kpiVacio ? _dal.ContarProspectos(inicioMes, finMes) : ToInt(kpisData?.prosMes, 0);
-                int prosAnt = kpiVacio ? _dal.ContarProspectos(inicioMesAnt, finMesAnt) : ToInt(kpisData?.prosAnt, 0);
-                int cotActivas = kpiVacio ? _dal.ContarCotizacionesActivas() : (ToInt(kpisData?.cotServ, 0) + ToInt(kpisData?.cotBorr, 0));
-                int cotServ = kpiVacio ? cotActivas : ToInt(kpisData?.cotServ, 0);
-                int cotBorr = kpiVacio ? 0 : ToInt(kpisData?.cotBorr, 0);
-                int totalP = ToInt(kpisData?.totalP, 0);
-                int convP = ToInt(kpisData?.convP, 0);
-                if (totalP == 0) totalP = _dal.ContarProspectos(DateTime.MinValue, DateTime.MaxValue);
-                int deudores = kpiVacio ? _dal.ContarDeudores() : ToInt(kpisData?.deudores, 0);
-                int alCorriente = kpiVacio ? _dal.ContarAlCorriente() : ToInt(kpisData?.alCorriente, 0);
-                int prosSuc = kpiVacio ? _dal.ContarProspectosConSucursales() : ToInt(kpisData?.prosSuc, 0);
-                int totalSuc = ToInt(kpisData?.totalSuc, 0);
+                double ingMes = ToDouble(Val(kpisData, "ingMes"), 0.0);
+                double ingAnt = ToDouble(Val(kpisData, "ingAnt"), 0.0);
+                int prosMes = ValInt(kpisData, "prosMes");
+                int prosAnt = ValInt(kpisData, "prosAnt");
+                int cotServ = ValInt(kpisData, "cotServ");
+                int cotBorr = ValInt(kpisData, "cotBorr");
+                int cotActivas = cotServ + cotBorr;
+                int totalP = ValInt(kpisData, "totalP");
+                int convP = ValInt(kpisData, "convP");
+                int deudores = ValInt(kpisData, "deudores");
+                int alCorriente = ValInt(kpisData, "alCorriente");
+                int prosSuc = ValInt(kpisData, "prosSuc");
+                int totalSuc = ValInt(kpisData, "totalSuc");
 
                 var mesesMap = new Dictionary<string, dynamic>();
                 for (int i = 5; i >= 0; i--)
@@ -76,21 +76,21 @@ namespace CRMSistema.Controllers.Dashboard
 
                 foreach (var r in tendP)
                 {
-                    var key = ToString(r.mes, "");
+                    var key = ValString(r, "mes");
                     if (mesesMap.ContainsKey(key))
                     {
                         var existing = mesesMap[key];
-                        mesesMap[key] = new { mes = existing.mes, prospectos = ToInt(r.total, 0), ingresos = existing.ingresos, tratos = existing.tratos };
+                        mesesMap[key] = new { mes = existing.mes, prospectos = ValInt(r, "total"), ingresos = existing.ingresos, tratos = existing.tratos };
                     }
                 }
 
                 foreach (var r in tendT)
                 {
-                    var key = ToString(r.mes, "");
+                    var key = ValString(r, "mes");
                     if (mesesMap.ContainsKey(key))
                     {
                         var existing = mesesMap[key];
-                        mesesMap[key] = new { mes = existing.mes, prospectos = existing.prospectos, ingresos = ToDouble(r.ingresos, 0.0), tratos = ToInt(r.tratos, 0) };
+                        mesesMap[key] = new { mes = existing.mes, prospectos = existing.prospectos, ingresos = ValDouble(r, "ingresos"), tratos = ValInt(r, "tratos") };
                     }
                 }
 
@@ -114,44 +114,45 @@ namespace CRMSistema.Controllers.Dashboard
                 }).ToList();
 
                 model.Origenes = _dal.ObtenerOrigenes()
-                    .Select(r => new OrigenDto { nombre = ToString(r.nombre), cantidad = ToInt(r.cantidad, 0) }).ToList();
+                    .Select(r => new OrigenDto { nombre = ValString(r, "nombre"), cantidad = ValInt(r, "cantidad") }).ToList();
 
                 model.TiposInmueble = _dal.ObtenerTiposInmueble()
-                    .Select(r => new TipoInmuebleDto { tipo = ToString(r.tipo), cantidad = ToInt(r.cantidad, 0) }).ToList();
+                    .Select(r => new TipoInmuebleDto { tipo = ValString(r, "tipo"), cantidad = ValInt(r, "cantidad") }).ToList();
 
                 // Distribución por estatus: solo del mes actual para que se “limpie” cada mes desde cero
                 var distEstatus = _dal.ObtenerEstatusDistribucionPorMes(inicioMes, finMes)
-                    .Select(r => new EstatusDistribucionDto { estatus = ToString(r.estatus), cantidad = ToInt(r.cantidad, 0) }).ToList();
+                    .Select(r => new EstatusDistribucionDto { estatus = ValString(r, "estatus"), cantidad = ValInt(r, "cantidad") }).ToList();
                 model.EstatusDistribucion = CompletarEstatusDistribucion(distEstatus);
 
                 var pipeline = _dal.ObtenerPipeline()
                     .Select(r => new PipelineDto
                     {
-                        empresa = ToString(r.empresa),
-                        contacto = ToString(r.contacto),
-                        estatus = ToString(r.estatus),
-                        tipoInmueble = ToString(r.tipoInmueble),
-                        fuente = ToString(r.fuente),
-                        trato = ToString(r.trato),
-                        monto = ToDecimal(r.monto),
-                        fase = ToString(r.fase),
-                        tieneSucursales = ToString(r.tieneSucursales),
-                        fecha = r.fecha
+                        empresa = ValString(r, "empresa"),
+                        contacto = ValString(r, "contacto"),
+                        estatus = ValString(r, "estatus"),
+                        tipoInmueble = ValString(r, "tipoInmueble"),
+                        fuente = ValString(r, "fuente"),
+                        trato = ValString(r, "trato"),
+                        monto = ValDecimal(r, "monto"),
+                        fase = ValString(r, "fase"),
+                        tieneSucursales = ValString(r, "tieneSucursales"),
+                        vendedorNombre = ValString(r, "vendedorNombre"),
+                        fecha = Val(r, "fecha")
                     }).ToList();
-                if (pipeline.Count == 0)
-                    pipeline = CalcularPipelineDesdeProspectos();
+
+                pipeline = FiltrarPorRol(pipeline);
                 model.Pipeline = pipeline;
 
                 model.CotizacionesDetalle = _dal.ObtenerCotizacionesDetalle()
                     .Select(r => new CotizacionDetalleDto
                     {
-                        tipo_residuo = ToString(r.tipo_residuo),
-                        frecuencia = ToString(r.frecuencia),
-                        periodicidad_pago = ToString(r.periodicidad_pago),
-                        volumen_estimado = ToDecimal(r.volumen_estimado),
-                        precio_unitario = ToDecimal(r.precio_unitario),
-                        trato = ToString(r.trato),
-                        empresa = ToString(r.empresa)
+                        tipo_residuo = ValString(r, "tipo_residuo"),
+                        frecuencia = ValString(r, "frecuencia"),
+                        periodicidad_pago = ValString(r, "periodicidad_pago"),
+                        volumen_estimado = ValDecimal(r, "volumen_estimado"),
+                        precio_unitario = ValDecimal(r, "precio_unitario"),
+                        trato = ValString(r, "trato"),
+                        empresa = ValString(r, "empresa")
                     }).ToList();
             }
             catch (Exception ex)
@@ -211,55 +212,18 @@ namespace CRMSistema.Controllers.Dashboard
             return resultado;
         }
 
-        private List<PipelineDto> CalcularPipelineDesdeProspectos()
+        private List<PipelineDto> FiltrarPorRol(List<PipelineDto> pipeline)
         {
-            try
-            {
-                // Intentar primero el fallback SQL con JOIN a tratos para traer montos reales
-                var sqlRows = _dal.PipelineDesdeProspectos();
-                if (sqlRows.Count > 0)
-                {
-                    return sqlRows.Select(r => new PipelineDto
-                    {
-                        empresa = ToString(r.empresa),
-                        contacto = !string.IsNullOrWhiteSpace(ToString(r.contactos))
-                            ? ToString(r.contactos)
-                            : ToString(r.contacto_principal),
-                        estatus = ToString(r.estatus) ?? "Nuevo",
-                        tipoInmueble = ToString(r.tipoInmueble),
-                        fuente = "",
-                        trato = "",
-                        monto = ToDecimal(r.monto),
-                        fase = "",
-                        tieneSucursales = !string.IsNullOrWhiteSpace(ToString(r.sucursales))
-                            ? ToString(r.sucursales)
-                            : (((ToString(r.tieneSucursales) ?? "").ToLower().StartsWith("s") ? "Sí" : "No")),
-                        fecha = r.fecha
-                    }).Take(20).ToList();
-                }
-            }
-            catch { }
+            var rol = Session["Rol"]?.ToString() ?? "";
+            if (AppRoles.EsSupervisorOAdmin(rol))
+                return pipeline;
 
-            // Fallback final a la API generica de prospectos
-            try
-            {
-                var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
-                var prospectos = pDal.ObtenerTodos();
-                return prospectos.Select(p => new PipelineDto
-                {
-                    empresa = p.nombre as string ?? "",
-                    contacto = p.contacto as string ?? "",
-                    estatus = p.estatus as string ?? "Nuevo",
-                    tipoInmueble = p.tipoInmueble as string ?? "",
-                    fuente = "",
-                    trato = "",
-                    monto = 0,
-                    fase = "",
-                    tieneSucursales = ((p.tieneSucursales as string) ?? "").ToLower().StartsWith("s") ? "Sí" : "No",
-                    fecha = p.GetType().GetProperty("Fecha_Creacion")?.GetValue(p)
-                }).Take(20).ToList();
-            }
-            catch { return new List<PipelineDto>(); }
+            // Vendedor: solo registros asignados a él
+            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
+            return pipeline
+                .Where(p => !string.IsNullOrWhiteSpace(p.vendedorNombre)
+                    && p.vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
         [HttpGet]
@@ -275,7 +239,7 @@ namespace CRMSistema.Controllers.Dashboard
                 fin = inicio.AddMonths(1).AddSeconds(-1);
 
                 var datos = _dal.ObtenerEstatusDistribucionPorMes(inicio, fin)
-                    .Select(r => new EstatusDistribucionDto { estatus = ToString(r.estatus), cantidad = ToInt(r.cantidad, 0) }).ToList();
+                    .Select(r => new EstatusDistribucionDto { estatus = ValString(r, "estatus"), cantidad = ValInt(r, "cantidad") }).ToList();
 
                 // Solo si se solicita el mes actual y no hay datos historicos,
                 // mostramos la distribucion actual como referencia.

@@ -4,6 +4,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using CRMSistema.DAL.Usuarios;
+using CRMSistema.Models.Usuarios;
 using CRMSistema.Models.ViewModels;
 
 namespace CRMSistema.Controllers.Acceso
@@ -39,6 +40,9 @@ namespace CRMSistema.Controllers.Acceso
         {
             ViewBag.Title = "Iniciar sesión";
 
+            model.Usuario = (model.Usuario ?? "").Trim();
+            model.Password = (model.Password ?? "").Trim();
+
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -51,12 +55,12 @@ namespace CRMSistema.Controllers.Acceso
             // Modo desarrollo sin BD: credenciales de prueba
             if (_modoDevSinBd)
             {
-                if ((model.Usuario.Equals("admin", StringComparison.OrdinalIgnoreCase) && model.Password == "admin123") ||
+                if ((model.Usuario.Equals("superadmin", StringComparison.OrdinalIgnoreCase) && model.Password == "admin123") ||
                     (model.Usuario.Equals("vendedor", StringComparison.OrdinalIgnoreCase) && model.Password == "venta123"))
                 {
                     FormsAuthentication.SetAuthCookie(model.Usuario, model.Recordarme);
                     Session["UsuarioNombre"] = model.Usuario;
-                    Session["Rol"] = model.Usuario.ToLowerInvariant().Contains("admin") ? "admin" : "vendedor";
+                    Session["Rol"] = model.Usuario.ToLowerInvariant().Contains("superadmin") ? AppRoles.Superadmin : AppRoles.Vendedor;
                     return RedirectToAction("Index", "Dashboard");
                 }
 
@@ -93,6 +97,9 @@ namespace CRMSistema.Controllers.Acceso
         public ActionResult LoginCliente(LoginViewModel model)
         {
             ViewBag.Title = "Acceso Clientes";
+
+            model.Usuario = (model.Usuario ?? "").Trim();
+            model.Password = (model.Password ?? "").Trim();
 
             if (!ModelState.IsValid)
                 return View(model);

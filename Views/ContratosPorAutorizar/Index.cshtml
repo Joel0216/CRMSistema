@@ -1,30 +1,30 @@
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewBag.Title = "Cotizaciones por Aprobar";
-    ViewBag.ActiveMenu = "CotizacionesPorAprobar";
+    ViewBag.Title = "Contratos por Autorizar";
+    ViewBag.ActiveMenu = "ContratosPorAutorizar";
 }
 
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="section-title mb-0" style="text-transform: uppercase;">Cotizaciones por Aprobar</h2>
+        <h2 class="section-title mb-0" style="text-transform: uppercase;">Contratos por Autorizar</h2>
         <p class="section-sub mb-0" id="lblCount">Cargando...</p>
     </div>
 </div>
 
 <div class="card">
     <div class="table-wrap">
-        <table class="table" id="tblValidaciones">
+        <table class="table" id="tblContratos">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Folio</th>
                     <th>Razón Social</th>
                     <th>RFC</th>
-                    <th>Dirección</th>
-                    <th>Estatus</th>
+                    <th>Monto Mensual</th>
+                    <th>Vendedor</th>
                     <th style="text-align: right;">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="tbValidaciones">
+            <tbody id="tbContratos">
                 <tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>
             </tbody>
         </table>
@@ -63,7 +63,7 @@
     @@media (min-width: 768px) {
         .detalle-box {
             border-radius: 14px;
-            width: 1150px;
+            width: 1200px;
             max-width: 96%;
             max-height: 96vh;
             height: auto;
@@ -80,6 +80,35 @@
         padding: 28px 32px;
         overflow-y: auto;
         flex-grow: 1;
+    }
+
+    .campo-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .campo-readonly {
+        width: 100%;
+        padding: 6px 10px;
+        font-size: 12px;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        background: #FAFAFA;
+        color: #424242;
+    }
+
+    .seccion-titulo {
+        color: #D84315;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        margin-top: 24px;
     }
 
     .cards-container-responsive {
@@ -223,13 +252,13 @@
 <div id="modalDetalle" class="detalle-overlay" onclick="if(event.target === this) cerrarDetalle()">
     <div class="detalle-box">
         <div class="modal-header" style="background: #4E342E; color: white; border-bottom: none; flex-shrink: 0;">
-            <h5 class="modal-title" id="modalFolio" style="font-size: 16px; text-transform: uppercase;">RESUMEN DE COTIZACIÓN</h5>
+            <h5 class="modal-title" id="modalFolio" style="font-size: 16px; text-transform: uppercase;">RESUMEN DE CONTRATO</h5>
             <button type="button" class="btn btn-sm" onclick="cerrarDetalle()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; padding: 4px 12px; font-weight: 600;">Cerrar</button>
         </div>
         <div class="detalle-body">
             <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
                 <h5 id="modalTitulo" style="color: #4E342E; font-weight: bold; word-break: break-word;"></h5>
-                <span class="badge" style="background: #FFE0B2; color: #E65100; padding: 6px 12px; border-radius: 20px; font-weight: bold; flex-shrink: 0;">PENDIENTE DE APROBACIÓN</span>
+                <span class="badge" style="background: #FFE0B2; color: #E65100; padding: 6px 12px; border-radius: 20px; font-weight: bold; flex-shrink: 0;">PENDIENTE DE AUTORIZACIÓN</span>
             </div>
 
             <div class="row mb-4" id="modalInfo">
@@ -246,12 +275,12 @@
                     <div id="infoVendedor" style="font-weight: 600; font-size: 14px;"></div>
                 </div>
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
-                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Fecha de creación</label>
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Fecha de autorización de cotización</label>
                     <div id="infoFecha" style="font-weight: 600; font-size: 14px;"></div>
                 </div>
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
-                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Vigencia</label>
-                    <div id="infoVigencia" style="font-weight: 600; font-size: 14px;"></div>
+                    <label style="font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase;">Monto mensual</label>
+                    <div id="infoMonto" style="font-weight: 600; font-size: 14px;"></div>
                 </div>
             </div>
 
@@ -259,8 +288,7 @@
                 Desglose por Sucursal — Selecciona una para ver sus servicios
             </h6>
 
-            <div id="cardsContainer" class="cards-container-responsive">
-            </div>
+            <div id="cardsContainer" class="cards-container-responsive"></div>
 
             <div id="serviciosContainer" style="display: none;">
                 <div class="detalle-grid">
@@ -270,18 +298,18 @@
                             <table class="table" style="border: 1px solid #4E342E; font-size: 12px; min-width: 700px;">
                                 <thead style="background: #8D6E63; color: white;">
                                     <tr>
-                                        <th style="border: 1px solid #4E342E;">Tipo</th>
                                         <th style="border: 1px solid #4E342E;">Servicio</th>
-                                        <th style="border: 1px solid #4E342E;">Detalles del Servicio</th>
-                                        <th style="border: 1px solid #4E342E; text-align: center;">Días</th>
-                                        <th style="border: 1px solid #4E342E; text-align: center;">Precio Unit.</th>
+                                        <th style="border: 1px solid #4E342E;">Producto</th>
+                                        <th style="border: 1px solid #4E342E;">Ruta</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Días asignados</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Cantidad</th>
+                                        <th style="border: 1px solid #4E342E; text-align: center;">Precio Unitario</th>
                                         <th style="border: 1px solid #4E342E; text-align: center;">% Adicional</th>
                                         <th style="border: 1px solid #4E342E; text-align: center;">% Descuento</th>
                                         <th style="border: 1px solid #4E342E; text-align: center;">Subtotal</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tbServicios">
-                                </tbody>
+                                <tbody id="tbServicios"></tbody>
                             </table>
                         </div>
                     </div>
@@ -316,8 +344,8 @@
         </div>
         <div class="modal-footer" style="border-top: 1px solid #eee; justify-content: flex-end; flex-shrink: 0;">
             <div class="action-btns">
-                <button type="button" class="btn-custom btn-rechazar-custom" onclick="rechazarValidacion()">Rechazar</button>
-                <button type="button" class="btn-custom btn-autorizar-custom" onclick="autorizarValidacion()">Autorizar</button>
+                <button type="button" class="btn-custom btn-rechazar-custom" onclick="rechazarContrato()">Rechazar</button>
+                <button type="button" class="btn-custom btn-autorizar-custom" onclick="autorizarContrato()">Autorizar</button>
             </div>
         </div>
     </div>
@@ -325,11 +353,11 @@
 
 @section Scripts {
     <script>
-        let validaciones = [];
-        let validacionActual = null;
-        let datosActual = null;
+        let contratos = [];
+        let contratoActual = null;
         let prospectoActual = null;
         let sucursalesActual = [];
+        let serviciosActual = [];
         let grupoActivo = 'MATRIZ';
 
         const formatMXN = (num) => {
@@ -351,74 +379,60 @@
         }
 
         function cargarPendientes() {
-            fetch('@Url.Action("GetPendientes", "ValidacionCotizaciones")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetch('@Url.Action("GetPendientes", "ContratosPorAutorizar")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
-                        validaciones = res.data || [];
+                        contratos = res.data || [];
                         renderizarTabla();
                     } else {
-                        $('#tbValidaciones').html(`<tr><td colspan="6" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
+                        $('#tbContratos').html(`<tr><td colspan="6" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
                     }
                 })
                 .catch(e => {
                     console.error(e);
-                    $('#tbValidaciones').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                    $('#tbContratos').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
                 });
         }
 
         function renderizarTabla() {
-            $('#lblCount').text(`${validaciones.length} registros encontrados`);
-            if (validaciones.length === 0) {
-                $('#tbValidaciones').html('<tr><td colspan="6" class="text-center py-4">No hay cotizaciones por aprobar.</td></tr>');
+            $('#lblCount').text(`${contratos.length} registros encontrados`);
+            if (contratos.length === 0) {
+                $('#tbContratos').html('<tr><td colspan="6" class="text-center py-4">No hay contratos por autorizar.</td></tr>');
                 return;
             }
 
-            function badgeValidacion(estatus) {
-                const e = (estatus || '').toLowerCase();
-                if (e === 'autorizada') return { texto: 'Autorizada', bg: '#E8F5E9', color: '#2E7D32' };
-                if (e === 'rechazada') return { texto: 'Rechazada', bg: '#FFEBEE', color: '#C62828' };
-                return { texto: 'Pendiente', bg: '#FFE0B2', color: '#E65100' };
-            }
-
             let html = '';
-            validaciones.forEach(v => {
-                const direccion = [v.Calle, v.Num_Ext ? `#${v.Num_Ext}` : '', v.Colonia, v.Municipio].filter(Boolean).join(', ') || '—';
-                const b = badgeValidacion(v.Estatus);
-                const ocultarAcciones = b.texto !== 'Pendiente' ? 'display:none;' : '';
+            contratos.forEach(c => {
                 html += `
                     <tr>
-                        <td>${v.Validacion_ID}</td>
-                        <td style="font-weight: 600;">${v.RazonSocial || '—'}</td>
-                        <td class="text-muted">${v.RFC || '—'}</td>
-                        <td class="text-muted" style="font-size: 12px;">${direccion}</td>
-                        <td><span class="badge" style="background: ${b.bg}; color: ${b.color}; padding: 4px 10px; border-radius: 12px; font-size: 11px;">${b.texto}</span></td>
+                        <td style="font-weight: 600;">${c.Folio || '—'}</td>
+                        <td>${c.RazonSocial || '—'}</td>
+                        <td class="text-muted">${c.RFC || '—'}</td>
+                        <td class="text-muted">${formatMXN(c.Monto_Mensual)}</td>
+                        <td class="text-muted">${c.VendedorNombre || '—'}</td>
                         <td style="text-align: right;">
-                            <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${v.Validacion_ID})" title="Ver detalle">
+                            <button class="btn btn-sm" style="background: transparent; border: none; color: #5D4037;" onclick="verDetalle(${c.Contrato_ID})" title="Ver detalle">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </td>
                     </tr>
                 `;
             });
-            $('#tbValidaciones').html(html);
+            $('#tbContratos').html(html);
         }
 
         function verDetalle(id) {
-            validacionActual = validaciones.find(v => v.Validacion_ID === id);
-            if (!validacionActual) return;
+            contratoActual = contratos.find(c => c.Contrato_ID === id);
+            if (!contratoActual) return;
 
-            fetch('@Url.Action("GetDetalle", "ValidacionCotizaciones")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetch('@Url.Action("GetDetalle", "ContratosPorAutorizar")/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
-                        prospectoActual = res.prospecto;
+                        prospectoActual = res.prospecto || {};
                         sucursalesActual = res.sucursales || [];
-                        try {
-                            datosActual = JSON.parse(res.validacion.Datos_Cotizacion || '{}');
-                        } catch (e) {
-                            datosActual = {};
-                        }
+                        serviciosActual = res.servicios || [];
                         mostrarDetalle();
                         $('#modalDetalle').addClass('show');
                     } else {
@@ -429,32 +443,21 @@
         }
 
         function mostrarDetalle() {
-            const v = validacionActual;
-            const p = prospectoActual;
-            const d = datosActual || {};
+            const c = contratoActual;
+            const p = prospectoActual || {};
 
-            const razon = getProp(p, 'Nombre', 'nombre') || v.RazonSocial || '—';
-            const rfc = getProp(p, 'RFC', 'rfc') || v.RFC || '—';
-            const vendedor = getProp(p, 'Vendedor_Nombre', 'vendedorNombre') || v.VendedorNombre || 'Sin asignar';
-            const fechaCreacion = v.Fecha_Creacion ? new Date(v.Fecha_Creacion).toLocaleDateString('es-MX') : '—';
-            const vigenciaInicio = d.fechaInicio ? formatearFecha(d.fechaInicio) : '—';
-            const vigenciaFin = d.fechaLimite ? formatearFecha(d.fechaLimite) : '—';
-            const folio = `COT-${new Date().getFullYear()}-${v.Validacion_ID.toString().padStart(4, '0')}`;
+            const razon = getProp(p, 'nombre', 'Nombre') || c.RazonSocial || '—';
+            const rfc = getProp(p, 'rfc', 'RFC') || c.RFC || '—';
+            const vendedor = getProp(p, 'vendedorNombre', 'VendedorNombre') || c.VendedorNombre || 'Sin asignar';
+            const fechaAut = c.Fecha_Autorizacion ? new Date(c.Fecha_Autorizacion).toLocaleDateString('es-MX') : '—';
 
-            const estatusVal = (v.Estatus || '').toLowerCase();
-            const estatusLabel = estatusVal === 'autorizada' ? 'Autorizada' : (estatusVal === 'rechazada' ? 'Rechazada' : 'Pendiente');
-
-            $('#modalFolio').text(`RESUMEN DE COTIZACIÓN - ${folio}`);
-            $('#modalTitulo').text(`${folio} | ${razon.toUpperCase()} — ${estatusLabel}`);
+            $('#modalFolio').text(`RESUMEN DE CONTRATO - ${c.Folio || ''}`);
+            $('#modalTitulo').text(`${c.Folio || ''} | ${razon.toUpperCase()}`);
             $('#infoRazonSocial').text(razon);
             $('#infoRFC').text(rfc);
             $('#infoVendedor').text(vendedor);
-            $('#infoFecha').text(fechaCreacion);
-            $('#infoVigencia').text(`${vigenciaInicio} al ${vigenciaFin}`);
-
-            // Mostrar/ocultar botones de acción según estatus
-            const mostrarAcciones = estatusVal === 'pendiente';
-            $('.btn-rechazar-custom, .btn-autorizar-custom').toggle(mostrarAcciones);
+            $('#infoFecha').text(fechaAut);
+            $('#infoMonto').text(formatMXN(c.Monto_Mensual));
 
             renderizarCards();
             grupoActivo = 'MATRIZ';
@@ -467,34 +470,26 @@
             return obj[key1] !== undefined ? obj[key1] : (obj[key2] !== undefined ? obj[key2] : '');
         }
 
-        function formatearFecha(fechaStr) {
-            if (!fechaStr) return '—';
-            const partes = fechaStr.split('-');
-            if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
-            return fechaStr;
-        }
-
         function renderizarCards() {
             const p = prospectoActual;
-            const nombreCliente = getProp(p, 'Nombre_Comercial', 'nombreComercial') || getProp(p, 'Nombre', 'nombre') || 'Cliente';
-            const items = datosActual.items || [];
+            const nombreCliente = getProp(p, 'nombreComercial', 'Nombre_Comercial') || getProp(p, 'nombre', 'Nombre') || 'Cliente';
 
             let html = `
                 <div class="card-sucursal active" onclick="cambiarGrupo('MATRIZ')" id="card-MATRIZ">
                     <div class="sucursal-label"><i class="fas fa-building"></i> MATRIZ — ${nombreCliente}</div>
                     <div class="sucursal-monto">${formatMXN(subtotalGrupo('MATRIZ'))}</div>
-                    <div class="sucursal-count">${items.filter(i => i.tab_id === 'MATRIZ').length} Servicios</div>
+                    <div class="sucursal-count">${serviciosActual.filter(s => !s.sucursal_id || String(s.sucursal_id) === 'MATRIZ').length} Servicios</div>
                 </div>
             `;
 
             sucursalesActual.forEach((s, idx) => {
-                const sId = String(getProp(s, 'Sucursal_ID', 'id') || getProp(s, 'Id', 'id'));
-                const nom = getProp(s, 'Nombre_Sucursal', 'nombre_sucursal') || `Sucursal ${idx + 1}`;
+                const sId = String(getProp(s, 'id', 'Id'));
+                const nom = getProp(s, 'nombre_sucursal', 'Nombre_Sucursal') || `Sucursal ${idx + 1}`;
                 html += `
                     <div class="card-sucursal" onclick="cambiarGrupo('${sId}')" id="card-${sId}">
                         <div class="sucursal-label"><i class="fas fa-building"></i> SUC. ${String(idx + 1).padStart(3, '0')} — ${nom}</div>
                         <div class="sucursal-monto">${formatMXN(subtotalGrupo(sId))}</div>
-                        <div class="sucursal-count">${items.filter(i => String(i.tab_id) === sId).length} Servicios</div>
+                        <div class="sucursal-count">${serviciosActual.filter(s => String(s.sucursal_id) === sId).length} Servicios</div>
                     </div>
                 `;
             });
@@ -515,7 +510,13 @@
         }
 
         function renderizarServicios() {
-            const items = (datosActual.items || []).filter(i => String(i.tab_id) === String(grupoActivo));
+            const items = serviciosActual.filter(s => {
+                const sid = String(s.sucursal_id || '');
+                if (grupoActivo === 'MATRIZ') {
+                    return !sid || sid === 'MATRIZ' || sid === 'null' || sid === '';
+                }
+                return sid === String(grupoActivo);
+            });
 
             if (items.length === 0) {
                 $('#serviciosContainer').hide();
@@ -523,50 +524,34 @@
             }
 
             $('#serviciosContainer').show();
-            const nombreCliente = getProp(prospectoActual, 'Nombre_Comercial', 'nombreComercial') || getProp(prospectoActual, 'Nombre', 'nombre') || 'Cliente';
+            const nombreCliente = getProp(prospectoActual, 'nombreComercial', 'Nombre_Comercial') || getProp(prospectoActual, 'nombre', 'Nombre') || 'Cliente';
             const titulo = grupoActivo === 'MATRIZ' ? `MATRIZ - ${nombreCliente}` : `SUCURSAL - ${getNombreSucursal(grupoActivo)}`;
             $('#tituloServicios').text(`SERVICIOS COTIZADOS - ${titulo.toUpperCase()}`);
 
             let html = '';
             items.forEach(it => {
-                const isRSU = (it.tipo_servicio || '').toUpperCase() === 'RSU';
-                const badgeColor = isRSU ? '#E67E22' : '#27AE60';
-                const tipoTexto = isRSU ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
-                const dias = Array.isArray(it.dias_asignados) ? it.dias_asignados : (it.dias_asignados || '').toString().split(',').filter(Boolean);
+                const rawTipo = (it.tipo_residuo || it.tipo_servicio || '').toString().toUpperCase();
+                const isRSU = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(it.costo_tonelada) || 0) === 0 && (Number(it.costo_disposicion) || 0) === 0));
+                const bg = isRSU ? '#F57F17' : '#4CAF50';
+                const dias = Array.isArray(it.dias_asignados)
+                    ? it.dias_asignados
+                    : (it.dias_asignados || '').toString().split(',').filter(Boolean);
                 const diasHtml = dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
+                const cantidad = isRSU ? (it.volumen_estimado || 0) : (it.recolectores || 0);
                 const pu = isRSU ? (Number(it.precio_unitario) || 18.60) : ((Number(it.costo_tonelada) || 0) + (Number(it.costo_disposicion) || 0));
-                const puColor = isRSU ? '#333' : '#2E7D32';
                 const subtotal = calcularSubtotalItem(it);
-
-                let detalles = '';
-                if (isRSU) {
-                    detalles = `
-                        <div style="display: grid; grid-template-columns: 80px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
-                            <span style="color: #666;">Producto:</span><span style="font-weight: 700; color: #333;">${it.tipo_residuo || '—'}</span>
-                            <span style="color: #666;">Ruta:</span><span style="color: #3498DB; font-weight: 700;">${it.ruta || 'Por asignar'}</span>
-                            <span style="color: #666;">Bolsas:</span><span style="font-weight: 700; color: #333;">${it.bolsas || 0}</span>
-                        </div>`;
-                } else {
-                    detalles = `
-                        <div style="display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
-                            <span style="color: #666;">Unidad:</span><span style="color: #3498DB; font-weight: 700;">${it.tipo_unidad || 'N/A'}</span>
-                            <span style="color: #666;">Tipo Serv:</span><span style="color: #8E44AD; font-weight: 700;">${it.tipo_cobro === 'PESO' ? 'Peso' : 'Viaje'}</span>
-                            <span style="color: #666;">Recorrido:</span><span style="background: #f0f0f0; border-radius: 4px; padding: 2px 6px; font-weight: 600; width: fit-content; color: #666;">Config</span>
-                            <span style="color: #666;">Recolecciones:</span><span style="font-weight: 700; color: #333;">${it.recolectores || 0}/día</span>
-                            <span style="color: #666;">Turno:</span><span style="color: #E67E22; font-weight: 700; text-transform: capitalize;">${(it.turno || '').toLowerCase()}</span>
-                        </div>`;
-                }
 
                 html += `
                     <tr>
-                        <td style="border: 1px solid #ccc;"><span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">${it.tipo_servicio}</span></td>
-                        <td style="border: 1px solid #ccc; font-weight: 600; vertical-align: middle;">${tipoTexto}</td>
-                        <td style="border: 1px solid #ccc; vertical-align: middle;">${detalles}</td>
-                        <td style="border: 1px solid #ccc; text-align: center; vertical-align: middle;"><div style="display: flex; gap: 2px; justify-content: center;">${diasHtml}</div></td>
-                        <td style="border: 1px solid #ccc; text-align: center; font-weight: 700; vertical-align: middle; color: ${puColor};">${formatMXN(pu)}</td>
-                        <td style="border: 1px solid #ccc; text-align: center; vertical-align: middle;">${it.porcentaje_adicional || 0}%</td>
-                        <td style="border: 1px solid #ccc; text-align: center; vertical-align: middle;">${it.porcentaje_descuento || 0}%</td>
-                        <td style="border: 1px solid #ccc; text-align: center; font-weight: bold; color: #2E7D32; vertical-align: middle;">${formatMXN(subtotal)}</td>
+                        <td style="border: 1px solid #ccc;"><span style="background: ${bg}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">${isRSU ? 'RSU' : 'RME'}</span></td>
+                        <td style="border: 1px solid #ccc; font-weight: 600;">${it.tipo_residuo || '—'}</td>
+                        <td style="border: 1px solid #ccc;">${it.ruta || 'Por asignar'}</td>
+                        <td style="border: 1px solid #ccc; text-align: center;"><div style="display: flex; gap: 2px; justify-content: center;">${diasHtml}</div></td>
+                        <td style="border: 1px solid #ccc; text-align: center;">${cantidad}</td>
+                        <td style="border: 1px solid #ccc; text-align: center; font-weight: 600;">${formatMXN(pu)}</td>
+                        <td style="border: 1px solid #ccc; text-align: center;">${it.porcentaje_adicional || 0}%</td>
+                        <td style="border: 1px solid #ccc; text-align: center;">${it.porcentaje_descuento || 0}%</td>
+                        <td style="border: 1px solid #ccc; text-align: center; font-weight: bold; color: #2E7D32;">${formatMXN(subtotal)}</td>
                     </tr>
                 `;
             });
@@ -575,20 +560,23 @@
         }
 
         function getNombreSucursal(id) {
-            const s = sucursalesActual.find(x => String(getProp(x, 'Sucursal_ID', 'id')) === String(id) || String(getProp(x, 'Id', 'id')) === String(id));
-            return s ? getProp(s, 'Nombre_Sucursal', 'nombre_sucursal') : id;
+            const s = sucursalesActual.find(x => String(getProp(x, 'id', 'Id')) === String(id));
+            return s ? getProp(s, 'nombre_sucursal', 'Nombre_Sucursal') : id;
         }
 
         function calcularSubtotalItem(i) {
-            const isRSU = (i.tipo_servicio || '').toUpperCase() === 'RSU';
-            const dias = Array.isArray(i.dias_asignados) ? i.dias_asignados : (i.dias_asignados || '').toString().split(',').filter(Boolean);
+            const rawTipo = (i.tipo_residuo || i.tipo_servicio || '').toString().toUpperCase();
+            const isRSU = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(i.costo_tonelada) || 0) === 0 && (Number(i.costo_disposicion) || 0) === 0));
+            const dias = Array.isArray(i.dias_asignados)
+                ? i.dias_asignados
+                : (i.dias_asignados || '').toString().split(',').filter(Boolean);
             const diasPorSemana = dias.length || 1;
             const adicional = (Number(i.porcentaje_adicional) || 0) / 100;
             const descuento = (Number(i.porcentaje_descuento) || 0) / 100;
             let base = 0;
 
             if (isRSU) {
-                const bolsasMensuales = ((i.bolsas || 0) * diasPorSemana * 52) / 12;
+                const bolsasMensuales = ((i.volumen_estimado || 0) * diasPorSemana * 52) / 12;
                 base = bolsasMensuales * (Number(i.precio_unitario) || 18.60);
             } else {
                 const viajesMensuales = (i.recolectores || 0) * diasPorSemana * 4;
@@ -600,12 +588,16 @@
         }
 
         function subtotalGrupo(grupoId) {
-            const items = (datosActual.items || []).filter(i => String(i.tab_id) === String(grupoId));
+            const items = serviciosActual.filter(s => {
+                const sid = String(s.sucursal_id || '');
+                if (grupoId === 'MATRIZ') return !sid || sid === 'MATRIZ' || sid === 'null' || sid === '';
+                return sid === String(grupoId);
+            });
             return items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
         }
 
         function renderizarTotales() {
-            const items = datosActual.items || [];
+            const items = serviciosActual || [];
             const subtotal = items.reduce((s, i) => s + calcularSubtotalItem(i), 0);
             const iva = subtotal * 0.16;
             const total = subtotal + iva;
@@ -628,8 +620,37 @@
             $('#resumenTotal').text(formatMXN(total));
         }
 
-        function rechazarValidacion() {
-            if (!validacionActual) return;
+        function autorizarContrato() {
+            if (!contratoActual) return;
+            Swal.fire({
+                title: '¿Autorizar contrato?',
+                text: 'El contrato pasará a estatus "Activo" y se podrá enviar al cliente.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, autorizar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E7D32'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('@Url.Action("Autorizar", "ContratosPorAutorizar")/' + contratoActual.Contrato_ID, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) {
+                            Swal.fire('Autorizado', res.message, 'success').then(() => {
+                                cerrarDetalle();
+                                cargarPendientes();
+                            });
+                        } else {
+                            Swal.fire('Error', res.error, 'error');
+                        }
+                    }).catch(console.error);
+                }
+            });
+        }
+
+        function rechazarContrato() {
+            if (!contratoActual) return;
             $('#modalDetalle').removeClass('show');
 
             Swal.fire({
@@ -652,13 +673,13 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch('@Url.Action("Rechazar", "ValidacionCotizaciones")', {
+                    fetch('@Url.Action("Rechazar", "ContratosPorAutorizar")', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: JSON.stringify({ validacion_id: validacionActual.Validacion_ID, motivo: result.value })
+                        body: JSON.stringify({ contrato_id: contratoActual.Contrato_ID, motivo: result.value })
                     }).then(r => r.json()).then(res => {
                         if (res.success) {
-                            Swal.fire('Rechazada', res.message, 'success').then(() => {
+                            Swal.fire('Rechazado', res.message, 'success').then(() => {
                                 cerrarDetalle();
                                 cargarPendientes();
                             });
@@ -669,45 +690,12 @@
                         }
                     }).catch(err => {
                         console.error(err);
-                        Swal.fire('Error', 'No se pudo rechazar la cotización.', 'error').then(() => {
+                        Swal.fire('Error', 'No se pudo rechazar el contrato.', 'error').then(() => {
                             $('#modalDetalle').addClass('show');
                         });
                     });
                 } else {
                     $('#modalDetalle').addClass('show');
-                }
-            });
-        }
-
-        function autorizarValidacion() {
-            if (!validacionActual) return;
-            Swal.fire({
-                title: '¿Autorizar cotización?',
-                text: 'Al autorizar se creará un contrato con estatus Activo.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, autorizar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#2E7D32'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('@Url.Action("Autorizar", "ValidacionCotizaciones")/' + validacionActual.Validacion_ID, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                    }).then(r => r.json()).then(res => {
-                        if (res.success) {
-                            Swal.fire('Autorizada', `${res.message}\nFolio: ${res.folio}`, 'success').then(() => {
-                                if (res.redirectUrl) {
-                                    window.location.href = res.redirectUrl;
-                                } else {
-                                    cerrarDetalle();
-                                    cargarPendientes();
-                                }
-                            });
-                        } else {
-                            Swal.fire('Error', res.error, 'error');
-                        }
-                    }).catch(console.error);
                 }
             });
         }

@@ -5,7 +5,7 @@ namespace CRMSistema.Models.ViewModels
     public class LoginViewModel
     {
         [Required(ErrorMessage = "El usuario es obligatorio.")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "El usuario contiene caracteres no permitidos. Use solo letras, números y guiones bajos.")]
+        [StringLength(50, ErrorMessage = "El usuario no puede tener más de 50 caracteres.")]
         [Display(Name = "Usuario")]
         public string Usuario { get; set; }
 

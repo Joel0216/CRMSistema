@@ -1,21 +1,391 @@
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewBag.Title = "Usuarios";
+    ViewBag.ActiveMenu = "Usuarios";
 }
 
-<div class="page-header">
+<style>
+    .estatus-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+    }
+    .btn-icon {
+        border: none;
+        background: transparent;
+        color: #5D4037;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-icon:hover { background: #f0f0f0; }
+
+    .rol-badge {
+        background: #4E342E;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .rol-superadmin { background: #C62828; }
+    .rol-supervisor { background: #1565C0; }
+    .rol-vendedor { background: #2E7D32; }
+
+    .modal-usuario .modal-header { background: #4E342E; color: white; }
+    .modal-usuario .modal-title { font-size: 15px; font-weight: 700; text-transform: uppercase; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="section-title"><i class="fas fa-user-cog me-2"></i>Usuarios</h2>
-        <p class="section-sub">Administración de usuarios del sistema.</p>
+        <h2 class="section-title mb-0"><i class="fas fa-user-cog me-2"></i>Usuarios</h2>
+        <p class="section-sub mb-0" id="lblCount">Cargando...</p>
+    </div>
+    <button class="btn" style="background:#4E342E;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:600;" onclick="abrirModal()">
+        <i class="fas fa-plus me-2"></i>Nuevo usuario
+    </button>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table" id="tblUsuarios">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th style="text-align:center;">Estatus</th>
+                    <th style="text-align:right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbUsuarios">
+                <tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Usuarios registrados</h5>
-    </div>
-    <div class="card-body text-center text-muted py-5">
-        <i class="fas fa-tools fa-2x mb-3"></i>
-        <p class="mb-0">Módulo en construcción. Aquí se listarán los usuarios del sistema.</p>
+<!-- Modal Usuario -->
+<div class="modal fade modal-usuario" id="modalUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo">Nuevo Usuario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="uId" value="0" />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control form-control-sm" id="uNombre" placeholder="Nombre" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Apellidos</label>
+                        <input type="text" class="form-control form-control-sm" id="uApellidos" placeholder="Apellidos" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-control form-control-sm" id="uCorreo" placeholder="correo@ejemplo.com" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre de usuario (login) *</label>
+                        <input type="text" class="form-control form-control-sm" id="uUsuario" placeholder="usuario" />
+                    </div>
+                    <div class="col-md-6" id="colPassword">
+                        <label class="form-label">Contraseña *</label>
+                        <input type="password" class="form-control form-control-sm" id="uPassword" placeholder="Contraseña temporal" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Rol *</label>
+                        <select class="form-select form-select-sm" id="uRol">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #eee;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success btn-sm" onclick="guardarUsuario()">Guardar usuario</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Modal Cambiar Contraseña -->
+<div class="modal fade" id="modalPassword" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#4E342E;color:white;">
+                <h5 class="modal-title" style="font-size:15px;font-weight:700;text-transform:uppercase;">Restablecer Contraseña</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="pId" value="0" />
+                <p style="font-size:13px;color:#424242;">
+                    Estás restableciendo la contraseña del usuario <strong id="pNombre"></strong>.
+                </p>
+                <label class="form-label">Nueva contraseña *</label>
+                <input type="password" class="form-control form-control-sm" id="pPassword" placeholder="Contraseña temporal" />
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #eee;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning btn-sm" onclick="guardarPassword()">Restablecer contraseña</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let usuarios = [];
+        let roles = [];
+        let usuarioActualId = 0;
+
+        $(document).ready(function() {
+            cargarRoles().then(cargarUsuarios);
+        });
+
+        function cargarRoles() {
+            return fetch('@Url.Action("GetRoles", "Usuarios")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    roles = res.success ? (res.data || []) : [];
+                    let html = '<option value="">-- Seleccionar --</option>';
+                    roles.forEach(r => {
+                        html += `<option value="${r.id}">${r.nombre}</option>`;
+                    });
+                    $('#uRol').html(html);
+                })
+                .catch(console.error);
+        }
+
+        function cargarUsuarios() {
+            fetch('@Url.Action("GetUsuarios", "Usuarios")', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        usuarios = res.data || [];
+                        renderizarTabla();
+                    } else {
+                        $('#tbUsuarios').html(`<tr><td colspan="6" class="text-center text-danger py-4">${res.error || 'Error al cargar'}</td></tr>`);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    $('#tbUsuarios').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>');
+                });
+        }
+
+        function renderizarTabla() {
+            const activos = usuarios.filter(u => u.activo).length;
+            $('#lblCount').text(`${usuarios.length} usuarios registrados (${activos} activos)`);
+
+            if (usuarios.length === 0) {
+                $('#tbUsuarios').html('<tr><td colspan="6" class="text-center py-4">No hay usuarios registrados.</td></tr>');
+                return;
+            }
+
+            let html = '';
+            usuarios.forEach(u => {
+                const rolSlug = (u.rol || '').toLowerCase().replace(' ', '');
+                const rolClass = rolSlug === 'superadmin' ? 'rol-superadmin' : rolSlug === 'supervisor' ? 'rol-supervisor' : 'rol-vendedor';
+                const estatus = u.activo
+                    ? '<span class="estatus-badge" style="background:#E8F5E9;color:#2E7D32;">Activo</span>'
+                    : '<span class="estatus-badge" style="background:#EEEEEE;color:#616161;">Inactivo</span>';
+
+                const btnActivar = u.activo ? '' : `<button class="btn-icon" onclick="activarUsuario(${u.id})" title="Activar"><i class="fas fa-check-circle" style="color:#2E7D32;"></i></button>`;
+                const btnAnular = u.activo ? `<button class="btn-icon" onclick="anularUsuario(${u.id})" title="Anular"><i class="fas fa-ban" style="color:#C62828;"></i></button>` : '';
+
+                html += `
+                    <tr style="${!u.activo ? 'opacity:0.6;' : ''}">
+                        <td style="font-weight:700;">${u.nombre} ${u.apellido || ''}</td>
+                        <td class="text-muted">${u.usuario || '—'}</td>
+                        <td class="text-muted">${u.correo || '—'}</td>
+                        <td><span class="rol-badge ${rolClass}">${u.rol || '—'}</span></td>
+                        <td style="text-align:center;">${estatus}</td>
+                        <td style="text-align:right; white-space:nowrap;">
+                            <button class="btn-icon" onclick="editarUsuario(${u.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="abrirPassword(${u.id}, '${escapeHtml(u.nombre + ' ' + (u.apellido || ''))}')" title="Restablecer contraseña"><i class="fas fa-key"></i></button>
+                            ${btnAnular}
+                            ${btnActivar}
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tbUsuarios').html(html);
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function abrirModal() {
+            $('#modalTitulo').text('Nuevo Usuario');
+            $('#uId').val(0);
+            $('#uNombre').val('');
+            $('#uApellidos').val('');
+            $('#uCorreo').val('');
+            $('#uUsuario').val('');
+            $('#uPassword').val('');
+            $('#uRol').val('');
+            $('#colPassword').show();
+            $('#modalUsuario').modal('show');
+        }
+
+        function editarUsuario(id) {
+            const u = usuarios.find(x => x.id === id);
+            if (!u) return;
+
+            $('#modalTitulo').text('Editar Usuario');
+            $('#uId').val(u.id);
+            $('#uNombre').val(u.nombre);
+            $('#uApellidos').val(u.apellido);
+            $('#uCorreo').val(u.correo);
+            $('#uUsuario').val(u.usuario);
+            $('#uPassword').val('');
+            $('#uRol').val(u.rolId || '');
+            $('#colPassword').hide();
+            $('#modalUsuario').modal('show');
+        }
+
+        function guardarUsuario() {
+            const id = parseInt($('#uId').val() || 0);
+            const req = {
+                id: id,
+                nombre: $('#uNombre').val().trim(),
+                apellidos: $('#uApellidos').val().trim(),
+                correo: $('#uCorreo').val().trim(),
+                usuario: $('#uUsuario').val().trim(),
+                password: $('#uPassword').val(),
+                rolId: parseInt($('#uRol').val() || 0)
+            };
+
+            if (!req.nombre || !req.usuario) {
+                Swal.fire('Atención', 'Nombre y usuario son obligatorios.', 'warning');
+                return;
+            }
+            if (!req.rolId) {
+                Swal.fire('Atención', 'Debes seleccionar un rol.', 'warning');
+                return;
+            }
+            if (id === 0 && !req.password) {
+                Swal.fire('Atención', 'La contraseña es obligatoria para nuevos usuarios.', 'warning');
+                return;
+            }
+
+            fetch('@Url.Action("Guardar", "Usuarios")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify(req)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    $('#modalUsuario').modal('hide');
+                    Swal.fire('Guardado', res.message, 'success').then(() => cargarUsuarios());
+                } else {
+                    Swal.fire('Error', res.error, 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'No se pudo guardar el usuario.', 'error');
+            });
+        }
+
+        function abrirPassword(id, nombre) {
+            usuarioActualId = id;
+            $('#pId').val(id);
+            $('#pNombre').text(nombre);
+            $('#pPassword').val('');
+            $('#modalPassword').modal('show');
+        }
+
+        function guardarPassword() {
+            const password = $('#pPassword').val();
+            if (!password) {
+                Swal.fire('Atención', 'Escribe una contraseña.', 'warning');
+                return;
+            }
+
+            fetch('@Url.Action("CambiarPassword", "Usuarios")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ id: usuarioActualId, password: password })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    $('#modalPassword').modal('hide');
+                    Swal.fire('Actualizado', res.message, 'success');
+                } else {
+                    Swal.fire('Error', res.error, 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'No se pudo cambiar la contraseña.', 'error');
+            });
+        }
+
+        function anularUsuario(id) {
+            Swal.fire({
+                title: '¿Anular usuario?',
+                text: 'El usuario no podrá iniciar sesión, pero sus registros históricos se conservarán.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Anular',
+                confirmButtonColor: '#C62828',
+                cancelButtonText: 'Cancelar'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                cambiarEstatus(id, 'Anular');
+            });
+        }
+
+        function activarUsuario(id) {
+            cambiarEstatus(id, 'Activar');
+        }
+
+        function cambiarEstatus(id, accion) {
+            var url = accion === 'Activar'
+                ? '@Url.Action("Activar", "Usuarios")'
+                : '@Url.Action("Anular", "Usuarios")';
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire('Listo', res.message, 'success').then(() => cargarUsuarios());
+                } else {
+                    Swal.fire('Error', res.error, 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('Error', 'No se pudo cambiar el estatus.', 'error');
+            });
+        }
+
+        // Si vino desde el menú rápido "Registrar usuario", abre el modal automáticamente.
+        $(function () {
+            if (sessionStorage.getItem('abrirModalUsuario') === '1') {
+                sessionStorage.removeItem('abrirModalUsuario');
+                setTimeout(abrirModal, 100);
+            }
+        });
+    </script>
+}

@@ -5,13 +5,15 @@ using System.Web.Mvc;
 using CRMSistema.Controllers.Base;
 using CRMSistema.DAL.Cotizador;
 using CRMSistema.DAL.Prospectos;
+using CRMSistema.Filters;
 using CRMSistema.Models.Cotizador;
+using CRMSistema.Models.Usuarios;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CRMSistema.Controllers.ValidacionCotizaciones
 {
-    [Authorize]
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
     public class ValidacionCotizacionesController : BaseController
     {
         private readonly CotizacionesDAL _dal = new CotizacionesDAL();

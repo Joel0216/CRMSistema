@@ -7,13 +7,15 @@ using CRMSistema.Controllers.Base;
 using CRMSistema.DAL.Cotizador;
 using CRMSistema.DAL.Prospectos;
 using CRMSistema.DAL.Usuarios;
+using CRMSistema.Filters;
 using CRMSistema.Models.Prospectos;
+using CRMSistema.Models.Usuarios;
 using CRMSistema.Models.ViewModels;
 using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.Prospectos
 {
-    [Authorize]
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
     public class ProspectosController : BaseController
     {
         private readonly ApiProspectosDAL _dal = new ApiProspectosDAL();
@@ -55,7 +57,9 @@ namespace CRMSistema.Controllers.Prospectos
         {
             try
             {
-                var rows = _dal.ObtenerTodos();
+                var rows = _dal.ObtenerTodos()
+                    .Where(PuedeVerProspecto)
+                    .ToList();
                 return rows.Select(MapListItem).ToList();
             }
             catch
@@ -66,12 +70,23 @@ namespace CRMSistema.Controllers.Prospectos
             }
         }
 
+        private bool PuedeVerProspecto(dynamic r)
+        {
+            var rol = Session["Rol"]?.ToString() ?? "";
+            if (AppRoles.EsSupervisorOAdmin(rol))
+                return true;
+
+            var vendedorId = ToInt(Val(r, "vendedorId"));
+            var usuarioId = Session["UsuarioId"] as int?;
+            return vendedorId > 0 && usuarioId.HasValue && vendedorId == usuarioId.Value;
+        }
+
         private ProspectoViewModel CargarProspectoCompleto(int id)
         {
             try
             {
                 var row = _dal.ObtenerTodos().FirstOrDefault(r => ToInt(Val(r, "id")) == id);
-                if (row == null) return null;
+                if (row == null || !PuedeVerProspecto(row)) return null;
 
                 var m = MapDetalle(row);
                 m.Contactos = _dal.ObtenerContactos(id).Select(MapContacto).ToList();
@@ -194,12 +209,9 @@ namespace CRMSistema.Controllers.Prospectos
 
             try
             {
-                var row = _dal.ObtenerTodos().FirstOrDefault(r => ToInt(Val(r, "id")) == id);
-                if (row == null) return HttpNotFound();
+                var model = CargarProspectoCompleto(id);
+                if (model == null) return HttpNotFound();
 
-                var model = MapDetalle(row);
-                model.Contactos = _dal.ObtenerContactos(id).Select(MapContacto).ToList();
-                model.Sucursales = _dal.ObtenerSucursales(id).Select(MapSucursal).ToList();
                 CargarViewBags(id);
                 return View("Formulario", model);
             }
@@ -265,12 +277,9 @@ namespace CRMSistema.Controllers.Prospectos
 
             try
             {
-                var row = _dal.ObtenerTodos().FirstOrDefault(r => ToInt(Val(r, "id")) == id);
-                if (row == null) return HttpNotFound();
+                var model = CargarProspectoCompleto(id);
+                if (model == null) return HttpNotFound();
 
-                var model = MapDetalle(row);
-                model.Contactos = _dal.ObtenerContactos(id).Select(MapContacto).ToList();
-                model.Sucursales = _dal.ObtenerSucursales(id).Select(MapSucursal).ToList();
                 CargarViewBags(id);
                 return View(model);
             }
@@ -441,7 +450,7 @@ namespace CRMSistema.Controllers.Prospectos
             ViewBag.SiNo = new[] { "No", "Sí" };
             try
             {
-                ViewBag.Vendedores = _usuariosDal.ObtenerActivos().Where(u => u.rol?.ToLower() == "vendedor").ToList();
+                ViewBag.Vendedores = _usuariosDal.ObtenerActivos().Where(u => AppRoles.TieneRol(u.rol, AppRoles.Vendedor)).ToList();
             }
             catch
             {

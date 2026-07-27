@@ -5,13 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Web.Mvc;
 using CRMSistema.DAL.Cotizador;
+using CRMSistema.Filters;
 using CRMSistema.Models.Cotizador;
+using CRMSistema.Models.Usuarios;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CRMSistema.Controllers.Cotizador
 {
-    [Authorize]
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
     public class CotizadorController : Controller
     {
         private readonly CotizacionesDAL _dal = new CotizacionesDAL();
@@ -186,14 +188,41 @@ namespace CRMSistema.Controllers.Cotizador
                 var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
                 var data = pDal.ObtenerTodos();
                 // Ignorar prospectos sin ID válido y advertir en trace.
-                var validos = data.Where(r => (r.id ?? 0) != 0).ToList();
+                var validos = data
+                    .Where(r => (r.id ?? 0) != 0 && PuedeVerProspecto(r))
+                    .ToList();
                 if (validos.Count < data.Count)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[GetProspectos] {data.Count - validos.Count} prospecto(s) con ID 0 fueron omitidos. Revisar SP_Prospectos_Create/GetAll.");
+                    System.Diagnostics.Debug.WriteLine($"[GetProspectos] {data.Count - validos.Count} prospecto(s) omitidos. Revisar SP_Prospectos_Create/GetAll o permisos de rol.");
                 }
                 return Content(Newtonsoft.Json.JsonConvert.SerializeObject(validos), "application/json");
             }
             catch (Exception ex) { return Content(Newtonsoft.Json.JsonConvert.SerializeObject(new { error = ex.Message }), "application/json"); }
+        }
+
+        private bool PuedeVerProspecto(dynamic r)
+        {
+            var rol = Session["Rol"]?.ToString() ?? "";
+            if (AppRoles.EsSupervisorOAdmin(rol))
+                return true;
+
+            // Vendedor: solo prospectos asignados a él
+            var usuarioId = Session["UsuarioId"] as int?;
+            int? vendedorId = null;
+            try { vendedorId = r.vendedorId as int?; } catch { }
+            if (!vendedorId.HasValue)
+            {
+                try { vendedorId = Convert.ToInt32(r.vendedorId); } catch { }
+            }
+
+            if (usuarioId.HasValue && vendedorId.HasValue && vendedorId.Value == usuarioId.Value)
+                return true;
+
+            // Fallback por nombre si no hay ID
+            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
+            var vendedorNombre = r.vendedorNombre as string ?? "";
+            return !string.IsNullOrWhiteSpace(vendedorNombre)
+                && vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
         }
 
         [HttpGet]
