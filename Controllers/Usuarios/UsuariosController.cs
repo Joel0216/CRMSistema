@@ -11,9 +11,10 @@ namespace CRMSistema.Controllers.Usuarios
 {
     /// <summary>
     /// Administración de usuarios del sistema.
-    /// Solo accesible para Superadmin.
+    /// Accesible para Superadmin y Jefe.
+    /// El Jefe puede crear y ver usuarios, pero no gestionar cuentas Superadmin.
     /// </summary>
-    [AuthorizeRole(AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Jefe, AppRoles.Superadmin)]
     public class UsuariosController : BaseController
     {
         private readonly UsuariosDAL _dal = new UsuariosDAL();
@@ -30,7 +31,9 @@ namespace CRMSistema.Controllers.Usuarios
         {
             try
             {
-                var data = _dal.ObtenerTodos();
+                var data = _dal.ObtenerTodos()
+                    .Where(u => PuedeGestionarUsuario(u.rol))
+                    .ToList();
                 return Json(new { success = true, data }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
@@ -44,7 +47,9 @@ namespace CRMSistema.Controllers.Usuarios
         {
             try
             {
-                var data = _dal.ObtenerRoles();
+                var data = _dal.ObtenerRoles()
+                    .Where(r => PuedeVerRol(r.nombre))
+                    .ToList();
                 return Json(new { success = true, data }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
@@ -82,15 +87,26 @@ namespace CRMSistema.Controllers.Usuarios
                     return Json(new { success = false, error = "Debes seleccionar un rol." });
 
                 var usuarioActualId = Session["UsuarioId"] as int? ?? 0;
+                var rolSeleccionado = _dal.ObtenerRoles().FirstOrDefault(r => r.id == req.rolId);
+                var nombreRolSeleccionado = rolSeleccionado?.nombre ?? "";
+
+                if (!PuedeAsignarRol(nombreRolSeleccionado))
+                    return Json(new { success = false, error = "No tienes permiso para asignar ese rol." });
 
                 if (req.id > 0)
                 {
                     // Editar
+                    var usuarioExistente = _dal.ObtenerPorId(req.id);
+                    if (usuarioExistente != null && !PuedeGestionarUsuario(usuarioExistente.rol))
+                        return Json(new { success = false, error = "No tienes permiso para editar este usuario." });
+
                     if (_dal.ExisteUsuario(req.usuario, req.id))
                         return Json(new { success = false, error = "El nombre de usuario ya está registrado." });
 
                     var ok = _dal.Editar(req, usuarioActualId);
-                    return Json(new { success = ok, message = ok ? "Usuario actualizado." : "No se pudo actualizar." });
+                    if (ok)
+                        return Json(new { success = true, message = "Usuario actualizado." });
+                    return Json(new { success = false, error = "No se pudo actualizar." });
                 }
                 else
                 {
@@ -102,7 +118,9 @@ namespace CRMSistema.Controllers.Usuarios
                         return Json(new { success = false, error = "El nombre de usuario ya está registrado." });
 
                     var nuevoId = _dal.Crear(req, usuarioActualId);
-                    return Json(new { success = nuevoId > 0, id = nuevoId, message = nuevoId > 0 ? "Usuario creado correctamente." : "No se pudo crear el usuario." });
+                    if (nuevoId > 0)
+                        return Json(new { success = true, id = nuevoId, message = "Usuario creado correctamente." });
+                    return Json(new { success = false, error = "No se pudo crear el usuario." });
                 }
             }
             catch (Exception ex)
@@ -119,8 +137,14 @@ namespace CRMSistema.Controllers.Usuarios
                 if (string.IsNullOrWhiteSpace(password))
                     return Json(new { success = false, error = "La contraseña no puede estar vacía." });
 
+                var usuario = _dal.ObtenerPorId(id);
+                if (usuario != null && !PuedeGestionarUsuario(usuario.rol))
+                    return Json(new { success = false, error = "No tienes permiso para cambiar la contraseña de este usuario." });
+
                 var ok = _dal.CambiarPassword(id, password);
-                return Json(new { success = ok, message = ok ? "Contraseña actualizada." : "No se pudo actualizar la contraseña." });
+                if (ok)
+                    return Json(new { success = true, message = "Contraseña actualizada." });
+                return Json(new { success = false, error = "No se pudo actualizar la contraseña." });
             }
             catch (Exception ex)
             {
@@ -134,8 +158,18 @@ namespace CRMSistema.Controllers.Usuarios
             try
             {
                 var usuarioActualId = Session["UsuarioId"] as int? ?? 0;
+                var usuario = _dal.ObtenerPorId(id);
+                if (usuario != null && !PuedeGestionarUsuario(usuario.rol))
+                    return Json(new { success = false, error = "No tienes permiso para cambiar el rol de este usuario." });
+
+                var rolDestino = _dal.ObtenerRoles().FirstOrDefault(r => r.id == rolId);
+                if (rolDestino != null && !PuedeAsignarRol(rolDestino.nombre))
+                    return Json(new { success = false, error = "No tienes permiso para asignar ese rol." });
+
                 var ok = _dal.CambiarRol(id, rolId, usuarioActualId);
-                return Json(new { success = ok, message = ok ? "Rol actualizado." : "No se pudo cambiar el rol." });
+                if (ok)
+                    return Json(new { success = true, message = "Rol actualizado." });
+                return Json(new { success = false, error = "No se pudo cambiar el rol." });
             }
             catch (Exception ex)
             {
@@ -144,16 +178,23 @@ namespace CRMSistema.Controllers.Usuarios
         }
 
         [HttpPost]
-        public ActionResult Anular(int id)
+        public ActionResult Anular(UsuarioIdRequest req)
         {
             try
             {
+                var id = req?.id ?? 0;
                 var usuarioActualId = Session["UsuarioId"] as int? ?? 0;
                 if (id == usuarioActualId)
                     return Json(new { success = false, error = "No puedes anular tu propio usuario." });
 
+                var usuario = _dal.ObtenerPorId(id);
+                if (usuario != null && !PuedeGestionarUsuario(usuario.rol))
+                    return Json(new { success = false, error = "No tienes permiso para anular este usuario." });
+
                 var ok = _dal.Desactivar(id, usuarioActualId);
-                return Json(new { success = ok, message = ok ? "Usuario anulado." : "No se pudo anular." });
+                if (ok)
+                    return Json(new { success = true, message = "Usuario anulado." });
+                return Json(new { success = false, error = "No se pudo anular." });
             }
             catch (Exception ex)
             {
@@ -162,13 +203,21 @@ namespace CRMSistema.Controllers.Usuarios
         }
 
         [HttpPost]
-        public ActionResult Activar(int id)
+        public ActionResult Activar(UsuarioIdRequest req)
         {
             try
             {
+                var id = req?.id ?? 0;
                 var usuarioActualId = Session["UsuarioId"] as int? ?? 0;
+
+                var usuario = _dal.ObtenerPorId(id);
+                if (usuario != null && !PuedeGestionarUsuario(usuario.rol))
+                    return Json(new { success = false, error = "No tienes permiso para activar este usuario." });
+
                 var ok = _dal.Activar(id, usuarioActualId);
-                return Json(new { success = ok, message = ok ? "Usuario activado." : "No se pudo activar." });
+                if (ok)
+                    return Json(new { success = true, message = "Usuario activado." });
+                return Json(new { success = false, error = "No se pudo activar." });
             }
             catch (Exception ex)
             {
@@ -176,5 +225,46 @@ namespace CRMSistema.Controllers.Usuarios
             }
         }
 
+        #region Helpers de permisos sobre usuarios
+
+        /// <summary>
+        /// Superadmin puede gestionar cualquier usuario.
+        /// Jefe puede gestionar usuarios con rol Vendedor, Supervisor, Coordinador o Jefe.
+        /// Ningún otro rol debería llegar aquí gracias al AuthorizeRole.
+        /// </summary>
+        private bool PuedeGestionarUsuario(string rolUsuario)
+        {
+            if (EsSuperadmin()) return true;
+            if (!EsJefe()) return false;
+
+            // Jefe no puede tocar cuentas Superadmin
+            return !AppRoles.EsSuperadmin(rolUsuario);
+        }
+
+        /// <summary>
+        /// Superadmin puede asignar cualquier rol.
+        /// Jefe puede asignar Vendedor, Supervisor, Coordinador o Jefe, pero no Superadmin.
+        /// </summary>
+        private bool PuedeAsignarRol(string rolAsignar)
+        {
+            if (EsSuperadmin()) return true;
+            if (!EsJefe()) return false;
+
+            return !AppRoles.EsSuperadmin(rolAsignar);
+        }
+
+        /// <summary>
+        /// Superadmin puede ver todos los roles en el dropdown.
+        /// Jefe solo ve roles que puede asignar.
+        /// </summary>
+        private bool PuedeVerRol(string nombreRol)
+        {
+            if (EsSuperadmin()) return true;
+            if (!EsJefe()) return false;
+
+            return !AppRoles.EsSuperadmin(nombreRol);
+        }
+
+        #endregion
     }
 }

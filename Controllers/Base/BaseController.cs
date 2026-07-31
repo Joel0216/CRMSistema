@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using CRMSistema.Models.Contratos;
+using CRMSistema.Models.Usuarios;
 using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.Base
@@ -107,6 +109,95 @@ namespace CRMSistema.Controllers.Base
         protected double ValDouble(dynamic r, params string[] keys)
         {
             return ToDouble(Val(r, keys), 0.0);
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // Helpers de rol y visibilidad de registros
+        // ─────────────────────────────────────────────────────────
+
+        protected string RolActual()
+        {
+            return Session?["Rol"]?.ToString() ?? "";
+        }
+
+        protected bool EsSupervisorOAdmin()
+        {
+            return AppRoles.EsSupervisorOAdmin(RolActual());
+        }
+
+        protected bool EsCoordinador()
+        {
+            return AppRoles.EsCoordinador(RolActual());
+        }
+
+        protected bool EsJefe()
+        {
+            return AppRoles.EsJefe(RolActual());
+        }
+
+        protected bool EsSuperadmin()
+        {
+            return AppRoles.EsSuperadmin(RolActual());
+        }
+
+        protected int? UsuarioIdActual()
+        {
+            return Session?["UsuarioId"] as int?;
+        }
+
+        protected string UsuarioNombreActual()
+        {
+            return Session?["UsuarioNombre"]?.ToString() ?? "";
+        }
+
+        /// <summary>
+        /// Determina si el usuario actual puede ver un prospecto.
+        /// Supervisores y superadmins ven todo; vendedores solo los asignados a ellos.
+        /// </summary>
+        protected bool PuedeVerProspecto(dynamic r)
+        {
+            if (EsSupervisorOAdmin())
+                return true;
+
+            var usuarioId = UsuarioIdActual();
+            if (!usuarioId.HasValue) return false;
+
+            // Preferir comparación por IDs
+            var vendedorId = ToInt(Val(r, "vendedorId"));
+            var propietarioId = ToInt(Val(r, "propietarioId"));
+            if ((vendedorId > 0 && vendedorId == usuarioId.Value)
+                || (propietarioId > 0 && propietarioId == usuarioId.Value))
+                return true;
+
+            // Fallback por nombre si no hay ID numérico
+            var vendedorNombre = ToString(Val(r, "vendedorNombre"), "");
+            var usuarioNombre = UsuarioNombreActual();
+            return !string.IsNullOrWhiteSpace(vendedorNombre)
+                && !string.IsNullOrWhiteSpace(usuarioNombre)
+                && vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determina si el usuario actual puede ver un contrato.
+        /// Supervisores y superadmins ven todo; vendedores solo los de su prospecto asignado.
+        /// </summary>
+        protected bool PuedeVerContrato(ContratoAutorizadoModel c)
+        {
+            if (EsSupervisorOAdmin())
+                return true;
+
+            var usuarioId = UsuarioIdActual();
+            if (!usuarioId.HasValue) return false;
+
+            if (c.VendedorId > 0 && c.VendedorId == usuarioId.Value)
+                return true;
+
+            // Fallback por nombre
+            var vendedorNombre = c.VendedorNombre ?? "";
+            var usuarioNombre = UsuarioNombreActual();
+            return !string.IsNullOrWhiteSpace(vendedorNombre)
+                && !string.IsNullOrWhiteSpace(usuarioNombre)
+                && vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

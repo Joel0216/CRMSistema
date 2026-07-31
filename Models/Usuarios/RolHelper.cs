@@ -19,6 +19,16 @@ namespace CRMSistema.Models.Usuarios
             return AppRoles.EsSuperadmin(RolActual());
         }
 
+        public static bool EsJefe()
+        {
+            return AppRoles.EsJefe(RolActual());
+        }
+
+        public static bool EsCoordinador()
+        {
+            return AppRoles.EsCoordinador(RolActual());
+        }
+
         public static bool EsSupervisor()
         {
             return AppRoles.EsSupervisorOAdmin(RolActual());

@@ -16,9 +16,15 @@ namespace CRMSistema.DAL.Prospectos
         public List<dynamic> ObtenerTodos()
         {
             var rows = AdoHelper.Query("SP_Prospectos_GetAll", CommandType.StoredProcedure);
-            // Normalizar claves para que los consumidores (Razor, JS, controllers) puedan usar
-            // nombres en camelCase sin depender del casing exacto de las columnas del SP.
             return rows.Select(NormalizarClaves).ToList();
+        }
+
+        public dynamic ObtenerPorId(int id)
+        {
+            var rows = AdoHelper.Query("SP_Prospectos_GetById", CommandType.StoredProcedure,
+                new SqlParameter("@id", id));
+            var row = rows.FirstOrDefault();
+            return row != null ? NormalizarClaves(row) : null;
         }
 
         private static dynamic NormalizarClaves(dynamic r)
@@ -45,6 +51,7 @@ namespace CRMSistema.DAL.Prospectos
             }
 
             Alias("id", "Prospecto_ID", "prospecto_id", "ProspectoId");
+            Alias("empresaId", "Empresa_ID", "EmpresaId");
             Alias("nombre", "Nombre_Prospecto", "Nombre_Empresa", "Nombre_Comercial_Empresa", "Nombre_Comercial", "Empresa");
             Alias("contacto", "Nombre_Prospecto", "Contacto");
             Alias("rfc", "RFC");
@@ -52,6 +59,7 @@ namespace CRMSistema.DAL.Prospectos
             Alias("email", "Correo");
             Alias("estatus", "Estatus");
             Alias("tipoPersona", "Tipo_Persona", "TipoPersona");
+            Alias("tipoInmueble", "Tipo_Inmueble", "TipoInmueble");
             Alias("tieneSucursales", "Tiene_Sucursales", "TieneSucursales");
             Alias("nombreComercial", "Nombre_Comercial", "NombreComercial");
             Alias("calle", "Calle");
@@ -74,12 +82,15 @@ namespace CRMSistema.DAL.Prospectos
             Alias("ruta", "Ruta");
             Alias("vendedorNombre", "VendedorNombre", "Nombre_Vendedor", "Vendedor");
             Alias("vendedorId", "Vendedor_ID", "VendedorId");
+            Alias("propietarioId", "Propietario_ID", "PropietarioId");
+            Alias("foto_comprobante", "Foto_Comprobante");
             Alias("foto_fachada", "Foto_Fachada");
             Alias("foto_acceso", "Foto_Acceso");
             Alias("foto_referencia", "Foto_Referencia");
             Alias("documento_catastral", "Documento_Catastral");
             Alias("documento_catastral_nombre", "Documento_Catastral_Nombre");
             Alias("motivoRechazo", "Motivo_Rechazo", "MotivoRechazo");
+            Alias("fechaCreacion", "Fecha_Creacion", "FechaCreacion");
 
             return result;
         }
@@ -101,7 +112,7 @@ namespace CRMSistema.DAL.Prospectos
             }
         }
 
-        public int Crear(ApiProspectoModel d, long empresaId, string contacto, string nombreTrim)
+        public int Crear(ApiProspectoModel d, long empresaId, string contacto, string nombreTrim, int? creadoPor = null, int? vendedorId = null)
         {
             using (var db = Db.GetConnection())
             using (var cmd = new SqlCommand("SP_Prospectos_Create", db))
@@ -138,7 +149,9 @@ namespace CRMSistema.DAL.Prospectos
                 cmd.Parameters.Add(new SqlParameter("@Foto_Acceso", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.foto_acceso) ?? DBNull.Value });
                 cmd.Parameters.Add(new SqlParameter("@Foto_Referencia", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.foto_referencia) ?? DBNull.Value });
                 cmd.Parameters.Add(new SqlParameter("@Documento_Catastral", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.documento_catastral) ?? DBNull.Value });
-                cmd.Parameters.AddWithValue("@Documento_Catastral_Nombre", d.documento_catastral_nombre);
+                cmd.Parameters.AddWithValue("@Documento_Catastral_Nombre", d.documento_catastral_nombre ?? "");
+                cmd.Parameters.AddWithValue("@Creado_Por", (object)creadoPor ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Vendedor_ID", (object)vendedorId ?? DBNull.Value);
 
                 db.Open();
                 var result = cmd.ExecuteScalar();
@@ -202,7 +215,7 @@ namespace CRMSistema.DAL.Prospectos
                 cmd.Parameters.Add(new SqlParameter("@Foto_Acceso", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.foto_acceso) ?? DBNull.Value });
                 cmd.Parameters.Add(new SqlParameter("@Foto_Referencia", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.foto_referencia) ?? DBNull.Value });
                 cmd.Parameters.Add(new SqlParameter("@Documento_Catastral", SqlDbType.VarBinary, -1) { Value = (object)ParseBase64(d.documento_catastral) ?? DBNull.Value });
-                cmd.Parameters.AddWithValue("@Documento_Catastral_Nombre", d.documento_catastral_nombre);
+                cmd.Parameters.AddWithValue("@Documento_Catastral_Nombre", d.documento_catastral_nombre ?? "");
                 db.Open();
                 cmd.ExecuteNonQuery();
             }
@@ -292,19 +305,10 @@ namespace CRMSistema.DAL.Prospectos
 
         public string AsignarVendedor(int id, int vendedorId)
         {
-            using (var db = Db.GetConnection())
-            using (var cmd = new SqlCommand("SP_Prospectos_AsignarVendedor", db))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@Prospecto_ID", id);
-                cmd.Parameters.AddWithValue("@Vendedor_ID", vendedorId);
-                var pNombre = new SqlParameter("@NombreVendedor", SqlDbType.VarChar, 150) { Direction = ParameterDirection.Output };
-                cmd.Parameters.Add(pNombre);
-
-                db.Open();
-                cmd.ExecuteNonQuery();
-                return pNombre.Value?.ToString() ?? "";
-            }
+            var row = AdoHelper.QuerySingle("SP_Prospectos_AsignarVendedor", CommandType.StoredProcedure,
+                new SqlParameter("@Prospecto_ID", id),
+                new SqlParameter("@Vendedor_ID", vendedorId));
+            return row?.NombreVendedor?.ToString() ?? "";
         }
 
         public List<dynamic> ObtenerSucursales(int id)

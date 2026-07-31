@@ -43,7 +43,9 @@ namespace CRMSistema.Controllers.Dashboard
                     return Math.Round(((act - ant) / ant) * 1000) / 10.0;
                 }
 
-                dynamic kpisData = _dal.ObtenerKPIs(inicioMes, finMes, inicioMesAnt, finMesAnt);
+                int? filtroVendedorId = EsSupervisorOAdmin() ? (int?)null : UsuarioIdActual();
+
+                dynamic kpisData = _dal.ObtenerKPIs(inicioMes, finMes, inicioMesAnt, finMesAnt, filtroVendedorId);
                 bool kpiVacio = kpisData == null ||
                     (ValDouble(kpisData, "ingMes") == 0 && ValInt(kpisData, "prosMes") == 0 &&
                      ValInt(kpisData, "cotServ") == 0 && ValInt(kpisData, "cotBorr") == 0 &&
@@ -71,8 +73,8 @@ namespace CRMSistema.Controllers.Dashboard
                     mesesMap[key] = new { mes = key, prospectos = 0, ingresos = 0.0, tratos = 0 };
                 }
 
-                var tendP = _dal.ObtenerTendenciaProspectos();
-                var tendT = _dal.ObtenerTendenciaVentas();
+                var tendP = _dal.ObtenerTendenciaProspectos(filtroVendedorId);
+                var tendT = _dal.ObtenerTendenciaVentas(filtroVendedorId);
 
                 foreach (var r in tendP)
                 {
@@ -113,18 +115,18 @@ namespace CRMSistema.Controllers.Dashboard
                     tratos = x.tratos
                 }).ToList();
 
-                model.Origenes = _dal.ObtenerOrigenes()
+                model.Origenes = _dal.ObtenerOrigenes(filtroVendedorId)
                     .Select(r => new OrigenDto { nombre = ValString(r, "nombre"), cantidad = ValInt(r, "cantidad") }).ToList();
 
-                model.TiposInmueble = _dal.ObtenerTiposInmueble()
+                model.TiposInmueble = _dal.ObtenerTiposInmueble(filtroVendedorId)
                     .Select(r => new TipoInmuebleDto { tipo = ValString(r, "tipo"), cantidad = ValInt(r, "cantidad") }).ToList();
 
                 // Distribución por estatus: solo del mes actual para que se “limpie” cada mes desde cero
-                var distEstatus = _dal.ObtenerEstatusDistribucionPorMes(inicioMes, finMes)
+                var distEstatus = _dal.ObtenerEstatusDistribucionPorMes(inicioMes, finMes, filtroVendedorId)
                     .Select(r => new EstatusDistribucionDto { estatus = ValString(r, "estatus"), cantidad = ValInt(r, "cantidad") }).ToList();
                 model.EstatusDistribucion = CompletarEstatusDistribucion(distEstatus);
 
-                var pipeline = _dal.ObtenerPipeline()
+                var pipeline = _dal.ObtenerPipeline(filtroVendedorId)
                     .Select(r => new PipelineDto
                     {
                         empresa = ValString(r, "empresa"),
@@ -140,10 +142,10 @@ namespace CRMSistema.Controllers.Dashboard
                         fecha = Val(r, "fecha")
                     }).ToList();
 
-                pipeline = FiltrarPorRol(pipeline);
-                model.Pipeline = pipeline;
+                // Filtrado de respaldo por rol (el SP ya filtra, pero se mantiene por seguridad).
+                model.Pipeline = FiltrarPorRol(pipeline);
 
-                model.CotizacionesDetalle = _dal.ObtenerCotizacionesDetalle()
+                var cotizacionesDetalle = _dal.ObtenerCotizacionesDetalle(filtroVendedorId)
                     .Select(r => new CotizacionDetalleDto
                     {
                         tipo_residuo = ValString(r, "tipo_residuo"),
@@ -152,8 +154,11 @@ namespace CRMSistema.Controllers.Dashboard
                         volumen_estimado = ValDecimal(r, "volumen_estimado"),
                         precio_unitario = ValDecimal(r, "precio_unitario"),
                         trato = ValString(r, "trato"),
-                        empresa = ValString(r, "empresa")
+                        empresa = ValString(r, "empresa"),
+                        vendedorNombre = ValString(r, "vendedorNombre")
                     }).ToList();
+
+                model.CotizacionesDetalle = FiltrarCotizacionesDetallePorRol(cotizacionesDetalle);
             }
             catch (Exception ex)
             {
@@ -170,12 +175,22 @@ namespace CRMSistema.Controllers.Dashboard
             return View(model);
         }
 
-        private List<EstatusDistribucionDto> CalcularEstatusDistribucionDesdeProspectos()
+        private List<EstatusDistribucionDto> CalcularEstatusDistribucionDesdeProspectos(int? vendedorId = null)
         {
             try
             {
                 var pDal = new CRMSistema.DAL.Prospectos.ApiProspectosDAL();
                 var prospectos = pDal.ObtenerTodos();
+
+                // Si se indica vendedor, limitar a prospectos asignados a él.
+                if (vendedorId.HasValue)
+                {
+                    prospectos = prospectos
+                        .Where(p => ToInt(Val(p, "vendedorId")) == vendedorId.Value
+                            || ToInt(Val(p, "propietarioId")) == vendedorId.Value)
+                        .ToList();
+                }
+
                 var datos = prospectos
                     .GroupBy(p => (p.estatus as string) ?? "Sin estatus")
                     .Select(g => new EstatusDistribucionDto { estatus = g.Key, cantidad = g.Count() })
@@ -214,15 +229,26 @@ namespace CRMSistema.Controllers.Dashboard
 
         private List<PipelineDto> FiltrarPorRol(List<PipelineDto> pipeline)
         {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
+            if (EsSupervisorOAdmin())
                 return pipeline;
 
             // Vendedor: solo registros asignados a él
-            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
+            var usuarioNombre = UsuarioNombreActual();
             return pipeline
                 .Where(p => !string.IsNullOrWhiteSpace(p.vendedorNombre)
                     && p.vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        private List<CotizacionDetalleDto> FiltrarCotizacionesDetallePorRol(List<CotizacionDetalleDto> cotizaciones)
+        {
+            if (EsSupervisorOAdmin())
+                return cotizaciones;
+
+            var usuarioNombre = UsuarioNombreActual();
+            return cotizaciones
+                .Where(c => !string.IsNullOrWhiteSpace(c.vendedorNombre)
+                    && c.vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -238,7 +264,9 @@ namespace CRMSistema.Controllers.Dashboard
                 }
                 fin = inicio.AddMonths(1).AddSeconds(-1);
 
-                var datos = _dal.ObtenerEstatusDistribucionPorMes(inicio, fin)
+                int? filtroVendedorId = EsSupervisorOAdmin() ? (int?)null : UsuarioIdActual();
+
+                var datos = _dal.ObtenerEstatusDistribucionPorMes(inicio, fin, filtroVendedorId)
                     .Select(r => new EstatusDistribucionDto { estatus = ValString(r, "estatus"), cantidad = ValInt(r, "cantidad") }).ToList();
 
                 // Solo si se solicita el mes actual y no hay datos historicos,
@@ -246,7 +274,7 @@ namespace CRMSistema.Controllers.Dashboard
                 var ahora = DateTime.Now;
                 bool esMesActual = inicio.Year == ahora.Year && inicio.Month == ahora.Month;
                 if (datos.Count == 0 && esMesActual)
-                    datos = CalcularEstatusDistribucionDesdeProspectos();
+                    datos = CalcularEstatusDistribucionDesdeProspectos(filtroVendedorId);
 
                 datos = CompletarEstatusDistribucion(datos);
 

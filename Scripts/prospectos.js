@@ -182,6 +182,7 @@
                 $('#btnAgregarContacto, #btnAgregarSucursal').hide();
                 $('[id^=fotoSlot], #docCatastralSlot').css('cursor', 'default').removeAttr('onclick');
                 $('#btnAccionesDetalle').css('display', 'flex');
+                $('#seccionVendedorDetalle').show();
                 $('#seccionEstadoDetalle').show();
                 $('#seccionCotizacionDetalle').show();
                 if ($('#motivoRechazoDetalle').length && $('#hdnEstatusProspecto').val().toLowerCase() === 'rechazado') {

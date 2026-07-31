@@ -43,6 +43,7 @@
             $('.modal-title').text('Detalle del Prospecto');
             
             // Mostrar secciones de estatus solo en detalle
+            $('#seccionVendedorDetalle').show();
             $('#seccionEstadoDetalle').show();
             $('#seccionCotizacionDetalle').show();
             if ('@(Model.Estatus?.ToLower())' === 'rechazado') {
@@ -51,11 +52,20 @@
 
             // Mostrar botones de acción y ocultar botón Guardar
             document.getElementById('btnAccionesDetalle').style.display = 'flex';
-            $('#btnAccionesDetalle').html(`
-                <button type="button" class="btn-custom" style="background: #C0392B; color: white; padding: 9px 24px;" data-accion="rechazar" data-id="@Model.Id">Rechazar</button>
-                <button type="button" class="btn-custom" style="background: #7B1FA2; color: white; padding: 9px 24px;" data-accion="baja" data-id="@Model.Id">Dar de baja</button>
-                <button type="button" class="btn-custom" style="background: #E67E22; color: white; padding: 9px 24px;" data-accion="asignar" data-id="@Model.Id">Asignar Vendedor</button>
-            `);
+            @if (CRMSistema.Models.Usuarios.AppRoles.EsSupervisorOAdmin(Session["Rol"]?.ToString() ?? ""))
+            {
+                <text>
+                $('#btnAccionesDetalle').html(`
+                    <button type="button" class="btn-custom" style="background: #C0392B; color: white; padding: 9px 24px;" data-accion="rechazar" data-id="@Model.Id">Rechazar</button>
+                    <button type="button" class="btn-custom" style="background: #7B1FA2; color: white; padding: 9px 24px;" data-accion="baja" data-id="@Model.Id">Dar de baja</button>
+                    <button type="button" class="btn-custom" style="background: #E67E22; color: white; padding: 9px 24px;" data-accion="asignar" data-id="@Model.Id">Asignar Vendedor</button>
+                `);
+                </text>
+            }
+            else
+            {
+                <text>$('#btnAccionesDetalle').hide();</text>
+            }
             $('#btnProspectoGuardar').remove();
             
             // Desactivar todos los inputs

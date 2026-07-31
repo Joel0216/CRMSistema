@@ -58,13 +58,53 @@ namespace CRMSistema.DAL.Usuarios
         public List<RolDto> ObtenerRoles()
         {
             var rows = AdoHelper.Query("SP_Roles_GetActivos", CommandType.StoredProcedure);
-            return rows.Select(r => new RolDto
+            return rows.Select(r =>
             {
-                id = r.id != null ? (int)r.id : 0,
-                nombre = r.nombre?.ToString() ?? "",
-                descripcion = r.descripcion?.ToString() ?? "",
-                activo = r.activo != null && (r.activo.ToString() == "1" || r.activo.ToString().ToLower() == "true")
+                var dict = r as IDictionary<string, object>;
+                return new RolDto
+                {
+                    id = ValInt(dict, "RolId", "id"),
+                    nombre = ValString(dict, "Nombre", "nombre"),
+                    descripcion = ValString(dict, "Descripcion", "descripcion"),
+                    activo = ValBool(dict, "Activo", "activo")
+                };
             }).ToList();
+        }
+
+        private static string ValString(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                var k = dict?.Keys.FirstOrDefault(x => x.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if (k != null && dict[k] != null)
+                    return dict[k].ToString();
+            }
+            return "";
+        }
+
+        private static int ValInt(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                var k = dict?.Keys.FirstOrDefault(x => x.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if (k != null && dict[k] != null)
+                    return Convert.ToInt32(dict[k]);
+            }
+            return 0;
+        }
+
+        private static bool ValBool(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                var k = dict?.Keys.FirstOrDefault(x => x.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if (k != null && dict[k] != null)
+                {
+                    var valor = dict[k].ToString().ToLowerInvariant();
+                    return valor == "1" || valor == "true";
+                }
+            }
+            return true;
         }
 
         public bool ExisteUsuario(string usuario, int? excluirId = null)
@@ -80,10 +120,10 @@ namespace CRMSistema.DAL.Usuarios
         #endregion
 
         #region Escritura
-
+         
         public int Crear(UsuarioCrudRequest req, int registradoPor)
         {
-            return AdoHelper.Execute("SP_Usuarios_Insert", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_Insert", CommandType.StoredProcedure,
                 new SqlParameter("@nombre", req.nombre ?? ""),
                 new SqlParameter("@apellidos", req.apellidos ?? ""),
                 new SqlParameter("@correo", req.correo ?? ""),
@@ -91,25 +131,31 @@ namespace CRMSistema.DAL.Usuarios
                 new SqlParameter("@password", SqlDbType.VarChar, 100) { Value = (object)req.password ?? DBNull.Value },
                 new SqlParameter("@rolId", req.rolId),
                 new SqlParameter("@registradoPor", registradoPor));
+
+            return row?.nuevoId != null ? Convert.ToInt32(row.nuevoId) : 0;
         }
 
         public bool Editar(UsuarioCrudRequest req, int actualizadoPor)
         {
-            return AdoHelper.Execute("SP_Usuarios_Update", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_Update", CommandType.StoredProcedure,
                 new SqlParameter("@id", req.id),
                 new SqlParameter("@nombre", req.nombre ?? ""),
                 new SqlParameter("@apellidos", req.apellidos ?? ""),
                 new SqlParameter("@correo", req.correo ?? ""),
                 new SqlParameter("@usuario", req.usuario ?? ""),
                 new SqlParameter("@rolId", req.rolId),
-                new SqlParameter("@actualizadoPor", actualizadoPor)) > 0;
+                new SqlParameter("@actualizadoPor", actualizadoPor));
+
+            return row?.filas != null && Convert.ToInt32(row.filas) > 0;
         }
 
         public bool CambiarPassword(int usuarioId, string nuevaPassword)
         {
-            return AdoHelper.Execute("SP_Usuarios_UpdatePassword", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_UpdatePassword", CommandType.StoredProcedure,
                 new SqlParameter("@usuarioId", usuarioId),
-                new SqlParameter("@password", SqlDbType.VarChar, 100) { Value = (object)nuevaPassword ?? DBNull.Value }) > 0;
+                new SqlParameter("@password", SqlDbType.VarChar, 100) { Value = (object)nuevaPassword ?? DBNull.Value });
+
+            return row?.filas != null && Convert.ToInt32(row.filas) > 0;
         }
 
         public bool CambiarPasswordPropio(int usuarioId, string passwordActual, string passwordNuevo)
@@ -122,25 +168,31 @@ namespace CRMSistema.DAL.Usuarios
 
         public bool CambiarRol(int usuarioId, int rolId, int actualizadoPor)
         {
-            return AdoHelper.Execute("SP_Usuarios_UpdateRol", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_UpdateRol", CommandType.StoredProcedure,
                 new SqlParameter("@usuarioId", usuarioId),
                 new SqlParameter("@rolId", rolId),
-                new SqlParameter("@actualizadoPor", actualizadoPor)) > 0;
+                new SqlParameter("@actualizadoPor", actualizadoPor));
+
+            return row?.filas != null && Convert.ToInt32(row.filas) > 0;
         }
 
         public bool Desactivar(int usuarioId, int desactivadoPor)
         {
             // Soft delete: el usuario ya no puede iniciar sesión, pero sus registros históricos se conservan.
-            return AdoHelper.Execute("SP_Usuarios_Disable", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_Disable", CommandType.StoredProcedure,
                 new SqlParameter("@usuarioId", usuarioId),
-                new SqlParameter("@desactivadoPor", desactivadoPor)) > 0;
+                new SqlParameter("@desactivadoPor", desactivadoPor));
+
+            return row?.filas != null && Convert.ToInt32(row.filas) > 0;
         }
 
         public bool Activar(int usuarioId, int activadoPor)
         {
-            return AdoHelper.Execute("SP_Usuarios_Enable", CommandType.StoredProcedure,
+            var row = AdoHelper.QuerySingle("SP_Usuarios_Enable", CommandType.StoredProcedure,
                 new SqlParameter("@usuarioId", usuarioId),
-                new SqlParameter("@activadoPor", activadoPor)) > 0;
+                new SqlParameter("@activadoPor", activadoPor));
+
+            return row?.filas != null && Convert.ToInt32(row.filas) > 0;
         }
 
         #endregion
@@ -153,15 +205,58 @@ namespace CRMSistema.DAL.Usuarios
 
             return new UsuarioDto
             {
-                id = dict.ContainsKey("id") && u.id != null ? (int)u.id : 0,
-                nombre = dict.ContainsKey("nombre") && u.nombre != null ? u.nombre.ToString() : "",
-                apellido = dict.ContainsKey("apellido") && u.apellido != null ? u.apellido.ToString() : "",
-                correo = dict.ContainsKey("correo") && u.correo != null ? u.correo.ToString() : "",
-                usuario = dict.ContainsKey("usuario") && u.usuario != null ? u.usuario.ToString() : "",
-                rol = dict.ContainsKey("rol") && u.rol != null ? u.rol.ToString() : "",
-                rolId = dict.ContainsKey("rolId") && u.rolId != null ? (int?)Convert.ToInt32(u.rolId) : null,
-                activo = !dict.ContainsKey("activo") || (u.activo != null && (u.activo.ToString() == "1" || u.activo.ToString().ToLower() == "true"))
+                id = GetInt(dict, "UsuarioId", "id"),
+                nombre = GetString(dict, "Nombre", "nombre"),
+                apellido = GetString(dict, "Apellidos", "apellido", "apellidos"),
+                correo = GetString(dict, "Email", "correo", "email"),
+                usuario = GetString(dict, "Usuario", "usuario", "userName"),
+                rol = GetString(dict, "RolNombre", "rol", "Rol"),
+                rolId = GetNullableInt(dict, "RolId", "rolId"),
+                activo = GetBool(dict, "Activo", "activo")
             };
+        }
+
+        private static string GetString(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (dict.ContainsKey(key) && dict[key] != null)
+                    return dict[key].ToString();
+            }
+            return "";
+        }
+
+        private static int GetInt(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (dict.ContainsKey(key) && dict[key] != null)
+                    return Convert.ToInt32(dict[key]);
+            }
+            return 0;
+        }
+
+        private static int? GetNullableInt(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (dict.ContainsKey(key) && dict[key] != null)
+                    return (int?)Convert.ToInt32(dict[key]);
+            }
+            return null;
+        }
+
+        private static bool GetBool(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (dict.ContainsKey(key) && dict[key] != null)
+                {
+                    var valor = dict[key].ToString().ToLowerInvariant();
+                    return valor == "1" || valor == "true";
+                }
+            }
+            return true;
         }
 
         #endregion

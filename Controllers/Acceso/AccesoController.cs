@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using CRMSistema.DAL.Usuarios;
+using CRMSistema.Models.Permisos;
 using CRMSistema.Models.Usuarios;
 using CRMSistema.Models.ViewModels;
 
@@ -55,12 +57,30 @@ namespace CRMSistema.Controllers.Acceso
             // Modo desarrollo sin BD: credenciales de prueba
             if (_modoDevSinBd)
             {
-                if ((model.Usuario.Equals("superadmin", StringComparison.OrdinalIgnoreCase) && model.Password == "admin123") ||
-                    (model.Usuario.Equals("vendedor", StringComparison.OrdinalIgnoreCase) && model.Password == "venta123"))
+                var credencialesDev = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
+                    { "superadmin", "admin123" },
+                    { "vendedor", "venta123" },
+                    { "supervisor", "super123" },
+                    { "coordinador", "coord123" },
+                    { "jefe", "jefe123" }
+                };
+
+                if (credencialesDev.TryGetValue(model.Usuario, out string passEsperada) && model.Password == passEsperada)
+                {
+                    string rol;
+                    var usuarioLower = model.Usuario.ToLowerInvariant();
+
+                    if (usuarioLower.Contains("superadmin")) rol = AppRoles.Superadmin;
+                    else if (usuarioLower.Contains("jefe")) rol = AppRoles.Jefe;
+                    else if (usuarioLower.Contains("coordinador")) rol = AppRoles.Coordinador;
+                    else if (usuarioLower.Contains("supervisor")) rol = AppRoles.Supervisor;
+                    else rol = AppRoles.Vendedor;
+
                     FormsAuthentication.SetAuthCookie(model.Usuario, model.Recordarme);
                     Session["UsuarioNombre"] = model.Usuario;
-                    Session["Rol"] = model.Usuario.ToLowerInvariant().Contains("superadmin") ? AppRoles.Superadmin : AppRoles.Vendedor;
+                    Session["Rol"] = rol;
+                    PermisoService.CargarPermisosEnSesion(null, true);
                     return RedirectToAction("Index", "Dashboard");
                 }
 
@@ -74,10 +94,12 @@ namespace CRMSistema.Controllers.Acceso
                 var usuario = _usuariosDal.ValidarUsuario(model.Usuario, model.Password);
                 if (usuario != null)
                 {
-                    FormsAuthentication.SetAuthCookie(usuario.nombre, model.Recordarme);
+                    var nombreParaCookie = !string.IsNullOrWhiteSpace(usuario.nombre) ? usuario.nombre : usuario.usuario;
+                    FormsAuthentication.SetAuthCookie(nombreParaCookie, model.Recordarme);
                     Session["UsuarioId"] = usuario.id;
-                    Session["UsuarioNombre"] = usuario.nombre;
+                    Session["UsuarioNombre"] = nombreParaCookie;
                     Session["Rol"] = usuario.rol;
+                    PermisoService.CargarPermisosEnSesion(usuario.rolId, _modoDevSinBd);
                     return RedirectToAction("Index", "Dashboard");
                 }
             }

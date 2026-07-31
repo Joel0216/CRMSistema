@@ -31,6 +31,8 @@
         font-weight: 600;
     }
     .rol-superadmin { background: #C62828; }
+    .rol-jefe { background: #6A1B9A; }
+    .rol-coordinador { background: #E65100; }
     .rol-supervisor { background: #1565C0; }
     .rol-vendedor { background: #2E7D32; }
 
@@ -192,7 +194,11 @@
             let html = '';
             usuarios.forEach(u => {
                 const rolSlug = (u.rol || '').toLowerCase().replace(' ', '');
-                const rolClass = rolSlug === 'superadmin' ? 'rol-superadmin' : rolSlug === 'supervisor' ? 'rol-supervisor' : 'rol-vendedor';
+                const rolClass =
+                    rolSlug === 'superadmin' ? 'rol-superadmin' :
+                    rolSlug === 'jefe' ? 'rol-jefe' :
+                    rolSlug === 'coordinador' ? 'rol-coordinador' :
+                    rolSlug === 'supervisor' ? 'rol-supervisor' : 'rol-vendedor';
                 const estatus = u.activo
                     ? '<span class="estatus-badge" style="background:#E8F5E9;color:#2E7D32;">Activo</span>'
                     : '<span class="estatus-badge" style="background:#EEEEEE;color:#616161;">Inactivo</span>';

@@ -8,7 +8,12 @@ namespace CRMSistema.Filters
     {
         public void OnException(ExceptionContext filterContext)
         {
-            if (!filterContext.HttpContext.Request.IsAjaxRequest())
+            var request = filterContext.HttpContext.Request;
+            var isAjax = request.IsAjaxRequest()
+                || (request.Headers["Accept"] ?? "").Contains("application/json")
+                || string.Equals(request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase);
+
+            if (!isAjax)
                 return;
 
             var ex = filterContext.Exception ?? new Exception("Error desconocido");
@@ -19,6 +24,7 @@ namespace CRMSistema.Filters
             };
             filterContext.ExceptionHandled = true;
             filterContext.HttpContext.Response.StatusCode = 500;
+            filterContext.HttpContext.Response.TrySkipIisCustomErrors = true;
         }
     }
 }

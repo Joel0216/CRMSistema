@@ -9,11 +9,24 @@ using CRMSistema.Models.Usuarios;
 namespace CRMSistema.Controllers.RutasCotizadas
 {
     /// <summary>
-    /// Módulo de Rutas Cotizadas (maqueta operativa).
+    /// Módulo de Rutas Cotizadas (configurador / planificador operativo).
+    ///
+    /// NOTA IMPORTANTE (Operaciones):
+    /// Este controller es una maqueta funcional. Los catálogos de rutas, unidades y
+    /// operadores se generan en memoria con datos de demostración.
+    /// El área de Operaciones es la responsable de mantener los catálogos reales
+    /// (tablas: crm_rutas, crm_unidades, crm_operadores) y exponerlos mediante stored procedures.
+    ///
+    /// Para conectar a producción:
+    /// 1. Crear las tablas de catálogos en CRM_Base.
+    /// 2. Reemplazar los métodos GenerarDatosDemo(), GenerarDisponibilidadRutas()
+    ///    y los selects hardcodeados en la vista por llamadas a DAL reales.
+    /// 3. Implementar SP_Permisos_Save / SP_Rutas_Asignar para persistir la asignación.
+    ///
     /// Centraliza cotizaciones aprobadas que requieren asignación de ruta, unidad y operador.
-    /// Accesible para Superadmin y Supervisor.
+    /// Accesible para Superadmin, Jefe, Coordinador y Supervisor.
     /// </summary>
-    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class RutasCotizadasController : BaseController
     {
         public ActionResult Index()
@@ -28,6 +41,8 @@ namespace CRMSistema.Controllers.RutasCotizadas
         {
             try
             {
+                // TODO-Operaciones: reemplazar GenerarDatosDemo() por llamada a SP que traiga
+                // cotizaciones aprobadas pendientes de asignación de ruta.
                 var data = GenerarDatosDemo();
                 return Json(new { success = true, data }, JsonRequestBehavior.AllowGet);
             }
@@ -42,6 +57,13 @@ namespace CRMSistema.Controllers.RutasCotizadas
         {
             try
             {
+                // TODO-Operaciones: reemplazar datos de demostración por consultas reales a BD.
+                // Se requieren:
+                //   - datos de la cotización aprobada,
+                //   - rutas activas con % de ocupación,
+                //   - unidades disponibles por tipo de residuo,
+                //   - operadores activos y disponibles,
+                //   - historial de asignaciones previas.
                 var data = GenerarDatosDemo();
                 var item = data.FirstOrDefault(x => x.id == id);
                 if (item == null)
@@ -73,7 +95,10 @@ namespace CRMSistema.Controllers.RutasCotizadas
         {
             try
             {
-                // TODO: persistir asignación en tabla crm_rutas_cotizadas cuando exista.
+                // TODO-Operaciones: persistir asignación en tabla crm_rutas_cotizadas.
+                // Campos mínimos sugeridos: cotizacionId, rutaId, unidadId, operadorId,
+                // diasAsignados, observaciones, asignadoPor, fechaAsignacion.
+                // Validar que la ruta/unidad/operador existan antes de guardar.
                 return Json(new { success = true, message = "Ruta asignada correctamente." });
             }
             catch (Exception ex)
@@ -87,7 +112,8 @@ namespace CRMSistema.Controllers.RutasCotizadas
         {
             try
             {
-                // TODO: cambiar estatus a "Requiere ajuste comercial" y notificar a ventas.
+                // TODO-Ventas/Operaciones: cambiar estatus de la cotización a "Requiere ajuste comercial"
+                // y notificar al vendedor/cotizador para que revise fechas, capacidad o tarifa.
                 return Json(new { success = true, message = "Solicitud rechazada. Se notificará a ventas." });
             }
             catch (Exception ex)
@@ -96,7 +122,10 @@ namespace CRMSistema.Controllers.RutasCotizadas
             }
         }
 
-        #region Datos de demostración
+        #region Datos de demostración (quitar cuando haya tablas reales)
+
+        // NOTA: Los métodos a continuación son solo para la maqueta/demo.
+        // Deben eliminarse o delegarse a DAL cuando Operaciones entregue los catálogos reales.
 
         private List<dynamic> GenerarDatosDemo()
         {

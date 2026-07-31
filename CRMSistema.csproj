@@ -116,6 +116,7 @@
     <Compile Include="Controllers\ValidacionCotizaciones\ValidacionCotizacionesController.cs" />
     <Compile Include="Controllers\Usuarios\UsuariosController.cs" />
     <Compile Include="Controllers\Cliente\ClienteController.cs" />
+    <Compile Include="Controllers\Indicadores\IndicadoresController.cs" />
     <Compile Include="DAL\Db.cs" />
     <Compile Include="DAL\AdoHelper.cs" />
     <Compile Include="DAL\Prospectos\ApiProspectosDAL.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="DAL\Usuarios\UsuariosDAL.cs" />
     <Compile Include="DAL\Contratos\ContratosDAL.cs" />
     <Compile Include="DAL\Manifiestos\ManifiestosDAL.cs" />
+    <Compile Include="DAL\Permisos\PermisosDAL.cs" />
     <Compile Include="Models\Common\ApiResponse.cs" />
     <Compile Include="Models\ViewModels\LoginViewModel.cs" />
     <Compile Include="Models\ViewModels\DashboardViewModel.cs" />
@@ -140,11 +142,15 @@
     <Compile Include="Models\Cotizador\TratoModel.cs" />
     <Compile Include="Models\Cotizador\UnidadRmeDto.cs" />
     <Compile Include="Models\Dashboard\DashboardKpiDto.cs" />
+    <Compile Include="Models\Permisos\MenuPermisoModel.cs" />
+    <Compile Include="Models\Permisos\SubMenuPermisoModel.cs" />
+    <Compile Include="Models\Permisos\PermisoService.cs" />
     <Compile Include="Models\Usuarios\AppRoles.cs" />
     <Compile Include="Models\Usuarios\RolDto.cs" />
     <Compile Include="Models\Usuarios\RolHelper.cs" />
     <Compile Include="Models\Usuarios\UsuarioCrudRequest.cs" />
     <Compile Include="Models\Usuarios\UsuarioDto.cs" />
+    <Compile Include="Models\Usuarios\UsuarioIdRequest.cs" />
     <Compile Include="Models\Contratos\ContratoAutorizadoModel.cs" />
     <Compile Include="Models\Contratos\ContratoDto.cs" />
     <Compile Include="Models\Contratos\ContratoRechazoRequest.cs" />
@@ -163,13 +169,6 @@
     <Content Include="Content\Assets\*" />
     <Content Include="Scripts\*.js" />
     <Content Include="Global.asax" />
-    <Content Include="sql\validacion_cotizaciones.sql" />
-    <Content Include="sql\prospectos_direccion_update.sql" />
-    <Content Include="sql\limpiar_pruebas_crm.sql" />
-    <Content Include="sql\limpiar_todo_completo.sql" />
-    <Content Include="sql\seed_catalogos_crm.sql" />
-    <Content Include="sql\usuarios_roles.sql" />
-    <Content Include="sql\seed_usuario_superadmin.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -211,6 +210,7 @@
     <Content Include="Views\Cliente\Contratos.cshtml" />
     <Content Include="Views\Cliente\Manifiestos.cshtml" />
     <Content Include="Views\Usuarios\Index.cshtml" />
+    <Content Include="Views\Indicadores\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

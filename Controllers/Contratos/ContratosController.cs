@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.Contratos
 {
-    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ContratosController : BaseController
     {
         private readonly ContratosDAL _dal = new ContratosDAL();
@@ -37,7 +37,7 @@ namespace CRMSistema.Controllers.Contratos
             {
                 // Mostramos todos los contratos; la vista filtra por estatus.
                 var data = _dal.ObtenerContratosAutorizados()
-                    .Where(c => PuedeVerContrato(c))
+                    .Where(c => base.PuedeVerContrato(c))
                     .Select(c => new
                     {
                         c.Contrato_ID,
@@ -80,16 +80,7 @@ namespace CRMSistema.Controllers.Contratos
             }
         }
 
-        private bool PuedeVerContrato(ContratoAutorizadoModel c)
-        {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
-                return true;
-
-            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
-            return !string.IsNullOrWhiteSpace(c.VendedorNombre)
-                && c.VendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
-        }
+        // PuedeVerContrato ahora vive en BaseController.
 
         [HttpGet]
         public ActionResult GetDetalle(int id)
@@ -100,7 +91,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." }, JsonRequestBehavior.AllowGet);
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para ver este contrato." }, JsonRequestBehavior.AllowGet);
 
                 var prospectos = _prospectosDal.ObtenerTodos();
@@ -206,7 +197,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." });
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para modificar este contrato." });
 
                 _dal.ActualizarEstatus(id, "Enviado");
@@ -227,7 +218,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." });
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para modificar este contrato." });
 
                 _dal.ActualizarEstatus(id, "Firmado");
@@ -249,7 +240,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." });
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para modificar este contrato." });
 
                 if ((contrato.Estatus ?? "").Equals("Por Autorizar", StringComparison.OrdinalIgnoreCase))
@@ -276,7 +267,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." });
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para modificar este contrato." });
 
                 if (servicios.Count == 0)
@@ -390,7 +381,7 @@ namespace CRMSistema.Controllers.Contratos
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." });
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para modificar este contrato." });
 
                 string domFiscal = FormatearDireccion(

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web.Mvc;
+using CRMSistema.Controllers.Base;
 using CRMSistema.DAL.Cotizador;
 using CRMSistema.Filters;
 using CRMSistema.Models.Cotizador;
@@ -13,8 +14,8 @@ using Newtonsoft.Json.Linq;
 
 namespace CRMSistema.Controllers.Cotizador
 {
-    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
-    public class CotizadorController : Controller
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
+    public class CotizadorController : BaseController
     {
         private readonly CotizacionesDAL _dal = new CotizacionesDAL();
         private readonly TratosDAL _tratosDal = new TratosDAL();
@@ -200,30 +201,7 @@ namespace CRMSistema.Controllers.Cotizador
             catch (Exception ex) { return Content(Newtonsoft.Json.JsonConvert.SerializeObject(new { error = ex.Message }), "application/json"); }
         }
 
-        private bool PuedeVerProspecto(dynamic r)
-        {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
-                return true;
-
-            // Vendedor: solo prospectos asignados a él
-            var usuarioId = Session["UsuarioId"] as int?;
-            int? vendedorId = null;
-            try { vendedorId = r.vendedorId as int?; } catch { }
-            if (!vendedorId.HasValue)
-            {
-                try { vendedorId = Convert.ToInt32(r.vendedorId); } catch { }
-            }
-
-            if (usuarioId.HasValue && vendedorId.HasValue && vendedorId.Value == usuarioId.Value)
-                return true;
-
-            // Fallback por nombre si no hay ID
-            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
-            var vendedorNombre = r.vendedorNombre as string ?? "";
-            return !string.IsNullOrWhiteSpace(vendedorNombre)
-                && vendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
-        }
+        // PuedeVerProspecto ahora vive en BaseController.
 
         [HttpGet]
         public ActionResult GetSucursales(int id)

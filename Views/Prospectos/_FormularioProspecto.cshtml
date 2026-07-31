@@ -78,6 +78,13 @@
                             <label class="form-label" for="Email">Correo electr&oacute;nico *</label>
                             @Html.TextBoxFor(m => m.Email, new { @class = "form-input", placeholder = "correo@ejemplo.com" })
                         </div>
+                        @if (CRMSistema.Models.Usuarios.AppRoles.EsSupervisorOAdmin(ViewBag.RolActual as string ?? ""))
+                        {
+                            <div class="form-group">
+                                <label class="form-label" for="VendedorId">Asignar vendedor</label>
+                                @Html.DropDownListFor(m => m.VendedorId, new SelectList((List<CRMSistema.Models.Usuarios.UsuarioDto>)ViewBag.Vendedores, "id", "nombre"), "-- Seleccionar --", new { @class = "form-input" })
+                            </div>
+                        }
                     </div>
 
                     <div class="section-title-sm" style="margin-top: 32px; display: flex; align-items: center; cursor: pointer;">
@@ -94,6 +101,14 @@
                             <button type="button" id="btnAgregarContacto" class="btn-custom btn-primary-custom" style="padding: 6px 14px; font-size: 12px; border-radius: 6px;">+ Agregar Contacto</button>
                         </div>
                     }
+
+                    <!-- VENDEDOR ASIGNADO -->
+                    <div id="seccionVendedorDetalle" style="display: none; margin-top: 24px; padding: 16px; background: #F8F9FA; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div class="section-title-sm" style="margin-bottom: 12px;">VENDEDOR</div>
+                        <div id="vendedorAsignadoDetalle" style="font-size: 13px; color: var(--text1);">
+                            @(string.IsNullOrEmpty(Model.VendedorNombre) ? "Sin asignar" : Model.VendedorNombre)
+                        </div>
+                    </div>
 
                     <!-- ESTADO DEL PROSPECTO (SOLO DETALLE) -->
                     <div id="seccionEstadoDetalle" style="display: none; margin-top: 24px; padding: 16px; background: #F8F9FA; border-radius: 8px; border: 1px solid var(--border-light);">
@@ -264,9 +279,12 @@
                 <!-- Form Actions -->
                 <div style="display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border-light); padding-top: 16px;">
                     <div id="btnAccionesDetalle" style="display: none; gap: 12px;">
-                        <button type="button" class="btn-custom" style="background: #C0392B; color: white; padding: 9px 24px;" data-accion="rechazar" data-id="@Model.Id">Rechazar</button>
-                        <button type="button" class="btn-custom" style="background: #7B1FA2; color: white; padding: 9px 24px;" data-accion="baja" data-id="@Model.Id">Dar de baja</button>
-                        <button type="button" class="btn-custom" style="background: #E67E22; color: white; padding: 9px 24px;" data-accion="asignar" data-id="@Model.Id">Asignar Vendedor</button>
+                        @if (CRMSistema.Models.Usuarios.AppRoles.EsSupervisorOAdmin(ViewBag.RolActual as string ?? Session["Rol"]?.ToString() ?? ""))
+                        {
+                            <button type="button" class="btn-custom" style="background: #C0392B; color: white; padding: 9px 24px;" data-accion="rechazar" data-id="@Model.Id">Rechazar</button>
+                            <button type="button" class="btn-custom" style="background: #7B1FA2; color: white; padding: 9px 24px;" data-accion="baja" data-id="@Model.Id">Dar de baja</button>
+                            <button type="button" class="btn-custom" style="background: #E67E22; color: white; padding: 9px 24px;" data-accion="asignar" data-id="@Model.Id">Asignar Vendedor</button>
+                        }
                     </div>
                     <div id="btnNavegacionFormulario" style="display: flex; gap: 12px; margin-left: auto;">
                         <button type="button" id="btnProspectoAnterior" class="btn-custom btn-ghost-custom" style="padding: 9px 24px; display: none;" data-nav="-1">Anterior</button>

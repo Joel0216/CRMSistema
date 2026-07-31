@@ -7,8 +7,10 @@ namespace CRMSistema
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
-            filters.Add(new HandleErrorAttribute());
+            // JsonExceptionFilter debe ejecutarse primero para peticiones AJAX,
+            // de lo contrario HandleErrorAttribute devuelve la vista Error.cshtml (HTML).
             filters.Add(new JsonExceptionFilter());
+            filters.Add(new HandleErrorAttribute());
         }
     }
 }

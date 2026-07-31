@@ -39,6 +39,7 @@ namespace CRMSistema.Models.Contratos
         public string Dias_Disponibles { get; set; }
         public string Horario { get; set; }
         public string Ruta { get; set; }
+        public int VendedorId { get; set; }
         public string VendedorNombre { get; set; }
     }
 }

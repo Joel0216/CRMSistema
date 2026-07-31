@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.ContratosAutorizados
 {
-    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ContratosAutorizadosController : BaseController
     {
         private readonly ContratosDAL _dal = new ContratosDAL();
@@ -34,7 +34,7 @@ namespace CRMSistema.Controllers.ContratosAutorizados
             try
             {
                 var data = _dal.ObtenerContratosAutorizados()
-                    .Where(PuedeVerContrato)
+                    .Where(c => base.PuedeVerContrato(c))
                     .Select(c => new
                     {
                         c.Contrato_ID,
@@ -74,16 +74,7 @@ namespace CRMSistema.Controllers.ContratosAutorizados
             }
         }
 
-        private bool PuedeVerContrato(ContratoAutorizadoModel c)
-        {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
-                return true;
-
-            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
-            return !string.IsNullOrWhiteSpace(c.VendedorNombre)
-                && c.VendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
-        }
+        // PuedeVerContrato ahora vive en BaseController.
 
         [HttpGet]
         public ActionResult GetDetalle(int id)
@@ -94,7 +85,7 @@ namespace CRMSistema.Controllers.ContratosAutorizados
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." }, JsonRequestBehavior.AllowGet);
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para ver este contrato." }, JsonRequestBehavior.AllowGet);
 
                 var prospectos = _prospectosDal.ObtenerTodos();

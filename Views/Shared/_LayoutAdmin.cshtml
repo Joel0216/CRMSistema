@@ -27,81 +27,38 @@
 
 @{
                 var rol = Session["Rol"]?.ToString() ?? "";
-                bool esSuperadmin = CRMSistema.Models.Usuarios.AppRoles.EsSuperadmin(rol);
-                bool esSupervisor = CRMSistema.Models.Usuarios.AppRoles.EsSupervisorOAdmin(rol);
-                bool esVendedor = CRMSistema.Models.Usuarios.AppRoles.EsVendedor(rol);
+                var permisosMenu = CRMSistema.Models.Permisos.PermisoService.ObtenerPermisosDesdeSesion();
+                var nombreUsuarioRaw = Session["UsuarioNombre"]?.ToString() ?? User.Identity?.Name ?? "";
+                var nombreUsuario = !string.IsNullOrWhiteSpace(nombreUsuarioRaw) ? nombreUsuarioRaw : "Usuario";
             }
 
             <nav class="sidebar-nav">
-                <div>
-                    <div class="nav-section-title">PRINCIPAL</div>
-                    <a href="@Url.Action("Index", "Dashboard")" class="nav-link @(ViewBag.ActiveMenu == "Dashboard" ? "active" : "")">
-                        Dashboard
-                    </a>
-                </div>
-                <div>
-                    <div class="nav-section-title">VENTAS</div>
-                    <a href="@Url.Action("Index", "Prospectos")" class="nav-link @(ViewBag.ActiveMenu == "Prospectos" ? "active" : "")">
-                        Prospectos
-                    </a>
-                    <a href="@Url.Action("Index", "Cotizador")" class="nav-link @(ViewBag.ActiveMenu == "Cotizador" ? "active" : "")">
-                        Cotizador
-                    </a>
-                    @if (esSupervisor)
-                    {
-                        <a href="@Url.Action("Index", "ValidacionCotizaciones")" class="nav-link @(ViewBag.ActiveMenu == "CotizacionesPorAprobar" ? "active" : "")">
-                            Cotizaciones por Aprobar
-                        </a>
-                    }
-                    <a href="@Url.Action("Index", "Contratos")" class="nav-link @(ViewBag.ActiveMenu == "Contratos" ? "active" : "")">
-                        Contratos
-                    </a>
-                    @if (esSupervisor)
-                    {
-                        <a href="@Url.Action("Index", "ContratosPorAutorizar")" class="nav-link @(ViewBag.ActiveMenu == "ContratosPorAutorizar" ? "active" : "")">
-                            Contratos por Autorizar
-                        </a>
-                    }
-                    <a href="@Url.Action("Index", "ContratosAutorizados")" class="nav-link @(ViewBag.ActiveMenu == "ContratosAutorizados" ? "active" : "")">
-                        Contratos Autorizados
-                    </a>
-                </div>
-                <div>
-                    <div class="nav-section-title">OPERACIONES</div>
-                    @if (esSupervisor)
-                    {
-                        <a href="@Url.Action("Index", "RutasCotizadas")" class="nav-link @(ViewBag.ActiveMenu == "RutasCotizadas" ? "active" : "")">
-                            Rutas Cotizadas
-                        </a>
-                    }
-                    <a href="@Url.Action("Index", "Manifiestos")" class="nav-link @(ViewBag.ActiveMenu == "Manifiestos" ? "active" : "")">
-                        Manifiestos
-                    </a>
-                </div>
-                <div>
-                    <div class="nav-section-title">ADMINISTRACIÓN</div>
-                    @if (esSuperadmin)
-                    {
-                        <div class="nav-section-title">SUPERADMIN</div>
-                        <a href="@Url.Action("Index", "Usuarios")" class="nav-link @(ViewBag.ActiveMenu == "Usuarios" ? "active" : "")">
-                            <i class="fas fa-users-cog me-2"></i> Usuarios
-                        </a>
-                        <a href="@Url.Action("Index", "Usuarios")" class="nav-link @(ViewBag.ActiveMenu == "RegistrarUsuario" ? "active" : "")" id="btnRegistrarUsuarioMenu">
-                            <i class="fas fa-user-plus me-2"></i> Registrar usuario
-                        </a>
-                    }
-                </div>
+                @foreach (var menu in permisosMenu)
+                {
+                    <div>
+                        <div class="nav-section-title">@menu.Nombre</div>
+                        @foreach (var sm in menu.SubMenus)
+                        {
+                            var activeClass = ViewBag.ActiveMenu != null && ViewBag.ActiveMenu.ToString().Equals(sm.Nombre.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? "active" : "";
+                            var iconHtml = !string.IsNullOrEmpty(sm.Icono) ? $"<i class='fas {sm.Icono} me-2'></i> " : "";
+                            var linkId = sm.Nombre == "Registrar usuario" ? "id=btnRegistrarUsuarioMenu" : "";
+                            <a href="@Url.Action(sm.Accion, sm.Controlador)" class="nav-link @activeClass" @linkId>
+                                @Html.Raw(iconHtml)@sm.Nombre
+                            </a>
+                        }
+                    </div>
+                }
             </nav>
 
             <div class="sidebar-footer">
                 <div class="dropdown">
                     <button class="user-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: transparent; border: none; width: 100%; text-align: left;">
                         <div class="avatar">
-                            @((User.Identity?.Name ?? "U").Substring(0, 1).ToUpper())
+                            @(nombreUsuario.Substring(0, 1).ToUpper())
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <div class="user-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                @(User.Identity?.Name ?? "Usuario")
+                                @nombreUsuario
                             </div>
                             <div class="user-rol">@(rol != "" ? rol : "Usuario")</div>
                         </div>

@@ -40,6 +40,7 @@ namespace CRMSistema.Models.Prospectos
         public decimal? lat { get; set; }
         public decimal? lng { get; set; }
         public bool coordenadas_manuales { get; set; }
+        public int? vendedorId { get; set; }
 
         public List<ApiSucursalModel> sucursales { get; set; }
         public List<ApiContactoModel> contactos { get; set; }

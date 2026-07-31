@@ -4,7 +4,7 @@ using CRMSistema.Models.Usuarios;
 
 namespace CRMSistema.Controllers.Manifiestos
 {
-    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ManifiestosController : Controller
     {
         public ActionResult Index()

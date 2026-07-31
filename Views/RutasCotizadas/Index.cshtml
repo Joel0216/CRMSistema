@@ -4,6 +4,43 @@
     ViewBag.ActiveMenu = "RutasCotizadas";
 }
 
+@*
+    VISTA DE CONFIGURADOR / PLANIFICADOR DE RUTAS
+    =================================================
+    Esta vista es una maqueta funcional del módulo "Rutas Cotizadas".
+
+    ¿Qué hace?
+    - Muestra cotizaciones aprobadas que ya pasaron por ventas y ahora necesitan
+      que Operaciones les asigne ruta, unidad y operador.
+    - El panel lateral permite al coordinador/jefe/supervisor elegir entre rutas,
+      unidades y operadores disponibles, y aprobar/rechazar la asignación.
+
+    ¿Quién pone las rutas?
+    - NO son rutas inventadas por Ventas. Los catálogos de rutas, unidades y
+      operadores deben venir del área de Operaciones (tablas reales en BD).
+    - Por ahora los selects y KPIs usan datos de demostración hardcodeados.
+
+    ¿Cómo se arreglan los errores / se pone en producción?
+    1. Operaciones debe crear las tablas: crm_rutas, crm_unidades, crm_operadores,
+       crm_rutas_cotizadas (asignación) y crm_rutas_ocupacion (ocupación por día).
+    2. Crear stored procedures que expongan: rutas activas, unidades disponibles,
+       operadores disponibles, ocupación por día y sugerencia operativa.
+    3. Reemplazar en el controller los métodos GenerarDatosDemo(),
+       GenerarDisponibilidadRutas(), GenerarOcupacionPorDia() y
+       GenerarSugerenciaOperativa() por llamadas al DAL de Operaciones.
+    4. Reemplazar los <select> hardcodeados de esta vista por options cargados
+       dinámicamente desde el servidor (ver sección "Asignación de ruta").
+
+    Errores conocidos corregidos en esta versión:
+    - El botón de Acciones se veía aplastado porque el texto cambiaba de tamaño;
+      ahora ambos textos ("Asignar Ruta" / "Cambiar Operador") usan el mismo
+      ancho mínimo y no se rompen en varias líneas.
+    - El botón "Reasignar" del panel llamaba por error a rechazarSolicitud();
+      ahora guarda la asignación como "Reasignar".
+    - La tabla "Disponibilidad y Ocupación por Día" tenía columnas desalineadas
+      (thead de 8 columnas vs tbody de 3); ahora encabezado y cuerpo coinciden.
+*@
+
 <style>
     .kpi-ruta {
         background: white;
@@ -201,6 +238,19 @@
         z-index: 1040;
     }
     .overlay-backdrop.show { display: block; }
+
+    /* Botón de acciones en la tabla: mismo estilo para "Asignar Ruta" y "Cambiar Operador" */
+    .btn-accion-ruta {
+        min-width: 150px;
+        white-space: nowrap;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 6px;
+        background: #5D4037;
+        color: white;
+        border: none;
+    }
+    .btn-accion-ruta:hover { background: #3E2723; color: white; }
 </style>
 
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
@@ -347,6 +397,12 @@
         <!-- Asignación de ruta -->
         <div class="seccion-card">
             <div class="seccion-titulo">Asignación de Ruta y Capacidad</div>
+            @*
+                Los selects de Ruta, Unidad y Operador están hardcodeados como demostración.
+                Operaciones debe exponer endpoints GetRutas, GetUnidades, GetOperadores
+                para llenar estas opciones dinámicamente según el tipo de residuo,
+                ubicación del cliente y disponibilidad.
+            *@
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <label class="campo-label">Ruta</label>
@@ -404,9 +460,16 @@
                     </table>
                 </div>
                 <div class="col-md-6">
+                    @*
+                        Tabla de ocupación por día.
+                        Encabezado y cuerpo deben tener el mismo número de columnas.
+                        Actualmente muestra: día, ocupación actual, ocupación proyectada tras asignar.
+                        TODO-Operaciones: cuando haya datos reales, esta tabla puede convertirse
+                        en una matriz 7xN con rutas como filas y días como columnas.
+                    *@
                     <table class="tabla-rutas mapa-calor">
                         <thead>
-                            <tr><th>Ruta</th><th>Lun</th><th>Mar</th><th>Mie</th><th>Jue</th><th>Vie</th><th>Sab</th><th>Dom</th></tr>
+                            <tr><th>Día</th><th>Ocupación Actual</th><th>Ocupación con Asignación</th></tr>
                         </thead>
                         <tbody id="detOcupacion"></tbody>
                     </table>
@@ -434,7 +497,12 @@
     <div class="panel-detalle-footer">
         <button type="button" class="btn btn-outline-secondary" onclick="cerrarDetalle()">Cerrar</button>
         <button type="button" class="btn btn-danger" onclick="rechazarSolicitud()">Rechazar</button>
-        <button type="button" class="btn btn-outline-primary" onclick="rechazarSolicitud()">Reasignar</button>
+        @*
+            Botón "Reasignar": corrige error previo donde llamaba a rechazarSolicitud().
+            Reasignar simplemente vuelve a guardar la asignación con los valores
+            actuales de los selects (p.ej. cambiar operador sin rechazar).
+        *@
+        <button type="button" class="btn btn-outline-primary" onclick="aprobarRuta()">Reasignar</button>
         <button type="button" class="btn btn-success" onclick="aprobarRuta()">
             <i class="fas fa-check me-1"></i> Aprobar y Asignar Ruta
         </button>
@@ -520,7 +588,7 @@
                         <td>${r.operador || '—'}</td>
                         <td><span class="badge bg-${estatusClass}" style="font-size: 11px;">${estatusText}</span></td>
                         <td style="text-align: right;">
-                            <button class="btn btn-sm" style="background:#5D4037;color:white;border:none;border-radius:6px;" onclick="abrirDetalle(${r.id})">
+                            <button class="btn btn-sm btn-accion-ruta" onclick="abrirDetalle(${r.id})">
                                 ${btnText} <i class="fas fa-chevron-right ms-1"></i>
                             </button>
                         </td>
@@ -599,20 +667,23 @@
             });
             $('#detRutas').html(rutasHtml);
 
-            // Ocupación por día
+            // Ocupación por día (3 columnas: Día, Actual, Después)
+            // NOTA: cuando Operaciones entregue datos reales, se puede cambiar a una
+            // matriz completa con rutas como filas y días como columnas.
             let ocpHtml = '';
             (res.ocupacion || []).forEach(x => {
-                const color = getColorCalor(x.despues);
                 ocpHtml += `
                     <tr>
                         <td style="background:#F5F5F5;color:#5D4037;font-weight:700;">${x.dia}</td>
                         <td style="background:${getColorCalor(x.actual)};">${x.actual}%</td>
-                        <td colspan="6" style="background:${color};">${x.despues}%</td>
+                        <td style="background:${getColorCalor(x.despues)};">${x.despues}%</td>
                     </tr>`;
             });
             $('#detOcupacion').html(ocpHtml);
 
-            // Capacidad barra
+            // Capacidad barra (valores de demostración).
+            // TODO-Operaciones: calcular con base en la ruta y unidad seleccionadas
+            // consultando ocupación real antes y después de la asignación.
             const actual = 75;
             const despues = 90;
             $('#txtCapacidad').text(`${actual}% → ${despues}%`);
@@ -645,6 +716,10 @@
             rutaActual = null;
         }
 
+        // Guarda o reasigna la ruta/unidad/operador seleccionados.
+        // Tanto "Aprobar y Asignar Ruta" como "Reasignar" usan esta función.
+        // TODO-Operaciones: antes de enviar, validar que la combinación ruta+unidad+operador
+        // exista en los catálogos reales y tenga capacidad disponible.
         function aprobarRuta() {
             if (!rutaActual) return;
 

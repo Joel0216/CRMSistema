@@ -104,5 +104,6 @@ namespace CRMSistema.Models.Dashboard
         public decimal precio_unitario { get; set; }
         public string trato { get; set; }
         public string empresa { get; set; }
+        public string vendedorNombre { get; set; }
     }
 }

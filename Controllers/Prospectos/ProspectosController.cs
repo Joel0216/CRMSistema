@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.Prospectos
 {
-    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Vendedor, AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ProspectosController : BaseController
     {
         private readonly ApiProspectosDAL _dal = new ApiProspectosDAL();
@@ -48,6 +48,7 @@ namespace CRMSistema.Controllers.Prospectos
 
             ViewBag.Filtro = filtro;
             ViewBag.EstatusFiltro = estatus;
+            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
 
             CargarViewBags();
             return View(lista);
@@ -70,22 +71,13 @@ namespace CRMSistema.Controllers.Prospectos
             }
         }
 
-        private bool PuedeVerProspecto(dynamic r)
-        {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
-                return true;
-
-            var vendedorId = ToInt(Val(r, "vendedorId"));
-            var usuarioId = Session["UsuarioId"] as int?;
-            return vendedorId > 0 && usuarioId.HasValue && vendedorId == usuarioId.Value;
-        }
+        // PuedeVerProspecto ahora vive en BaseController y compara por ID y nombre.
 
         private ProspectoViewModel CargarProspectoCompleto(int id)
         {
             try
             {
-                var row = _dal.ObtenerTodos().FirstOrDefault(r => ToInt(Val(r, "id")) == id);
+                var row = _dal.ObtenerPorId(id);
                 if (row == null || !PuedeVerProspecto(row)) return null;
 
                 var m = MapDetalle(row);
@@ -117,6 +109,7 @@ namespace CRMSistema.Controllers.Prospectos
         public ActionResult PartialNuevo()
         {
             ViewBag.Accion = "Nuevo";
+            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags();
             return PartialView("_FormularioProspecto", new ProspectoViewModel
             {
@@ -133,6 +126,7 @@ namespace CRMSistema.Controllers.Prospectos
             if (model == null) return HttpNotFound();
 
             ViewBag.Accion = "Editar";
+            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags(id);
             return PartialView("_FormularioProspecto", model);
         }
@@ -143,6 +137,7 @@ namespace CRMSistema.Controllers.Prospectos
             if (model == null) return HttpNotFound();
 
             ViewBag.Accion = "Detalle";
+            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags(id);
             return PartialView("_FormularioProspecto", model);
         }
@@ -152,6 +147,7 @@ namespace CRMSistema.Controllers.Prospectos
             ViewBag.Title = "Nuevo Prospecto";
             ViewBag.ActiveMenu = "Prospectos";
             ViewBag.Accion = "Nuevo";
+            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags();
             return View("Formulario", new ProspectoViewModel { Estatus = "Nuevo", TipoPersona = "Moral", TieneSucursales = "No" });
         }
@@ -180,7 +176,22 @@ namespace CRMSistema.Controllers.Prospectos
             {
                 var apiModel = ToApiModel(model);
                 var empresaId = _dal.UpsertEmpresa((apiModel.nombre ?? "").Trim(), apiModel.rfc);
-                var nuevoId = _dal.Crear(apiModel, empresaId, (apiModel.contacto ?? "").Trim(), (apiModel.nombre ?? "").Trim());
+                var creadoPor = Session["UsuarioId"] as int?;
+
+                // Vendedor: se asigna automáticamente a sí mismo.
+                // Supervisor/Superadmin: puede elegir vendedor en el formulario.
+                int? vendedorId = null;
+                var rol = RolActual();
+                if (!EsSupervisorOAdmin())
+                {
+                    vendedorId = creadoPor;
+                }
+                else if (model.VendedorId.HasValue && model.VendedorId.Value > 0)
+                {
+                    vendedorId = model.VendedorId;
+                }
+
+                var nuevoId = _dal.Crear(apiModel, empresaId, (apiModel.contacto ?? "").Trim(), (apiModel.nombre ?? "").Trim(), creadoPor, vendedorId);
                 _dal.InsertarSucursales(nuevoId, apiModel.sucursales);
                 _dal.InsertarContactos(nuevoId, apiModel.contactos);
                 TempData["Success"] = "Prospecto registrado correctamente.";
@@ -212,6 +223,7 @@ namespace CRMSistema.Controllers.Prospectos
                 var model = CargarProspectoCompleto(id);
                 if (model == null) return HttpNotFound();
 
+                ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
                 CargarViewBags(id);
                 return View("Formulario", model);
             }
@@ -221,6 +233,7 @@ namespace CRMSistema.Controllers.Prospectos
                 {
                     var model = GetSampleProspectos().FirstOrDefault(p => p.Id == id);
                     if (model == null) return HttpNotFound();
+                    ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
                     CargarViewBags(id);
                     return View("Formulario", model);
                 }
@@ -250,6 +263,14 @@ namespace CRMSistema.Controllers.Prospectos
 
             try
             {
+                var rol = Session["Rol"]?.ToString() ?? "";
+                if (!AppRoles.EsSupervisorOAdmin(rol))
+                {
+                    var row = _dal.ObtenerPorId(id);
+                    if (row == null || !PuedeVerProspecto(row))
+                        return Json(new { success = false, error = "No tienes permiso para editar este prospecto." });
+                }
+
                 var apiModel = ToApiModel(model);
                 _dal.Actualizar(id, apiModel, (apiModel.contacto ?? "").Trim(), (apiModel.nombre ?? "").Trim());
                 TempData["Success"] = "Prospecto actualizado correctamente.";
@@ -280,6 +301,7 @@ namespace CRMSistema.Controllers.Prospectos
                 var model = CargarProspectoCompleto(id);
                 if (model == null) return HttpNotFound();
 
+                ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
                 CargarViewBags(id);
                 return View(model);
             }
@@ -289,6 +311,7 @@ namespace CRMSistema.Controllers.Prospectos
                 {
                     var model = GetSampleProspectos().FirstOrDefault(p => p.Id == id);
                     if (model == null) return HttpNotFound();
+                    ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
                     CargarViewBags(id);
                     return View(model);
                 }
@@ -301,6 +324,14 @@ namespace CRMSistema.Controllers.Prospectos
         {
             try
             {
+                var rol = Session["Rol"]?.ToString() ?? "";
+                if (!AppRoles.EsSupervisorOAdmin(rol))
+                {
+                    var row = _dal.ObtenerPorId(id);
+                    if (row == null || !PuedeVerProspecto(row))
+                        return Json(new { success = false, error = "No tienes permiso para eliminar este prospecto." });
+                }
+
                 _dal.Eliminar(id);
                 return Json(new { success = true });
             }
@@ -315,6 +346,10 @@ namespace CRMSistema.Controllers.Prospectos
         {
             try
             {
+                var rol = Session["Rol"]?.ToString() ?? "";
+                if (!AppRoles.EsSupervisorOAdmin(rol))
+                    return Json(new { success = false, error = "No tienes permiso para asignar vendedores." });
+
                 var nombre = _dal.AsignarVendedor(id, vendedorId);
                 return Json(new { success = true, nombre });
             }
@@ -329,6 +364,10 @@ namespace CRMSistema.Controllers.Prospectos
         {
             try
             {
+                var rol = Session["Rol"]?.ToString() ?? "";
+                if (!AppRoles.EsSupervisorOAdmin(rol))
+                    return Json(new { success = false, error = "No tienes permiso para rechazar prospectos." });
+
                 var usuarioId = Session["UsuarioId"] as int?;
                 _dal.Rechazar(id, motivo, usuarioId);
                 return Json(new { success = true });
@@ -344,6 +383,14 @@ namespace CRMSistema.Controllers.Prospectos
         {
             try
             {
+                var rol = Session["Rol"]?.ToString() ?? "";
+                if (!AppRoles.EsSupervisorOAdmin(rol))
+                {
+                    var row = _dal.ObtenerPorId(id);
+                    if (row == null || !PuedeVerProspecto(row))
+                        return Json(new { success = false, error = "No tienes permiso para cambiar el estatus de este prospecto." });
+                }
+
                 _dal.ActualizarEstatus(id, estatus);
                 return Json(new { success = true });
             }
@@ -606,6 +653,7 @@ namespace CRMSistema.Controllers.Prospectos
                 foto_referencia = m.FotoReferencia,
                 documento_catastral = m.DocumentoCatastral,
                 documento_catastral_nombre = m.DocumentoCatastralNombre,
+                vendedorId = m.VendedorId,
                 contactos = m.Contactos?.Select(c => new ApiContactoModel
                 {
                     nombre_contacto = c.NombreContacto,

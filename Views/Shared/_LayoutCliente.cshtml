@@ -21,6 +21,11 @@
             <img src="~/Content/Assets/logo_ecolsur.png" alt="Logo" style="width: 100px; height: 30px; margin-bottom: 8px;" onerror="this.style.display='none'" />
         </div>
 
+@{
+            var nombreClienteRaw = Session["UsuarioNombre"]?.ToString() ?? User.Identity?.Name ?? "";
+            var nombreCliente = !string.IsNullOrWhiteSpace(nombreClienteRaw) ? nombreClienteRaw : "Cliente";
+        }
+
         <ul class="nav flex-column mt-1">
             <li><span class="nav-section-title">MI CUENTA</span></li>
             <li class="nav-item">
@@ -42,10 +47,10 @@
         <div class="sidebar-user">
             <div class="d-flex align-items-center gap-2">
                 <div class="user-avatar">
-                    @((User.Identity?.Name ?? "C").Substring(0, 1).ToUpper())
+                    @(nombreCliente.Substring(0, 1).ToUpper())
                 </div>
                 <div class="overflow-hidden">
-                    <div class="user-name text-truncate">@(User.Identity?.Name ?? "Cliente")</div>
+                    <div class="user-name text-truncate">@nombreCliente</div>
                     <a href="@Url.Action("Logout", "Acceso")" class="btn-logout" style="text-decoration: none;">
                         <i class="fas fa-sign-out-alt me-1"></i>Cerrar sesión
                     </a>

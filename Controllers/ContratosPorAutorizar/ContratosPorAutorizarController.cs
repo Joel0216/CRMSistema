@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace CRMSistema.Controllers.ContratosPorAutorizar
 {
-    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ContratosPorAutorizarController : BaseController
     {
         private readonly ContratosDAL _dal = new ContratosDAL();
@@ -34,7 +34,7 @@ namespace CRMSistema.Controllers.ContratosPorAutorizar
             try
             {
                 var data = _dal.ObtenerContratosPorAutorizar()
-                    .Where(PuedeVerContrato)
+                    .Where(c => base.PuedeVerContrato(c))
                     .Select(c => new
                     {
                         c.Contrato_ID,
@@ -77,16 +77,7 @@ namespace CRMSistema.Controllers.ContratosPorAutorizar
             }
         }
 
-        private bool PuedeVerContrato(ContratoAutorizadoModel c)
-        {
-            var rol = Session["Rol"]?.ToString() ?? "";
-            if (AppRoles.EsSupervisorOAdmin(rol))
-                return true;
-
-            var usuarioNombre = Session["UsuarioNombre"]?.ToString() ?? "";
-            return !string.IsNullOrWhiteSpace(c.VendedorNombre)
-                && c.VendedorNombre.Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase);
-        }
+        // PuedeVerContrato ahora vive en BaseController.
 
         [HttpGet]
         public ActionResult GetDetalle(int id)
@@ -97,7 +88,7 @@ namespace CRMSistema.Controllers.ContratosPorAutorizar
                 if (contrato == null)
                     return Json(new { success = false, error = "Contrato no encontrado." }, JsonRequestBehavior.AllowGet);
 
-                if (!PuedeVerContrato(contrato))
+                if (!base.PuedeVerContrato(contrato))
                     return Json(new { success = false, error = "No tienes permiso para ver este contrato." }, JsonRequestBehavior.AllowGet);
 
                 var prospectos = _prospectosDal.ObtenerTodos();

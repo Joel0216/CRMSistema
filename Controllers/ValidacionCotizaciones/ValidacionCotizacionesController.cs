@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace CRMSistema.Controllers.ValidacionCotizaciones
 {
-    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Superadmin)]
+    [AuthorizeRole(AppRoles.Supervisor, AppRoles.Coordinador, AppRoles.Jefe, AppRoles.Superadmin)]
     public class ValidacionCotizacionesController : BaseController
     {
         private readonly CotizacionesDAL _dal = new CotizacionesDAL();
