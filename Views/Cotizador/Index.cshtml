@@ -65,7 +65,7 @@
         window.estatusLista = [];
         window.vendedores = [];
     </script>
-    <script src="~/Scripts/prospectos.js?v=22"></script>
+    <script src="~/Scripts/prospectos.js?v=25"></script>
 
     <script>
         let allProspectos = [];
@@ -301,7 +301,7 @@
                               </button>`;
                         } else {
                             btnAccion = `<button onclick="window.location.href='@Url.Action("Generar", "Cotizador")?prospectoId=${id}&borradorId=${bId}'" style="background: #fff; border: 1px solid #E67E22; color: #E67E22; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-pencil-alt"></i> Continuar Editando
+                                <i class="fas fa-paper-plane"></i> Corregir y reenviar
                               </button>`;
                         }
 

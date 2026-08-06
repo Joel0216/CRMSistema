@@ -8,9 +8,9 @@
         <div style="padding: 0; overflow-y: auto; flex-grow: 1;">
             <!-- Tabs Header -->
             <div style="display: flex; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--border-light); margin-bottom: 24px;">
-                <div class="tab-item-suc active" onclick="showTabSuc('contacto', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">DATOS DE CONTACTO</div>
-                <div class="tab-item-suc" onclick="showTabSuc('direccion', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">DIRECCI&Oacute;N</div>
-                <div class="tab-item-suc" onclick="showTabSuc('fotos', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">FOTOS Y ARCHIVOS</div>
+                <div class="tab-item-suc active" onclick="showTabSuc('contacto', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">Datos de contacto</div>
+                <div class="tab-item-suc" onclick="showTabSuc('direccion', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">Direcci&oacute;n</div>
+                <div class="tab-item-suc" onclick="showTabSuc('fotos', this)" style="padding: 16px 0; color: var(--text3); font-weight: 600; cursor: pointer; font-size: 13.5px; border-bottom: 2px solid transparent;">Fotos y archivos</div>
             </div>
 
             <div style="padding: 0 24px 24px;">
@@ -23,7 +23,7 @@
                         </div>
                         <div class="form-group">
                             <label for="sucTelefono" class="form-label">Telefono de sucursal *</label>
-                            <input type="tel" id="sucTelefono" class="form-input" placeholder="000 000 0000" oninput="this.value=this.value.replace(/[^0-9]/g,'')" maxlength="10" />
+                            <input type="tel" id="sucTelefono" class="form-input" placeholder="000 000 0000" oninput="this.value=this.value.replace(/[^0-9]/g,'')" minlength="10" maxlength="10" />
                         </div>
                         <div class="form-group">
                             <label for="sucCorreo" class="form-label">Correo electronico *</label>
@@ -38,12 +38,6 @@
 
                 <!-- TAB 2: DIRECCIÓN -->
                 <div id="tab-suc-direccion" class="tab-content-suc" style="display: none;">
-                    <div style="margin-bottom: 16px; background: var(--bg2, #F8F9FA); padding: 12px; border-radius: 8px; border: 1px solid var(--border-light);">
-                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text1);">B&uacute;squeda r&aacute;pida en mapa</div>
-                        <input type="text" class="form-input" style="width: 100%;" placeholder="Pega todo junto aqu&iacute;. Ej: C. 60-A 322-por 57 y 59, Mulchechen, 97370 Mérida, Yuc." />
-                        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Si llenas este campo, el mapa lo usar&aacute; como primera opci&oacute;n para encontrar la ubicaci&oacute;n exacta.</div>
-                    </div>
-                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label for="sucCalle" class="form-label">Calle</label>
@@ -73,11 +67,6 @@
                             <label for="sucEstado" class="form-label">Estado</label>
                             <input type="text" id="sucEstado" class="form-input" value="Yucatán" placeholder="Ej. Yucatán" />
                         </div>
-                        <div class="form-group">
-                            <label for="sucConcesionaria" class="form-label">Concesionaria</label>
-                            <input type="text" id="sucConcesionaria" class="form-input" />
-                        </div>
-                        
                         <div style="grid-column: 1 / -1;">
                             <label for="sucReferencias" class="form-label">Referencias</label>
                             <input type="text" id="sucReferencias" class="form-input" placeholder="Ej. Cerca de la plaza x" />
@@ -162,16 +151,18 @@
                     <input type="hidden" id="hdnSucFotoReferencia" />
                     <input type="hidden" id="hdnSucDocCatastral" />
                     <input type="hidden" id="hdnSucDocCatastralNombre" />
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end;">
+                        <button type="button" id="btnGuardarSucursal" class="btn-custom btn-primary-custom" style="padding: 9px 48px;">GUARDAR</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div style="padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
             <button type="button" id="btnSucAnterior" class="btn-custom btn-ghost-custom" style="padding: 9px 24px; display: none;" data-nav="-1">Anterior</button>
-            <div></div>
             <div style="display: flex; gap: 10px;">
                 <button type="button" id="btnSucSiguiente" class="btn-custom btn-primary-custom" style="padding: 9px 24px;" data-nav="1">Siguiente</button>
-                <button type="button" class="btn-custom" id="btnGuardarSucursal" style="background: var(--brown-dark); color: white; padding: 10px 48px; display: none;">GUARDAR</button>
             </div>
         </div>
     </div>

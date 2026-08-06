@@ -1,98 +1,184 @@
-# Plan: Roles y visibilidad por vendedor en el CRM
+# Plan de correcciones al CRM
 
-## Objetivo
-Aplicar las reglas de negocio:
+## Decisiones confirmadas con el usuario
 
-- **Vendedor**:
-  - Ve solo sus propios datos en: Dashboard, Prospectos, Cotizador, Contratos, Contratos Autorizados.
-  - Al crear un prospecto, se asigna automáticamente a sí mismo.
-- **Supervisor / Superadmin**:
-  - Ven todo.
-  - Pueden asignar un vendedor a un prospecto.
+| Tema | Decisión |
+|------|----------|
+| Status duplicado en detalle de prospecto | Mostrar solo la sección **ESTATUS** del prospecto; ocultar la sección **COTIZACIÓN**. |
+| Texto del botón de borrador no autorizado | Cambiar **"Continuar Editando"** → **"Corregir y reenviar"**. |
+| RME – Servicio único / un solo viaje | Agregar opción **"Único"** en el select de tipo de servicio; al elegirla se ocultan los días de la semana y aparece un campo de **fecha puntual**. |
+| Unidades de medida adicionales (m²/m³) en RME | **No modificar** en este ciclo. |
 
-## Estado actual
-- El login ya guarda `Session["UsuarioId"]`, `Session["UsuarioNombre"]` y `Session["Rol"]`.
-- Algunos controladores ya tienen filtros en memoria (`PuedeVerProspecto`, `PuedeVerContrato`, `FiltrarPorRol`), pero no están en todos lados o usan solo nombre de vendedor.
-- El menú ya oculta "Cotizaciones por Aprobar", "Contratos por Autorizar" y "Rutas Cotizadas" a los vendedores, pero **deja visible "Manifiestos"** aunque su controlador solo permite Supervisor/Superadmin.
-- Los SP de dashboard agregan datos de **todos** los usuarios; un vendedor actualmente ve los KPIs globales.
+> **Pendiente de confirmar:** Rutas Cotizadas y Manifiestos "no sirven aún". Se dejan fuera del plan hasta que confirmes si los revisamos en este mismo trabajo.
 
-## Enfoque
-Híbrido para minimizar cambios y mantener el rendimiento:
+---
 
-1. **Listados y detalles** (Prospectos, Contratos, Cotizador): filtrado en memoria con helper centralizado, usando `VendedorId`/`PropietarioId` y respaldo por nombre.
-2. **Dashboard KPIs y tendencias**: modificar los stored procedures para que acepten un `@VendedorId` opcional; si viene, filtran por `crm_prospectos.Vendedor_ID` / `Propietario_ID`. De este modo los totales mostrados al vendedor son reales.
-3. **Creación de prospectos**: ajustar `ProspectosController.Nuevo` para auto-asignar al vendedor actual; para supervisores/superadmins agregar un dropdown de vendedor en el formulario.
-4. **Menú**: ocultar "Manifiestos" a los vendedores.
-5. **Limpieza opcional**: eliminar los usuarios de prueba `Prueba` y `Prueba1` (sin registros asociados).
+## 1. Prospectos – Estatus duplicado en detalle
 
-## Archivos a modificar
+**Archivo:** `Views/Prospectos/_FormularioProspecto.cshtml`
 
-### C# / ASP.NET MVC
-1. `Models/Usuarios/RolHelper.cs` — agregar helper `UsuarioIdActual()` ya existe; agregar helper para obtener rol y verificar visibilidad.
-2. `Controllers/Base/BaseController.cs` — agregar métodos reutilizables:
-   - `bool EsSupervisorOAdmin()`
-   - `bool PuedeVerProspecto(dynamic r)`
-   - `bool PuedeVerContrato(ContratoAutorizadoModel c)`
-   - `int? UsuarioIdActual()`
-   - `string UsuarioNombreActual()`
-3. `Controllers/Prospectos/ProspectosController.cs`:
-   - Reutilizar el helper de `BaseController` para `PuedeVerProspecto`.
-   - En `Nuevo` POST, auto-asignar `VendedorId` si el rol es Vendedor.
-   - Si es Supervisor/Superadmin y el modelo trae `VendedorId`, usarlo; si no, asignar al creador.
-   - Reforzar permisos en `Editar`, `Eliminar`, `CambiarEstatus`.
-4. `Controllers/Cotizador/CotizadorController.cs`:
-   - Reemplazar `PuedeVerProspecto` local por el helper centralizado.
-5. `Controllers/Contratos/ContratosController.cs`, `ContratosAutorizadosController.cs`, `ContratosPorAutorizarController.cs`:
-   - Reemplazar `PuedeVerContrato` local por el helper centralizado.
-   - Asegurar que `ContratoAutorizadoModel` exponga `VendedorId` (si los SPs lo devuelven) además de `VendedorNombre`.
-6. `Controllers/Dashboard/DashboardController.cs`:
-   - Pasar `usuarioId` y `rol` a `DashboardDAL`.
-   - Aplicar `FiltrarPorRol` a todos los listados ya filtrados (pipeline ya lo hace; cotizaciones detalle necesita filtro).
-7. `DAL/Dashboard/DashboardDAL.cs`:
-   - Agregar sobrecargas/métodos que acepten `int? vendedorId` y lo pasen a los SPs.
-8. `Views/Prospectos/_FormularioProspecto.cshtml`:
-   - Mostrar dropdown de vendedor solo para Supervisor/Superadmin.
-9. `Views/Shared/_LayoutAdmin.cshtml`:
-   - Ocultar "Manifiestos" a los vendedores.
+- Ocultar la sección `seccionCotizacionDetalle` y dejar visible solo `seccionEstadoDetalle`.
+- Si el prospecto tiene un motivo de rechazo de cotización, mostrarlo dentro de la sección **ESTATUS** como un campo adicional (no como bloque separado de "COTIZACIÓN").
 
-### SQL Server (stored procedures)
-Modificar estos SPs para aceptar `@VendedorId INT = NULL` y, cuando no sea NULL, filtrar por `Vendedor_ID` / `Propietario_ID`:
+## 2. Prospectos – Teléfono de contacto exactamente 10 dígitos
 
-1. `SP_Dashboard_GetKPIs`
-2. `SP_Dashboard_GetTendenciaProspectos`
-3. `SP_Dashboard_GetTendenciaVentas`
-4. `SP_Dashboard_GetOrigenes`
-5. `SP_Dashboard_GetTiposInmueble`
-6. `SP_Dashboard_GetEstatusDistribucionPorMes`
-7. `SP_Dashboard_GetPipeline`
-8. `SP_Dashboard_GetCotizacionesDetalle`
-9. `SP_Prospectos_GetAll` (opcional, ya se filtra en memoria; se deja como está o se agrega parámetro para eficiencia).
-10. `SP_ContratosAutorizados_GetAll` / `SP_ContratosAutorizados_GetPending` (opcional; se filtra en memoria por ahora).
+**Archivos:**
+- `Views/Prospectos/_FormularioProspecto.cshtml` (teléfono matriz)
+- `Views/Prospectos/_ModalContacto.cshtml` (teléfono de contacto)
+- `Views/Prospectos/_ModalSucursal.cshtml` (teléfono de sucursal)
+- `Scripts/prospectos.js`
 
-**Nota:** si los SPs no se modifican, el dashboard seguirá mostrando totales globales a los vendedores. Por eso se propone la modificación SQL como paso esencial.
+- Agregar `minlength="10"` en los inputs de teléfono.
+- En la validación JS (`obtenerErroresTabProspecto`, `obtenerErroresTabSuc`, `guardarContactoConValidacion`) verificar que la longitud sea exactamente 10.
+- Mensaje: "El teléfono debe tener 10 dígitos".
 
-## Pasos de implementación
+## 3. Prospectos – RFC: validación reforzada
 
-1. **Crear helper centralizado** en `BaseController`.
-2. **Actualizar controladores** para usar el helper.
-3. **Ajustar creación de prospectos** y formulario.
-4. **Modificar SPs del dashboard** para aceptar `@VendedorId`.
-5. **Actualizar `DashboardDAL`** y `DashboardController` para pasar el filtro.
-6. **Ajustar menú** (`_LayoutAdmin.cshtml`).
-7. **Verificar** con usuarios de cada rol.
-8. **Eliminar** usuarios `Prueba` y `Prueba1` si el usuario lo confirma.
+**Archivo:** `Scripts/prospectos.js`
 
-## Cómo probar
+- Ya existe validación de longitud 12/13 según tipo de persona en `obtenerErroresTabProspecto`.
+- Se asegurará que el mensaje de error sea claro y que se marque el campo al fallar.
 
-1. Iniciar sesión como vendedor, crear un prospecto y verificar que:
-   - El prospecto aparece con `Vendedor_ID` = usuario actual.
-   - En Dashboard, Prospectos, Cotizador, Contratos y Contratos Autorizados solo se ve ese prospecto/contrato.
-2. Iniciar sesión como supervisor/superadmin y verificar que:
-   - Se ven todos los prospectos/contratos.
-   - Se puede asignar un prospecto a otro vendedor.
-3. Confirmar que `Prueba` y `Prueba1` ya no aparecen en la lista de usuarios.
+## 4. Prospectos – Quitar "Búsqueda rápida en mapa"
 
-## Decisión pendiente
+**Archivos:**
+- `Views/Prospectos/_FormularioProspecto.cshtml` (matriz)
+- `Views/Prospectos/_ModalSucursal.cshtml` (sucursal)
 
-¿Procedo con esta propuesta, incluyendo la modificación de los stored procedures del dashboard?  
-Si prefieres evitar cambios SQL, puedo alternativamente calcular los KPIs del dashboard desde los datos filtrados en C# (más código, menos rendimiento con muchos datos).
+- Eliminar el bloque de input/botón de "Búsqueda rápida en mapa".
+- Dejar intactos los campos de dirección, el botón "Verificar Dirección" y el mapa.
+
+## 5. Prospectos – Fotografías con nombres diferentes
+
+**Archivos:**
+- `Views/Prospectos/_FormularioProspecto.cshtml`
+- `Views/Prospectos/_ModalSucursal.cshtml`
+- `Scripts/prospectos.js`
+
+- Agregar hidden inputs para guardar el nombre original/prefijado de cada foto.
+- En `previewFoto`, asignar nombres distintos automáticamente usando prefijo + timestamp:
+  - Fachada: `Fachada_<timestamp>.jpg`
+  - Acceso: `Acceso_<timestamp>.jpg`
+  - Referencia: `Referencia_<timestamp>.jpg`
+- Incluir esos nombres en el modelo que se envía al servidor.
+
+## 6. Prospectos – Folio y documento catastral opcionales
+
+**Archivos:**
+- `Models/ViewModels/ProspectoViewModel.cs`
+- `Views/Prospectos/_FormularioProspecto.cshtml`
+- `Views/Prospectos/_ModalSucursal.cshtml`
+- `Scripts/prospectos.js`
+
+- Quitar `[Required]` de `FolioCatastral` y `DocumentoCatastral` en el ViewModel.
+- En JS, quitar la validación obligatoria de folio y documento catastral.
+- Agregar validación opcional: si se captura folio, debe tener entre **16 y 31 caracteres alfanuméricos**.
+
+## 7. Prospectos – Botón GUARDAR de sucursal solo en "Fotos y Archivos"
+
+**Archivo:** `Scripts/prospectos.js`
+
+- En `actualizarBotonesSuc`, mostrar `btnGuardarSucursal` solo cuando `tabIdxSuc === 2` (FOTOS Y ARCHIVOS), en lugar de `tabIdxSuc === 0` (DATOS DE CONTACTO).
+
+## 8. Prospectos – Sucursal: Estado, Concesionaria y colores
+
+**Archivos:**
+- `Views/Prospectos/_ModalSucursal.cshtml`
+- `Scripts/prospectos.js`
+
+- Corregir el valor por defecto de `sucEstado` para que sea `"Yucatán"` (no `"Yucat&aacute;n"` ni entidades HTML escapadas).
+- Quitar el campo **Concesionaria** de la sucursal.
+- Unificar estilos de los botones **+ Agregar Contacto** y **+ Agregar Sucursal** para que usen fondo marrón oscuro y texto blanco, consistente con el resto de la app.
+
+## 9. Cotizador – Cambiar "Continuar Editando" → "Corregir y reenviar"
+
+**Archivo:** `Views/Cotizador/Index.cshtml`
+
+- En la lista de borradores, cambiar el texto del botón de borradores no autorizados a **"Corregir y reenviar"**.
+- El icono puede seguir siendo el lápiz o cambiarse a un icono de envío.
+
+## 10. Cotizador – Al enviar a validación, actualizar el borrador primero
+
+**Archivo:** `Views/Cotizador/Generar.cshtml`
+
+- En `solicitarValidacion`, si `borradorGuardadoId` existe, llamar primero a `UpdateBorrador` con los datos actuales antes de crear/enviar la validación.
+- Si no existe borrador, mantener el flujo actual (crear borrador y luego validación).
+- Esto garantiza que, si el supervisor rechaza y el vendedor vuelve a entrar, el borrador contenga lo último que se envió.
+
+## 11. Cotizador – No mostrar la contraseña al enviar al cliente
+
+**Archivo:** `Views/Cotizador/Generar.cshtml`
+
+- En `enviarACliente`, quitar la línea que muestra `emailRes.password_temporal` en el mensaje de éxito.
+- El backend seguirá generando y enviando la contraseña por correo, pero no se mostrará en pantalla.
+
+## 12. Prospectos – Notificación "Finalizar datos de registro"
+
+**Archivo:** `Scripts/prospectos.js`
+
+- En el modal de confirmación de **"Finalizar datos de registro"**, **no mostrar la contraseña temporal**.
+- Mostrar solo: "Se enviará un correo a [correo] con las instrucciones para finalizar el registro.".
+- Agregar comentario/documentación en el código indicando que la contraseña se genera en el backend (`SP_Notificaciones_Insert`) y se envía únicamente al correo del cliente.
+
+## 13. Usuarios – Correo electrónico válido y sin duplicados
+
+**Archivos:**
+- `DAL/Usuarios/UsuariosDAL.cs`
+- `Controllers/Usuarios/UsuariosController.cs`
+
+- Agregar método `ExisteCorreo(string correo, int? excluirId)` en `UsuariosDAL`.
+- En `UsuariosController.Guardar`:
+  - Validar formato de correo con `EmailAddressAttribute` o regex.
+  - Si el correo ya existe, devolver mensaje amigable: **"Correo ya utilizado"**.
+  - Si no se captura correo, permitir guardar sin validar duplicado (evita el error de UNIQUE KEY con valor vacío).
+- El error técnico de SQL ya no debe llegar al usuario.
+
+## 14. Usuarios – Formulario de información personal
+
+**Archivo:** `Views/Usuarios/Index.cshtml`
+
+- Cambiar labels:
+  - "Nombre" → **"Nombres"**
+  - "Apellidos" → **"Apellido Paterno"** y **"Apellido Materno"**
+- Mantener por ahora un solo campo de apellidos en el request (`UsuarioCrudRequest.apellidos`), concatenando en el controlador si el usuario escribe ambos apellidos en campos separados. Si la base de datos ya tiene columnas separadas, se ajustará en el SP/DAL correspondiente.
+
+## 15. RME – Servicio único / un solo viaje
+
+**Archivos:**
+- `Views/Cotizador/Generar.cshtml`
+- `Models/Cotizador/ServicioCotizadoModel.cs` (solo si se requiere almacenar fecha puntual)
+- `DAL/Cotizador/CotizacionesDAL.cs` (solo si se requiere persistir nuevos campos)
+
+- Agregar opción **"Único"** al select de tipo de servicio (`mdlTipoCobro` o un nuevo select de periodicidad).
+- Al seleccionar **"Único"**:
+  - Ocultar los checkboxes de días de la semana.
+  - Mostrar un campo de fecha puntual (`mdlFechaUnica`).
+- En el cálculo de subtotal (`calcularSubtotalItem`):
+  - Si es servicio único, cobrar **un solo viaje** (no multiplicar por 4 semanas).
+- Guardar la fecha puntual en el objeto del item.
+
+---
+
+## Archivos que se modificarán
+
+1. `Views/Prospectos/_FormularioProspecto.cshtml`
+2. `Views/Prospectos/_ModalContacto.cshtml`
+3. `Views/Prospectos/_ModalSucursal.cshtml`
+4. `Scripts/prospectos.js`
+5. `Models/ViewModels/ProspectoViewModel.cs`
+6. `Views/Cotizador/Index.cshtml`
+7. `Views/Cotizador/Generar.cshtml`
+8. `Models/Cotizador/ServicioCotizadoModel.cs`
+9. `DAL/Cotizador/CotizacionesDAL.cs`
+10. `DAL/Usuarios/UsuariosDAL.cs`
+11. `Controllers/Usuarios/UsuariosController.cs`
+12. `Views/Usuarios/Index.cshtml`
+
+---
+
+## Notas / riesgos
+
+- **Stored procedures:** No se modificarán salvo que sea estrictamente necesario. El envío de correo de "Finalizar datos de registro" se asume que ya lo hace `SP_Notificaciones_Insert`; solo se oculta la contraseña en la UI.
+- **Unidades de medida RME (m²/m³):** Se dejan sin cambios según lo indicado.
+- **Manifiestos y Rutas Cotizadas:** Se dejan fuera del plan hasta confirmación.
+- **Testing:** Se recomienda probar flujos completos de creación de prospecto, cotización RME única, rechazo/reenvío de validación y creación de usuario con correo duplicado.

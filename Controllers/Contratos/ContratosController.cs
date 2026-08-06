@@ -555,6 +555,7 @@ namespace CRMSistema.Controllers.Contratos
                 decimal descuento = (s.porcentaje_descuento ?? 0) / 100m;
                 string tipo = (s.tipo_residuo ?? "").ToUpperInvariant();
                 bool isRsu = !tipo.Contains("ESPECIAL") && (tipo.Contains("RSU") || tipo.Contains("URBANO") || tipo.Contains("SÓLIDO") || (s.costo_tonelada ?? 0) == 0 && (s.costo_disposicion ?? 0) == 0);
+                bool esUnico = (s.tipo_cobro ?? "").Equals("UNICO", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(s.fecha_unica);
                 decimal baseCalc = 0;
 
                 if (isRsu)
@@ -562,6 +563,12 @@ namespace CRMSistema.Controllers.Contratos
                     decimal bolsas = s.volumen_estimado ?? 0;
                     decimal bolsasMensuales = (bolsas * diasPorSemana * 52m) / 12m;
                     baseCalc = bolsasMensuales * (s.precio_unitario ?? 18.60m);
+                }
+                else if (esUnico)
+                {
+                    decimal costoT = s.costo_tonelada ?? 0;
+                    decimal costoD = s.costo_disposicion ?? 0;
+                    baseCalc = costoT + costoD;
                 }
                 else
                 {

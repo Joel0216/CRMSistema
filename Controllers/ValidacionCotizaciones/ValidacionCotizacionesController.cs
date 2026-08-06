@@ -196,14 +196,7 @@ namespace CRMSistema.Controllers.ValidacionCotizaciones
                     System.Diagnostics.Debug.WriteLine("Error actualizando estatus a Autorizado: " + exEstatus.Message);
                 }
 
-                // Redirigir al generador para que el usuario envíe la cotización al cliente.
-                var urlGenerador = Url.Action("Generar", "Cotizador", new {
-                    prospectoId = validacion.Prospecto_ID,
-                    borradorId = validacion.Borrador_ID,
-                    autorizada = 1
-                });
-
-                return JsonContent(new { success = true, message = "Cotización autorizada. Redirigiendo al generador...", folio, redirectUrl = urlGenerador });
+                return JsonContent(new { success = true, message = "Cotización autorizada correctamente.", folio });
             }
             catch (Exception ex)
             {

@@ -91,6 +91,7 @@ namespace CRMSistema.Controllers.Cotizador
 
 
         [HttpGet]
+        [Route("Cotizador/GetValidacionPorBorrador/{borradorId}")]
         public ActionResult GetValidacionPorBorrador(int borradorId)
         {
             try

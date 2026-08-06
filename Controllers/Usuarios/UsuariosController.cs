@@ -83,6 +83,19 @@ namespace CRMSistema.Controllers.Usuarios
                 if (string.IsNullOrWhiteSpace(req.nombre) || string.IsNullOrWhiteSpace(req.usuario))
                     return Json(new { success = false, error = "Nombre y usuario son obligatorios." });
 
+                if (string.IsNullOrWhiteSpace(req.correo))
+                    return Json(new { success = false, error = "El correo electrónico es obligatorio." });
+
+                var correoLimpio = req.correo.Trim();
+                if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(correoLimpio))
+                    return Json(new { success = false, error = "El correo electrónico no tiene un formato válido." });
+
+                if (_dal.ObtenerTodos().Any(u => !string.IsNullOrWhiteSpace(u.correo) &&
+                    u.correo.Trim().Equals(correoLimpio, StringComparison.OrdinalIgnoreCase) && u.id != req.id))
+                    return Json(new { success = false, error = "El correo electrónico ya está registrado. Usa otro correo." });
+
+                req.correo = correoLimpio;
+
                 if (req.rolId <= 0)
                     return Json(new { success = false, error = "Debes seleccionar un rol." });
 

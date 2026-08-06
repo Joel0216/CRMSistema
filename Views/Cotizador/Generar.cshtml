@@ -11,11 +11,11 @@
     <div class="d-flex gap-3 flex-wrap align-items-end">
         <div>
             <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha de inicio</label>
-            <input type="date" class="form-input form-control form-control-sm" id="fechaInicio" disabled style="min-width: 130px; width: auto;">
+            <input type="date" class="form-input form-control form-control-sm" id="fechaInicio" disabled autocomplete="off" style="min-width: 130px; width: auto;">
         </div>
         <div>
             <label style="font-size: 11px; font-weight: 700; color: var(--text3);">Fecha límite</label>
-            <input type="date" class="form-input form-control form-control-sm" id="fechaLimite" style="min-width: 130px; width: auto;">
+            <input type="date" class="form-input form-control form-control-sm" id="fechaLimite" autocomplete="off" style="min-width: 130px; width: auto;">
         </div>
         <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm align-self-end h-auto py-1">
             <i class="fas fa-arrow-left me-1"></i> Volver
@@ -57,16 +57,16 @@
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div>
                     <label class="form-label" style="font-size: 12px;">Domicilio de Servicio</label>
-                    <input class="form-control form-control-sm" id="activeDomicilio" disabled style="background: #f9f9f9;" />
+                    <input class="form-control form-control-sm" id="activeDomicilio" disabled style="background: #f9f9f9;" autocomplete="off" />
                 </div>
                 <div class="d-flex gap-3">
                     <div class="flex-fill">
                         <label class="form-label" style="font-size: 12px;">Latitud</label>
-                        <input class="form-control form-control-sm" id="activeLat" disabled style="background: #f9f9f9;" />
+                        <input class="form-control form-control-sm" id="activeLat" disabled style="background: #f9f9f9;" autocomplete="off" />
                     </div>
                     <div class="flex-fill">
                         <label class="form-label" style="font-size: 12px;">Longitud</label>
-                        <input class="form-control form-control-sm" id="activeLng" disabled style="background: #f9f9f9;" />
+                        <input class="form-control form-control-sm" id="activeLng" disabled style="background: #f9f9f9;" autocomplete="off" />
                     </div>
                 </div>
                 <div>
@@ -152,7 +152,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">PRODUCTO (Tipo Servicio)</label>
-                    <select class="form-select form-select-sm" id="mdlTipoServicio" onchange="toggleModalFields()">
+                    <select class="form-select form-select-sm" id="mdlTipoServicio" onchange="toggleModalFields()" autocomplete="off">
                         <option value="RSU">RSU</option>
                         <option value="RME">RME</option>
                     </select>
@@ -160,16 +160,24 @@
 
                 <div class="col-md-8 rsu-field">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE RESIDUO</label>
-                    <select class="form-select form-select-sm" id="mdlCodigoControl"></select>
+                    <select class="form-select form-select-sm" id="mdlCodigoControl" autocomplete="off"></select>
                 </div>
 
                 <div class="col-md-4 rme-field" style="display: none;">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE UNIDAD</label>
-                    <select class="form-select form-select-sm" id="mdlTipoUnidad" onchange="updateUnidadInfo()"></select>
+                    <select class="form-select form-select-sm" id="mdlTipoUnidad" onchange="updateUnidadInfo()" autocomplete="off"></select>
                 </div>
                 <div class="col-md-4 rme-field" style="display: none;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE SERVICIO</label>
-                    <select class="form-select form-select-sm" id="mdlTipoCobro">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">TIPO DE SERVICIO (ÚNICO / CONSTANTE)</label>
+                    <select class="form-select form-select-sm" id="mdlTipoServicioRME" onchange="toggleRmeModo()" autocomplete="off">
+                        <option value="">-- Selecciona --</option>
+                        <option value="CONSTANTE">CONSTANTE</option>
+                        <option value="UNICO">ÚNICO</option>
+                    </select>
+                </div>
+                <div class="col-md-4 rme-field rme-constante" style="display: none;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700;">COBRO</label>
+                    <select class="form-select form-select-sm" id="mdlTipoCobro" autocomplete="off">
                         <option value="">-- Selecciona --</option>
                         <option value="VIAJE">VIAJE</option>
                         <option value="PESO">PESO</option>
@@ -180,16 +188,16 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6 rsu-field">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">BOLSAS CONTRATADAS POR DÍA</label>
-                    <input type="number" class="form-control form-control-sm" id="mdlBolsas" value="20" min="1">
+                    <input type="number" class="form-control form-control-sm" id="mdlBolsas" value="20" min="1" autocomplete="off">
                 </div>
 
-                <div class="col-md-6 rme-field" style="display: none;">
+                <div class="col-md-6 rme-field rme-constante" style="display: none;">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">NO. RECOLECCIONES / DÍA</label>
-                    <input type="number" class="form-control form-control-sm" id="mdlRecolectores" value="1" min="1">
+                    <input type="number" class="form-control form-control-sm" id="mdlRecolectores" value="1" min="1" autocomplete="off">
                 </div>
                 <div class="col-md-6 rme-field" style="display: none;">
                     <label class="form-label" style="font-size: 12px; font-weight: 700;">TURNO</label>
-                    <select class="form-select form-select-sm" id="mdlTurno">
+                    <select class="form-select form-select-sm" id="mdlTurno" autocomplete="off">
                         <option value="">-- Selecciona --</option>
                         <option value="MAÑANA">MAÑANA</option>
                         <option value="TARDE">TARDE</option>
@@ -203,17 +211,17 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" style="font-size: 12px; font-weight: 700;">COSTO UNITARIO DEL SERVICIO</label>
-                        <input type="number" class="form-control form-control-sm" id="mdlCostoTonelada" value="0" disabled style="background: #f5f5f5;">
+                        <input type="number" class="form-control form-control-sm" id="mdlCostoTonelada" value="0" disabled style="background: #f5f5f5;" autocomplete="off">
                         <small class="text-muted" style="font-size: 10px;">Asignado automáticamente por tipo de unidad.</small>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" style="font-size: 12px; font-weight: 700;">COSTO DISPOSICIÓN EXTRA</label>
-                        <input type="number" class="form-control form-control-sm" id="mdlCostoDisposicion" value="0" min="0">
+                        <input type="number" class="form-control form-control-sm" id="mdlCostoDisposicion" value="0" min="0" autocomplete="off">
                     </div>
                 </div>
             </div>
 
-            <div>
+            <div id="diasRecoleccionWrapper">
                 <label class="form-label" style="font-size: 12px; font-weight: 700;">DÍAS DE RECOLECCIÓN SOLICITADO</label>
                 <div class="d-flex flex-wrap gap-3 mt-2" id="mdlDiasContainer">
                     <label class="d-flex align-items-center gap-1" style="font-size: 13px; font-weight: 600; cursor: pointer;">
@@ -238,6 +246,16 @@
                         <input type="checkbox" value="Domingo" class="chk-dia" checked> DOMINGO
                     </label>
                 </div>
+            </div>
+            <div class="unico-field mb-3" style="display: none;">
+                <label class="form-label" style="font-size: 12px; font-weight: 700;">FECHA DEL SERVICIO</label>
+                <input type="date" class="form-control form-control-sm" id="mdlFechaUnica" style="max-width: 220px;" autocomplete="off">
+            </div>
+
+            <div id="rmeUnicoDiasNota" class="unico-field mb-3" style="display: none;">
+                <p style="font-size: 12px; color: #33691E; background: #F1F8E9; border: 1px solid #C5E1A5; border-radius: 6px; padding: 10px; margin: 0;">
+                    <i class="fas fa-info-circle"></i> El servicio <strong>Único</strong> se cobra <strong>una sola vez</strong>, sin importar los d&iacute;as seleccionados.
+                </p>
             </div>
         </div>
 
@@ -309,7 +327,27 @@
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num || 0);
         };
 
+        const obtenerDiaDeFecha = (fechaStr) => {
+            if (!fechaStr) return '';
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const d = new Date(fechaStr + 'T00:00:00');
+            return dias[d.getDay()];
+        };
+
         $(document).ready(function() {
+            // Desactivar autocompletado/autofill en todos los inputs y selects del cotizador
+            $('input, select, textarea').each(function() {
+                $(this).attr('autocomplete', 'off');
+                $(this).attr('readonly', false);
+            });
+            // Hack para evitar autofill de Chrome: agregar y quitar readonly rápidamente
+            setTimeout(function() {
+                $('input[type="text"], input[type="number"], input[type="date"]').attr('readonly', true);
+                setTimeout(function() {
+                    $('input[type="text"], input[type="number"], input[type="date"]').attr('readonly', false);
+                }, 100);
+            }, 0);
+
             if (!prospectoId) {
                 window.location.href = '@Url.Action("Index", "Prospectos")';
                 return;
@@ -352,7 +390,7 @@
                             if (datos.fechaLimite) $('#fechaLimite').val(datos.fechaLimite);
                             if (datos.enviadoACliente === true) esEnviadaAlCliente = true;
                             borradorGuardadoId = parseInt(borradorId);
-                            promesaValidacion = fetch('@Url.Action("GetValidacionPorBorrador", "Cotizador")/' + borradorId).then(r => r.json());
+                            promesaValidacion = fetch('@Url.Action("GetValidacionPorBorrador", "Cotizador")?borradorId=' + borradorId).then(r => r.json());
                         } catch (e) {
                             console.error('Error parsing borrador:', e);
                         }
@@ -395,9 +433,9 @@
 
             let estadoHtml = '';
             if (esEnviadaAlCliente) {
-                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-lock"></i> Cotización enviada al cliente (solo lectura)</span></div>`;
+                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-lock"></i> Estatus: Enviada al cliente (solo lectura)</span></div>`;
             } else if (esAutorizada) {
-                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-check-circle"></i> Cotización autorizada — lista para enviar al cliente</span></div>`;
+                estadoHtml = `<div class="col-12 mb-2"><span class="badge" style="background:#E8F5E9; color:#2E7D32; padding:8px 12px; border-radius:6px; font-size:13px;"><i class="fas fa-check-circle"></i> Estatus: Autorizado — lista para enviar al cliente</span></div>`;
             }
 
             const htmlInfo = estadoHtml + `
@@ -425,15 +463,19 @@
             if (!modoSoloLectura) return;
             // Fechas y tabla
             $('#fechaInicio, #fechaLimite').prop('disabled', true);
-            $('#serviciosTbody input, #serviciosTbody select, #serviciosTbody textarea, #serviciosTbody button').prop('disabled', true);
-            $('#serviciosTbody button').hide();
+            $('#serviciosTbody input.input-editable').prop('disabled', true);
+            $('#serviciosTbody button.btn-eliminar-servicio').prop('disabled', true).hide();
             // Botón de agregar servicio
             $('button[onclick="openModalServicio()"]').prop('disabled', true).hide();
             // Campos del modal de servicio (por si se llegara a abrir)
-            $('#mdlTipoServicio, #mdlCodigoControl, #mdlBolsas, #mdlRecolectores, #mdlTipoUnidad, #mdlTipoCobro, #mdlCostoDisposicion, #mdlTurno').prop('disabled', true);
+            $('#mdlTipoServicio, #mdlCodigoControl, #mdlBolsas, #mdlRecolectores, #mdlTipoUnidad, #mdlTipoServicioRME, #mdlTipoCobro, #mdlCostoDisposicion, #mdlTurno, #mdlFechaUnica, #mdlCostoTonelada').prop('disabled', true);
             $('.chk-dia').prop('disabled', true);
             $('button[onclick="addServicio()"]').prop('disabled', true).hide();
             $('button[onclick="closeModalServicio()"]').text('Cerrar');
+
+            // Doble seguro: deshabilitar clics en la tabla y el botón de agregar
+            $('#serviciosTbody').css('pointer-events', 'none');
+            $('button[onclick="openModalServicio()"]').closest('div').hide();
         }
 
         function renderBotonesAccion() {
@@ -543,9 +585,10 @@
             } else {
                 activeItems.forEach(it => {
                     const isRSU = it.tipo_servicio === 'RSU';
-                    const badgeColor = isRSU ? '#E67E22' : '#27AE60';
+                    const esUnicoCobro = (it.tipo_cobro || '').toUpperCase() === 'UNICO';
+                    const badgeColor = isRSU ? '#E67E22' : (esUnicoCobro ? '#2980B9' : '#27AE60');
                     const tipoTexto = isRSU ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
-                    
+
                     let detalles = '';
                     if (isRSU) {
                         detalles = `
@@ -553,6 +596,15 @@
                                 <span style="color: #666;">Producto:</span><span style="font-weight: 700; color: #333;">${it.tipo_residuo}</span>
                                 <span style="color: #666;">Ruta:</span><span style="color: #3498DB; font-weight: 700;">—</span>
                                 <span style="color: #666;">Bolsas:</span><span style="font-weight: 700; color: #333;">${it.bolsas}</span>
+                            </div>`;
+                    } else if (esUnicoCobro) {
+                        detalles = `
+                            <div style="display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
+                                <span style="color: #666;">Unidad:</span><span style="color: #3498DB; font-weight: 700;">${it.tipo_unidad || 'N/A'}</span>
+                                <span style="color: #666;">Fecha:</span><span style="font-weight: 700; color: #333;">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>
+                                <span style="color: #666;">Recolecciones:</span><span style="font-weight: 700; color: #333;">${it.recolectores}</span>
+                                <span style="color: #666;">Turno:</span><span style="color: #E67E22; font-weight: 700; text-transform: capitalize;">${(it.turno || '').toLowerCase()}</span>
+                                <span style="color: #666;">Cobro:</span><span style="font-weight: 700; color: #27AE60;">Una sola vez</span>
                             </div>`;
                     } else {
                         detalles = `
@@ -565,11 +617,16 @@
                             </div>`;
                     }
 
-                    let diasHtml = it.dias_asignados.map(d => {
-                        const bg = isRSU ? '#FFE0B2' : '#C8E6C9';
-                        const col = isRSU ? '#E65100' : '#2E7D32';
-                        return `<span style="background: ${bg}; color: ${col}; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">${d.substring(0,3)}</span>`;
-                    }).join(' ');
+                    let diasHtml = '';
+                    if (esUnicoCobro && it.fecha_unica) {
+                        diasHtml = `<span style="background: #D6EAF8; color: #2980B9; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">${it.fecha_unica.split('-').reverse().join('/')}</span>`;
+                    } else {
+                        diasHtml = it.dias_asignados.map(d => {
+                            const bg = isRSU ? '#FFE0B2' : '#C8E6C9';
+                            const col = isRSU ? '#E65100' : '#2E7D32';
+                            return `<span style="background: ${bg}; color: ${col}; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">${d.substring(0,3)}</span>`;
+                        }).join(' ');
+                    }
 
                     const pu = isRSU ? formatMXN(getPrecioUnitarioRSU(it)) : formatMXN(getPrecioUnitarioRME(it));
                     const puColor = isRSU ? '#333' : '#2E7D32';
@@ -577,21 +634,21 @@
                     html += `
                         <tr>
                             <td style="padding: 16px; vertical-align: middle; border: 1px solid #eee;"><span style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">${it.tipo_servicio}</span></td>
-                            <td style="padding: 16px; font-weight: 600; font-size: 12px; color: #333; vertical-align: middle; border: 1px solid #eee;">${tipoTexto}</td>
+                            <td style="padding: 16px; font-weight: 600; font-size: 12px; color: #333; vertical-align: middle; border: 1px solid #eee;">${it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial'}</td>
                             <td style="padding: 16px; vertical-align: middle; border: 1px solid #eee;">${detalles}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
                                 <div style="display: flex; gap: 4px; justify-content: center;">${diasHtml}</div>
                             </td>
                             <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; vertical-align: middle; color: ${puColor}; border: 1px solid #eee;">${pu}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
-                                <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
+                                <input type="number" min="0" value="${it.porcentaje_adicional}" onchange="updatePorcentaje(${it.id}, this.value)" class="input-editable" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
                             </td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #555; border: 1px solid #eee;">
-                                <input type="number" min="0" max="100" value="${it.porcentaje_descuento || 0}" onchange="updateDescuento(${it.id}, this.value)" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
+                                <input type="number" min="0" max="100" value="${it.porcentaje_descuento || 0}" onchange="updateDescuento(${it.id}, this.value)" class="input-editable" style="background: transparent; border: none; color: #555; text-align: right; width: 45px; padding: 0;" /> %
                             </td>
                             <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 12px; color: #2E7D32; vertical-align: middle; border: 1px solid #eee;">${formatMXN(calcularSubtotalItem(it))}</td>
                             <td style="padding: 16px; text-align: center; vertical-align: middle; border: 1px solid #eee;">
-                                <button type="button" style="background: transparent; border: none; font-size: 18px; cursor: pointer;" onclick="removeItem(${it.id})">
+                                <button type="button" class="btn-eliminar-servicio" style="background: transparent; border: none; font-size: 18px; cursor: pointer;" onclick="removeItem(${it.id})">
                                     <i class="far fa-minus-square" style="color: #C0392B;"></i>
                                 </button>
                             </td>
@@ -620,6 +677,8 @@
                 const diasPorSemana = Array.isArray(i.dias_asignados) ? i.dias_asignados.length : 1;
                 const bolsasMensuales = (i.bolsas * diasPorSemana * 52) / 12;
                 base = bolsasMensuales * getPrecioUnitarioRSU(i);
+            } else if ((i.tipo_cobro || '').toUpperCase() === 'UNICO') {
+                base = getPrecioUnitarioRME(i);
             } else {
                 const viajesMensuales = i.recolectores * i.dias_asignados.length * 4;
                 const costo_por_viaje = getPrecioUnitarioRME(i);
@@ -702,10 +761,12 @@
             $('#mdlRecolectores').val(1);
             $('#mdlTurno').val('');
             $('#mdlTipoUnidad').val('');
+            $('#mdlTipoServicioRME').val('');
             $('#mdlTipoCobro').val('');
             $('#mdlCostoTonelada').val(0);
             $('#mdlCostoDisposicion').val(0);
             $('.chk-dia').prop('checked', true);
+            $('#mdlFechaUnica').val('');
             $('#modalServicio').css('display', 'flex');
         }
 
@@ -727,15 +788,35 @@
             $('#mdlTipoUnidad').html(rmeHtml);
         }
 
-
         function toggleModalFields() {
             const t = $('#mdlTipoServicio').val();
             if (t === 'RSU') {
                 $('.rsu-field').show();
                 $('.rme-field').hide();
+                $('#diasRecoleccionWrapper').show();
+                $('.unico-field').hide();
             } else {
                 $('.rsu-field').hide();
                 $('.rme-field').show();
+                toggleRmeModo();
+            }
+        }
+
+        function toggleRmeModo() {
+            const modo = $('#mdlTipoServicioRME').val();
+            if (modo === 'UNICO') {
+                // Servicio único: solo se muestra la fecha del servicio.
+                $('#diasRecoleccionWrapper').hide();
+                $('.rme-constante').hide();
+                $('.unico-field').show();
+            } else if (modo === 'CONSTANTE') {
+                $('#diasRecoleccionWrapper').show();
+                $('.rme-constante').show();
+                $('.unico-field').hide();
+            } else {
+                $('#diasRecoleccionWrapper').show();
+                $('.rme-constante').show();
+                $('.unico-field').hide();
             }
         }
 
@@ -751,11 +832,17 @@
 
         function addServicio() {
             const tipo = $('#mdlTipoServicio').val();
+            const modoRME = tipo === 'RME' ? $('#mdlTipoServicioRME').val() : '';
+            const esUnico = modoRME === 'UNICO';
             const dias = [];
             $('.chk-dia:checked').each(function() { dias.push($(this).val()); });
-            
-            if (dias.length === 0) {
-                Swal.fire('Atención', 'Selecciona al menos un día de recolección.', 'warning');
+
+            if (tipo === 'RME' && !modoRME) {
+                Swal.fire('Atenci&oacute;n', 'Selecciona el tipo de servicio RME: Constante o &Uacute;nico.', 'warning');
+                return;
+            }
+            if (!esUnico && dias.length === 0) {
+                Swal.fire('Atenci&oacute;n', 'Selecciona al menos un d&iacute;a de recolecci&oacute;n.', 'warning');
                 return;
             }
 
@@ -772,23 +859,31 @@
                 const cod = $('#mdlCodigoControl').val();
                 if (!cod) return Swal.fire('Falta residuo', 'Selecciona un tipo de residuo.', 'warning');
                 const serv = serviciosDb.find(s => s.codigo_control === cod);
-                
+
                 newItem.codigo_control = cod;
                 newItem.tipo_residuo = serv ? serv.descripcion : 'RSU';
                 newItem.bolsas = Number($('#mdlBolsas').val()) || 1;
                 newItem.precio_unitario = serv ? Number(serv.precio) : 18.60;
-                
+
             } else {
                 newItem.tipo_residuo = 'Residuos de Manejo Especial';
                 newItem.tipo_unidad = $('#mdlTipoUnidad').val();
-                newItem.tipo_cobro = $('#mdlTipoCobro').val();
-                newItem.recolectores = Number($('#mdlRecolectores').val()) || 1;
+                newItem.tipo_cobro = esUnico ? 'UNICO' : $('#mdlTipoCobro').val();
+                newItem.recolectores = esUnico ? 1 : (Number($('#mdlRecolectores').val()) || 1);
                 newItem.turno = $('#mdlTurno').val();
                 newItem.costo_tonelada = Number($('#mdlCostoTonelada').val()) || 0;
                 newItem.costo_disposicion = Number($('#mdlCostoDisposicion').val()) || 0;
-                
-                if (!newItem.tipo_unidad) return Swal.fire('Atención', 'Selecciona un tipo de unidad RME.', 'warning');
-                if (!newItem.tipo_cobro) return Swal.fire('Atención', 'Selecciona un tipo de servicio (cobro).', 'warning');
+
+                if (!newItem.tipo_unidad) return Swal.fire('Atenci&oacute;n', 'Selecciona un tipo de unidad RME.', 'warning');
+                if (!esUnico && !newItem.tipo_cobro) return Swal.fire('Atenci&oacute;n', 'Selecciona el cobro (Viaje o Peso).', 'warning');
+
+                if (esUnico) {
+                    const fechaUnica = $('#mdlFechaUnica').val();
+                    if (!fechaUnica) return Swal.fire('Atenci&oacute;n', 'Selecciona la fecha del servicio.', 'warning');
+                    newItem.fecha_unica = fechaUnica;
+                    newItem.tipo_cobro = 'UNICO';
+                    newItem.dias_asignados = [obtenerDiaDeFecha(fechaUnica)];
+                }
             }
 
             items.push(newItem);
@@ -898,7 +993,9 @@
                     }
                 });
             } else {
-                enviar();
+                guardarBorrador().then(r => {
+                    if (r.success) enviar();
+                });
             }
         }
 
@@ -939,7 +1036,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Cotización enviada',
-                        html: `Se envió el correo al cliente.<br><br>Contraseña generada: ${emailRes.password_temporal || 'N/A'}<br><br>El estatus cambió a "Cotizado".`,
+                        html: `Se envió el correo al cliente.<br><br>El estatus cambió a "Cotizado".`,
                         timer: 6000,
                         showConfirmButton: true
                     }).then(() => {
@@ -1000,6 +1097,7 @@
                         .badge-rme { background: #4CAF50; color: white; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
                         .badge-day-rsu { background: #FFF3E0; color: #E65100; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
                         .badge-day-rme { background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
+                        .badge-day-unico { background: #D6EAF8; color: #2980B9; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
                         
                         .detail-grid { display: grid; grid-template-columns: 80px 1fr; gap: 4px; align-items: center; }
                         .detail-label { color: #666; }
@@ -1007,6 +1105,7 @@
                         .detail-val-purple { color: #8E24AA; font-weight: 600; }
                         .detail-val-orange { color: #E65100; font-weight: 600; }
                         .detail-val-dark { color: #333; font-weight: 600; }
+                        .detail-val-green { color: #2E7D32; font-weight: 600; }
 
                         .summary-box { float: right; width: 350px; margin-top: 20px; font-size: 13px; color: #555; }
                         .summary-row { display: flex; justify-content: space-between; padding: 6px 0; }
@@ -1068,10 +1167,11 @@
                     `;
                     activeItems.forEach(it => {
                         const isRSU = it.tipo_servicio === 'RSU';
+                        const esUnicoCobro = (it.tipo_cobro || '').toUpperCase() === 'UNICO';
                         const badgeType = isRSU ? 'badge-rsu' : 'badge-rme';
                         const badgeDay = isRSU ? 'badge-day-rsu' : 'badge-day-rme';
                         const servName = isRSU ? 'Residuos<br>Sólidos<br>Urbanos' : 'Residuos<br>de Manejo<br>Especial';
-                        
+
                         let detalles = '';
                         if (isRSU) {
                             detalles = `
@@ -1079,6 +1179,15 @@
                                     <span class="detail-label">Producto:</span> <span class="detail-val-dark">${it.tipo_residuo}</span>
                                     <span class="detail-label">Ruta:</span> <span class="detail-val-blue">Por asignar</span>
                                     <span class="detail-label">Bolsas:</span> <span class="detail-val-dark">${it.bolsas}</span>
+                                </div>`;
+                        } else if (esUnicoCobro) {
+                            detalles = `
+                                <div class="detail-grid">
+                                    <span class="detail-label">Unidad:</span> <span class="detail-val-blue">${it.tipo_unidad || 'N/A'}</span>
+                                    <span class="detail-label">Fecha:</span> <span class="detail-val-dark">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>
+                                    <span class="detail-label">Recolecciones:</span> <span class="detail-val-dark">${it.recolectores}</span>
+                                    <span class="detail-label">Turno:</span> <span class="detail-val-orange">${(it.turno || '').toLowerCase().replace(/^\w/, c => c.toUpperCase())}</span>
+                                    <span class="detail-label">Cobro:</span> <span class="detail-val-green">Una sola vez</span>
                                 </div>`;
                         } else {
                             detalles = `
@@ -1091,7 +1200,12 @@
                                 </div>`;
                         }
 
-                        let diasHtml = it.dias_asignados.map(d => `<span class="${badgeDay}">${d.substring(0,3)}</span>`).join('');
+                        let diasHtml = '';
+                        if (esUnicoCobro && it.fecha_unica) {
+                            diasHtml = `<span class="badge-day-unico">${it.fecha_unica.split('-').reverse().join('/')}</span>`;
+                        } else {
+                            diasHtml = it.dias_asignados.map(d => `<span class="${badgeDay}">${d.substring(0,3)}</span>`).join('');
+                        }
                         const pu = isRSU ? formatMXN(getPrecioUnitarioRSU(it)) : formatMXN(getPrecioUnitarioRME(it));
                         const sub = formatMXN(calcularSubtotalItem(it));
                         const subColor = '#2E7D32';
@@ -1099,7 +1213,7 @@
                         htmlPdf += `
                             <tr>
                                 <td class="text-center" style="vertical-align: middle;"><span class="${badgeType}">${it.tipo_servicio}</span></td>
-                                <td style="vertical-align: middle; font-weight: bold; color: #555;">${servName}</td>
+                                <td style="vertical-align: middle; font-weight: bold; color: #555;">${it.tipo_servicio === 'RSU' ? 'Residuos<br>Sólidos<br>Urbanos' : 'Residuos<br>de Manejo<br>Especial'}</td>
                                 <td style="vertical-align: middle;">${detalles}</td>
                                 <td class="text-center" style="vertical-align: middle;">${diasHtml}</td>
                                 <td class="text-center" style="vertical-align: middle; font-weight: bold; color: #333;">${pu}</td>
@@ -1206,6 +1320,7 @@
                                 tipo_cobro: it.tipo_cobro,
                                 recolectores: it.recolectores,
                                 turno: it.turno,
+                                fecha_unica: it.fecha_unica || null,
                                 ruta: 'Por asignar'
                             })
                         }).then(r=>r.json()).then(sRes => {

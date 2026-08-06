@@ -33,7 +33,7 @@
         window.sucursalesIniciales = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Sucursales ?? new List<CRMSistema.Models.ViewModels.ProspectoSucursalViewModel>()));
         window.esModoDetalle = true;
     </script>
-    <script src="~/Scripts/prospectos.js?v=21"></script>
+    <script src="~/Scripts/prospectos.js?v=25"></script>
     <script>
         $(function () {
             // Mostrar modal
@@ -45,7 +45,6 @@
             // Mostrar secciones de estatus solo en detalle
             $('#seccionVendedorDetalle').show();
             $('#seccionEstadoDetalle').show();
-            $('#seccionCotizacionDetalle').show();
             if ('@(Model.Estatus?.ToLower())' === 'rechazado') {
                 $('#motivoRechazoDetalle').show();
             }

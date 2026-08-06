@@ -119,11 +119,27 @@ namespace CRMSistema.DAL.Cotizador
                 foreach (var it in items)
                 {
                     var dias = ExtraerDias(it["dias_asignados"]);
+                    string tipoIt = (it["tipo_servicio"]?.Value<string>() ?? "").ToUpperInvariant();
+                    if (tipoIt != "RSU" && tipoIt != "RME") tipoIt = "RME";
+                    string tipoCobroIt = (it["tipo_cobro"]?.Value<string>() ?? "").ToUpperInvariant();
+                    bool esUnicoIt = tipoCobroIt == "UNICO" || !string.IsNullOrWhiteSpace(it["fecha_unica"]?.Value<string>());
+                    if (esUnicoIt && dias.Count == 0 && !string.IsNullOrWhiteSpace(it["fecha_unica"]?.Value<string>()))
+                    {
+                        try
+                        {
+                            var fechaU = DateTime.Parse(it["fecha_unica"].Value<string>());
+                            dias.Add(ObtenerDiaSemanaEspanol(fechaU));
+                        }
+                        catch { }
+                    }
                     int diasPorSemana = dias.Count > 0 ? dias.Count : 1;
                     decimal adicional = (it["porcentaje_adicional"]?.Value<decimal>() ?? 0) / 100m;
                     decimal descuento = (it["porcentaje_descuento"]?.Value<decimal>() ?? 0) / 100m;
 
                     string tipo = (it["tipo_servicio"]?.Value<string>() ?? "").ToUpperInvariant();
+                    string tipoCobro = (it["tipo_cobro"]?.Value<string>() ?? "").ToUpperInvariant();
+                    bool esUnico = tipoCobro == "UNICO" || !string.IsNullOrWhiteSpace(it["fecha_unica"]?.Value<string>());
+                    if (tipo != "RSU" && tipo != "RME") tipo = "RME";
                     decimal baseCalc = 0;
                     int? volumen = null;
                     decimal? precioUnitario = null;
@@ -136,6 +152,15 @@ namespace CRMSistema.DAL.Cotizador
                         baseCalc = bolsasMensuales * 18.60m;
                         volumen = bolsas;
                         precioUnitario = 18.60m;
+                    }
+                    else if (esUnico)
+                    {
+                        decimal costoT = it["costo_tonelada"]?.Value<decimal>() ?? 0;
+                        decimal costoD = it["costo_disposicion"]?.Value<decimal>() ?? 0;
+                        baseCalc = costoT + costoD;
+                        volumen = 1;
+                        precioUnitario = costoT + costoD;
+                        recolectores = 1;
                     }
                     else
                     {
@@ -169,6 +194,7 @@ namespace CRMSistema.DAL.Cotizador
                         recolectores = recolectores,
                         turno = it["turno"]?.Value<string>(),
                         ruta = it["ruta"]?.Value<string>() ?? "Por asignar",
+                        fecha_unica = it["fecha_unica"]?.Value<string>(),
                         costo_tonelada = it["costo_tonelada"]?.Value<decimal>(),
                         costo_disposicion = it["costo_disposicion"]?.Value<decimal>()
                     });
@@ -194,6 +220,12 @@ namespace CRMSistema.DAL.Cotizador
                     .ToList();
             }
             return dias;
+        }
+
+        private static string ObtenerDiaSemanaEspanol(DateTime fecha)
+        {
+            string[] dias = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
+            return dias[(int)fecha.DayOfWeek];
         }
     }
 }

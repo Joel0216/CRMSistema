@@ -1,0 +1,24 @@
+[2026-08-05 14:15:27] Nuevo prospecto POST inicio
+[2026-08-05 14:15:27] UpsertEmpresa OK: nombre=Prueba, id=2002, ms=28
+[2026-08-05 14:22:32] Nuevo prospecto POST inicio
+[2026-08-05 14:22:32] UpsertEmpresa OK: nombre=afefwef, id=2003, ms=27
+[2026-08-05 14:22:32] Crear SP_Prospectos_Create OK: empresaId=2003, id=2004, ms=389
+[2026-08-05 14:22:32] InsertarSucursales OK: prospectoId=2004, count=1, ms=31
+[2026-08-05 14:22:32] InsertarContactos OK: prospectoId=2004, count=1, ms=8
+[2026-08-05 14:22:32] Nuevo prospecto POST fin OK: id=2004
+[2026-08-05 14:22:33] Nuevo prospecto POST inicio
+[2026-08-05 14:22:33] UpsertEmpresa OK: nombre=afefwef, id=2003, ms=2
+[2026-08-05 14:22:34] Crear SP_Prospectos_Create OK: empresaId=2003, id=2005, ms=439
+[2026-08-05 14:22:34] InsertarSucursales OK: prospectoId=2005, count=1, ms=18
+[2026-08-05 14:22:34] InsertarContactos OK: prospectoId=2005, count=1, ms=2
+[2026-08-05 14:22:34] Nuevo prospecto POST fin OK: id=2005
+[2026-08-05 14:25:45] Nuevo prospecto POST inicio
+[2026-08-05 14:25:45] UpsertEmpresa OK: nombre=afefwef, id=2003, ms=17
+[2026-08-05 14:25:45] Crear SP_Prospectos_Create OK: empresaId=2003, id=2006, ms=18
+[2026-08-05 14:25:45] InsertarContactos OK: prospectoId=2006, count=1, ms=6
+[2026-08-05 14:25:45] Nuevo prospecto POST fin OK: id=2006
+[2026-08-05 14:28:57] Nuevo prospecto POST inicio
+[2026-08-05 14:28:58] UpsertEmpresa OK: nombre=afefwef, id=2003, ms=19
+[2026-08-05 14:28:58] Crear SP_Prospectos_Create OK: empresaId=2003, id=2007, ms=21
+[2026-08-05 14:28:58] InsertarContactos OK: prospectoId=2007, count=1, ms=7
+[2026-08-05 14:28:58] Nuevo prospecto POST fin OK: id=2007

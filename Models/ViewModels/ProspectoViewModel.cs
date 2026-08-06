@@ -13,10 +13,12 @@ namespace CRMSistema.Models.ViewModels
         [Display(Name = "Razón Social / Nombre completo")]
         public string Nombre { get; set; }
 
+        [Required(ErrorMessage = "El RFC es obligatorio.")]
         [StringLength(20, ErrorMessage = "Máximo 20 caracteres.")]
         [Display(Name = "RFC")]
         public string Rfc { get; set; }
 
+        [Required(ErrorMessage = "El Nombre Comercial es obligatorio.")]
         [StringLength(150, ErrorMessage = "Máximo 150 caracteres.")]
         [Display(Name = "Nombre Comercial")]
         public string NombreComercial { get; set; }
@@ -25,9 +27,11 @@ namespace CRMSistema.Models.ViewModels
         [Display(Name = "Tipo de persona")]
         public string TipoPersona { get; set; }
 
+        [Required(ErrorMessage = "Debe indicar si tiene sucursales.")]
         [Display(Name = "¿Tiene sucursales?")]
         public string TieneSucursales { get; set; }
 
+        [Required(ErrorMessage = "El nombre de contacto es obligatorio.")]
         [StringLength(150, ErrorMessage = "Máximo 150 caracteres.")]
         [Display(Name = "Nombre de contacto")]
         public string Contacto { get; set; }
@@ -74,6 +78,7 @@ namespace CRMSistema.Models.ViewModels
         [Display(Name = "Código Postal")]
         public string Cp { get; set; }
 
+        [Required(ErrorMessage = "El estado es obligatorio.")]
         [Display(Name = "Estado")]
         public string Estado { get; set; }
 
@@ -121,10 +126,17 @@ namespace CRMSistema.Models.ViewModels
         public DateTime? FechaRechazo { get; set; }
 
         // Fotos y documentos (Base64)
+        [Required(ErrorMessage = "La foto de fachada es obligatoria.")]
         public string FotoFachada { get; set; }
+
+        [Required(ErrorMessage = "La foto de acceso es obligatoria.")]
         public string FotoAcceso { get; set; }
+
+        [Required(ErrorMessage = "La foto de referencia es obligatoria.")]
         public string FotoReferencia { get; set; }
+
         public string DocumentoCatastral { get; set; }
+
         public string DocumentoCatastralNombre { get; set; }
 
         // Listas hijas

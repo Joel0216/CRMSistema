@@ -28,6 +28,54 @@
         return window.esModoDetalle === true;
     }
 
+    function esCorreoValido(email) {
+        if (!email) return false;
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function limpiarErroresEn(contenedor) {
+        if (contenedor) {
+            $(contenedor).find('.form-input-error').removeClass('form-input-error');
+        } else {
+            $('.form-input-error').removeClass('form-input-error');
+        }
+    }
+
+    function marcarCampoError(selector) {
+        $(selector).addClass('form-input-error');
+    }
+
+    window.actualizarMaxLengthRFC = function () {
+        var tipo = $('#TipoPersona').val();
+        var rfc = $('#Rfc');
+        if (!tipo) {
+            rfc.prop('readonly', true).attr('placeholder', 'Seleccione tipo de persona');
+            $('#rfcHelp').text('Seleccione el tipo de persona para habilitar el RFC.');
+            rfc.val('');
+            return;
+        }
+        rfc.prop('readonly', false).attr('placeholder', 'XAXX010101000');
+        var longitud = (tipo === 'Física') ? 13 : 12;
+        rfc.attr('maxlength', longitud);
+        var val = rfc.val();
+        if (val && val.length > longitud) {
+            rfc.val(val.substring(0, longitud));
+        }
+        $('#rfcHelp').text('Persona ' + tipo + ': ' + longitud + ' caracteres.');
+    };
+
+    function validarRFC(tipoPersona, rfc) {
+        if (!rfc) return false;
+        var longitudEsperada = (tipoPersona === 'Física') ? 13 : 12;
+        return rfc.length === longitudEsperada;
+    }
+
+    function obtenerMensajeRFC(tipoPersona) {
+        var longitud = (tipoPersona === 'Física') ? 13 : 12;
+        return 'RFC debe tener ' + longitud + ' caracteres para persona ' + ((tipoPersona || 'Moral').toLowerCase());
+    }
+
     // === Render contactos ===
     function renderContactos() {
         var $cont = $('#listaContactos').empty();
@@ -128,20 +176,117 @@
         if (btnGuardar) btnGuardar.style.display = esUltimo ? 'inline-block' : 'none';
     }
 
-    function validarTabProspecto(idx) {
-        var campos = [];
-        if (idx === 0) {
-            var razon = document.getElementById('Nombre');
-            if (razon && !razon.value.trim()) campos.push('&bull; <b>Raz&oacute;n Social / Nombre completo</b> (en Datos Personales)');
-            var tipo = document.getElementById('TipoPersona');
-            if (tipo && !tipo.value.trim()) campos.push('&bull; <b>Tipo de Persona</b> (en Datos Personales)');
+    function obtenerErroresSeccionContactos() {
+        var errores = [];
+        if (contactos.length === 0) {
+            errores.push({ campo: '#btnAgregarContacto', mensaje: 'Al menos un contacto en DATOS DE CONTACTO' });
+            return errores;
         }
-        if (campos.length > 0) {
+        for (var i = 0; i < contactos.length; i++) {
+            var c = contactos[i];
+            if (!c.NombreContacto || !c.NombreContacto.trim())
+                errores.push({ campo: '#btnAgregarContacto', mensaje: 'Contacto #' + (i + 1) + ': Nombre completo' });
+            if (!c.Correo || !c.Correo.trim())
+                errores.push({ campo: '#btnAgregarContacto', mensaje: 'Contacto #' + (i + 1) + ': Correo electrónico (requerido)' });
+            else if (!esCorreoValido(c.Correo))
+                errores.push({ campo: '#btnAgregarContacto', mensaje: 'Contacto #' + (i + 1) + ': Correo electrónico no válido' });
+            if (!c.Telefono || !c.Telefono.trim())
+                errores.push({ campo: '#btnAgregarContacto', mensaje: 'Contacto #' + (i + 1) + ': Teléfono' });
+        }
+        return errores;
+    }
+
+    function obtenerErroresSeccionSucursales() {
+        var errores = [];
+        if (sucursales.length === 0) {
+            errores.push({ campo: '#btnAgregarSucursal', mensaje: 'Al menos una sucursal en GESTIÓN DE SUCURSALES' });
+            return errores;
+        }
+        for (var i = 0; i < sucursales.length; i++) {
+            var s = sucursales[i];
+            var base = 'Sucursal #' + (i + 1) + ': ';
+            if (!s.NombreSucursal || !s.NombreSucursal.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Nombre de Sucursal' });
+            if (!s.TelefonoSucursal || !s.TelefonoSucursal.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Teléfono' });
+            else if (s.TelefonoSucursal.replace(/\D/g, '').length !== 10) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'El teléfono debe tener exactamente 10 dígitos' });
+            if (!s.CorreoElectronico || !s.CorreoElectronico.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Correo electrónico (requerido)' });
+            else if (!esCorreoValido(s.CorreoElectronico)) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Correo electrónico no válido' });
+            if (!s.NombreResponsable || !s.NombreResponsable.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Nombre del responsable' });
+            if (!s.Calle || !s.Calle.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Calle' });
+            if (!s.NumExt || !s.NumExt.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Número Exterior' });
+            if (!s.Colonia || !s.Colonia.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Colonia' });
+            if (!s.Municipio || !s.Municipio.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Municipio' });
+            if (!s.Cp || !s.Cp.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Código Postal' });
+            if (!s.Estado || !s.Estado.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Estado' });
+            if (!s.FotoFachada || !s.FotoFachada.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Foto 1 - Fachada' });
+            if (!s.FotoAcceso || !s.FotoAcceso.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Foto 2 - Acceso' });
+            if (!s.FotoReferencia || !s.FotoReferencia.trim()) errores.push({ campo: '#btnAgregarSucursal', mensaje: base + 'Foto 3 - Referencia' });
+        }
+        return errores;
+    }
+
+    function obtenerErroresTabProspecto(idx) {
+        var errores = [];
+        if (idx === 0) {
+            var nombre = $('#Nombre').val().trim();
+            var tipoPersona = $('#TipoPersona').val();
+            var rfc = $('#Rfc').val().trim();
+            var nombreComercial = $('#NombreComercial').val().trim();
+            var contacto = $('#Contacto').val().trim();
+            var telefono = $('#Telefono').val().trim();
+            var email = $('#Email').val().trim();
+
+            if (!tipoPersona) errores.push({ campo: '#TipoPersona', mensaje: 'Tipo de persona' });
+            if (!nombre) errores.push({ campo: '#Nombre', mensaje: 'Razón Social / Nombre completo' });
+            if (!rfc) errores.push({ campo: '#Rfc', mensaje: 'RFC (requerido)' });
+            else if (tipoPersona && !validarRFC(tipoPersona, rfc)) errores.push({ campo: '#Rfc', mensaje: obtenerMensajeRFC(tipoPersona) });
+            if (!nombreComercial) errores.push({ campo: '#NombreComercial', mensaje: 'Nombre Comercial' });
+
+            var tieneSucursales = $('#TieneSucursales').val();
+            if (!tieneSucursales) errores.push({ campo: '#TieneSucursales', mensaje: '¿Tiene sucursales?' });
+
+            if (!contacto) errores.push({ campo: '#Contacto', mensaje: 'Nombre completo de contacto' });
+            if (!telefono) errores.push({ campo: '#Telefono', mensaje: 'Teléfono de contacto' });
+            else if (telefono.length !== 10) errores.push({ campo: '#Telefono', mensaje: 'El teléfono debe tener exactamente 10 dígitos' });
+            if (!email) errores.push({ campo: '#Email', mensaje: 'Correo electrónico (requerido)' });
+            else if (!esCorreoValido(email)) errores.push({ campo: '#Email', mensaje: 'Correo electrónico no válido' });
+
+            if (window.requiereVendedor) {
+                var vendedorId = $('#VendedorId').val();
+                if (!vendedorId || vendedorId === '' || vendedorId === '0') {
+                    errores.push({ campo: '#VendedorId', mensaje: 'Asignar vendedor' });
+                }
+            }
+        } else if (idx === 1) {
+            if (!$('#Calle').val().trim()) errores.push({ campo: '#Calle', mensaje: 'Calle' });
+            if (!$('#NumExt').val().trim()) errores.push({ campo: '#NumExt', mensaje: 'Número Exterior' });
+            if (!$('#Colonia').val().trim()) errores.push({ campo: '#Colonia', mensaje: 'Colonia' });
+            if (!$('#Municipio').val().trim()) errores.push({ campo: '#Municipio', mensaje: 'Municipio' });
+            if (!$('#Cp').val().trim()) errores.push({ campo: '#Cp', mensaje: 'Código Postal' });
+            if (!$('#Estado').val().trim()) errores.push({ campo: '#Estado', mensaje: 'Estado' });
+        } else if (idx === 2) {
+            if (!$('#hdnFotoFachada').val().trim()) errores.push({ campo: '#fotoSlot1', mensaje: 'Foto 1 - Fachada' });
+            if (!$('#hdnFotoAcceso').val().trim()) errores.push({ campo: '#fotoSlot2', mensaje: 'Foto 2 - Acceso' });
+            if (!$('#hdnFotoReferencia').val().trim()) errores.push({ campo: '#fotoSlot3', mensaje: 'Foto 3 - Referencia' });
+            // Folio y documento catastral son OPCIONALES en matriz.
+        }
+        return errores;
+    }
+
+    function validarTabProspecto(idx) {
+        limpiarErroresEn('#tab-' + tabsProspecto[idx]);
+        var errores = obtenerErroresTabProspecto(idx);
+        if (errores.length > 0) {
+            errores.forEach(function (e) { marcarCampoError(e.campo); });
+            var nombresTabs = { 0: 'Datos Personales', 1: 'Dirección', 2: 'Fotos' };
+            var mensajes = errores.map(function (e) { return '&bull; <b>' + e.mensaje + '</b>'; });
             Swal.fire({
                 icon: 'warning',
                 title: 'Campos requeridos',
-                html: 'Por favor completa los siguientes campos antes de continuar:<br><br>' + campos.join('<br>'),
-                confirmButtonColor: '#7b3f1a'
+                html: 'Por favor completa los siguientes campos en <b>' + nombresTabs[idx] + '</b> antes de continuar:<br><br>' + mensajes.join('<br>'),
+                confirmButtonColor: '#7b3f1a',
+                didClose: function () {
+                    errores.forEach(function (e) { marcarCampoError(e.campo); });
+                }
             });
             return false;
         }
@@ -184,8 +329,10 @@
                 $('#btnAccionesDetalle').css('display', 'flex');
                 $('#seccionVendedorDetalle').show();
                 $('#seccionEstadoDetalle').show();
-                $('#seccionCotizacionDetalle').show();
-                if ($('#motivoRechazoDetalle').length && $('#hdnEstatusProspecto').val().toLowerCase() === 'rechazado') {
+                // La sección de COTIZACIÓN se oculta; su información se muestra dentro de ESTATUS.
+                $('#seccionCotizacionDetalle').hide();
+                var estatusProspecto = ($('#hdnEstatusProspecto').val() || '').toLowerCase();
+                if ($('#motivoRechazoDetalle').length && (estatusProspecto === 'rechazado' || estatusProspecto === 'rechazada')) {
                     $('#motivoRechazoDetalle').show();
                 }
                 if ($('#hdnFotoFachada').val()) { $('#fotoPreview1').show().attr('src', 'data:image/jpeg;base64,' + $('#hdnFotoFachada').val()); $('#fotoPlaceholder1').hide(); }
@@ -207,6 +354,7 @@
             renderSucursales();
             inicializarPreviewsMatriz();
             toggleSucursales();
+            actualizarMaxLengthRFC();
 
             // Mostrar modal
             var modal = document.getElementById('modalFormularioProspecto');
@@ -267,18 +415,26 @@
     };
 
     window.guardarContactoConValidacion = function () {
+        limpiarErroresEn('#modalContacto');
         var nombre = $('#contactoNombre').val().trim();
         var correo = $('#contactoCorreo').val().trim();
         var telefono = $('#contactoTelefono').val().trim();
-        var campos = [];
-        if (!nombre) campos.push('&bull; <b>Nombre completo</b>');
-        if (!correo) campos.push('&bull; <b>Correo electr&oacute;nico</b>');
-        if (!telefono) campos.push('&bull; <b>Tel&eacute;fono</b>');
-        if (campos.length > 0) {
+        var errores = [];
+        if (!nombre) errores.push({ campo: '#contactoNombre', mensaje: 'Nombre completo' });
+        if (!correo) errores.push({ campo: '#contactoCorreo', mensaje: 'Correo electrónico (requerido)' });
+        else if (!esCorreoValido(correo)) errores.push({ campo: '#contactoCorreo', mensaje: 'Correo electrónico no válido' });
+        if (!telefono) errores.push({ campo: '#contactoTelefono', mensaje: 'Teléfono' });
+        else if (telefono.replace(/\D/g, '').length !== 10) errores.push({ campo: '#contactoTelefono', mensaje: 'El teléfono debe tener exactamente 10 dígitos' });
+        if (errores.length > 0) {
+            errores.forEach(function (e) { marcarCampoError(e.campo); });
+            var mensajes = errores.map(function (e) { return '&bull; <b>' + e.mensaje + '</b>'; });
             Swal.fire({
                 icon: 'warning', title: 'Campos requeridos',
-                html: 'Por favor completa los siguientes campos:<br><br>' + campos.join('<br>'),
-                confirmButtonColor: '#7b3f1a'
+                html: 'Por favor completa los siguientes campos en el contacto:<br><br>' + mensajes.join('<br>'),
+                confirmButtonColor: '#7b3f1a',
+                didClose: function () {
+                    errores.forEach(function (e) { marcarCampoError(e.campo); });
+                }
             });
             return;
         }
@@ -344,24 +500,59 @@
         if (btnAnterior) btnAnterior.style.display = tabIdxSuc > 0 ? 'inline-block' : 'none';
         var btnSiguiente = document.getElementById('btnSucSiguiente');
         if (btnSiguiente) btnSiguiente.style.display = !esUltimo ? 'inline-block' : 'none';
+        // El botón Guardar solo se muestra en FOTOS Y ARCHIVOS (último tab).
         var btnGuardar = document.getElementById('btnGuardarSucursal');
-        if (btnGuardar) btnGuardar.style.display = esUltimo ? 'inline-block' : 'none';
+        var footerGuardar = btnGuardar ? btnGuardar.closest('#modalSucursal > div > div:last-child > div:last-child') : null;
+        if (btnGuardar) {
+            var estaEnFotos = tabIdxSuc === tabsSuc.length - 1;
+            // El botón físico está ahora dentro del tab fotos; el del footer ya no existe.
+            btnGuardar.style.display = estaEnFotos ? 'inline-block' : 'none';
+        }
+    }
+
+    function obtenerErroresTabSuc(idx) {
+        var errores = [];
+        if (idx === 0) {
+            var nombre = document.getElementById('sucNombre');
+            if (nombre && !nombre.value.trim()) errores.push({ campo: '#sucNombre', mensaje: 'Nombre de Sucursal' });
+            var tel = document.getElementById('sucTelefono');
+            if (tel && !tel.value.trim()) errores.push({ campo: '#sucTelefono', mensaje: 'Teléfono' });
+            else if (tel && tel.value.replace(/\D/g, '').length !== 10) errores.push({ campo: '#sucTelefono', mensaje: 'El teléfono debe tener exactamente 10 dígitos' });
+            var correo = $('#sucCorreo').val().trim();
+            if (!correo) errores.push({ campo: '#sucCorreo', mensaje: 'Correo electrónico (requerido)' });
+            else if (!esCorreoValido(correo)) errores.push({ campo: '#sucCorreo', mensaje: 'Correo electrónico no válido' });
+            var responsable = document.getElementById('sucResponsable');
+            if (responsable && !responsable.value.trim()) errores.push({ campo: '#sucResponsable', mensaje: 'Nombre del responsable' });
+        } else if (idx === 1) {
+            if (!$('#sucCalle').val().trim()) errores.push({ campo: '#sucCalle', mensaje: 'Calle' });
+            if (!$('#sucNumExt').val().trim()) errores.push({ campo: '#sucNumExt', mensaje: 'Número Exterior' });
+            if (!$('#sucColonia').val().trim()) errores.push({ campo: '#sucColonia', mensaje: 'Colonia' });
+            if (!$('#sucMunicipio').val().trim()) errores.push({ campo: '#sucMunicipio', mensaje: 'Municipio' });
+            if (!$('#sucCp').val().trim()) errores.push({ campo: '#sucCp', mensaje: 'Código Postal' });
+            if (!$('#sucEstado').val().trim()) errores.push({ campo: '#sucEstado', mensaje: 'Estado' });
+        } else if (idx === 2) {
+            if (!$('#hdnSucFotoFachada').val().trim()) errores.push({ campo: '#sucFotoSlot1', mensaje: 'Foto 1 - Fachada' });
+            if (!$('#hdnSucFotoAcceso').val().trim()) errores.push({ campo: '#sucFotoSlot2', mensaje: 'Foto 2 - Acceso' });
+            if (!$('#hdnSucFotoReferencia').val().trim()) errores.push({ campo: '#sucFotoSlot3', mensaje: 'Foto 3 - Referencia' });
+            // Folio y documento catastral son OPCIONALES en sucursal.
+        }
+        return errores;
     }
 
     function validarTabSuc(idx) {
-        var campos = [];
-        if (idx === 0) {
-            var nombre = document.getElementById('sucNombre');
-            if (nombre && !nombre.value.trim()) campos.push('&bull; <b>Nombre de Sucursal</b>');
-            var tel = document.getElementById('sucTelefono');
-            if (tel && !tel.value.trim()) campos.push('&bull; <b>Tel&eacute;fono</b>');
-        }
-        if (campos.length > 0) {
+        limpiarErroresEn('#tab-suc-' + tabsSuc[idx]);
+        var errores = obtenerErroresTabSuc(idx);
+        if (errores.length > 0) {
+            errores.forEach(function (e) { marcarCampoError(e.campo); });
+            var mensajes = errores.map(function (e) { return '&bull; <b>' + e.mensaje + '</b>'; });
             Swal.fire({
                 icon: 'warning',
                 title: 'Campos requeridos',
-                html: 'Por favor completa:<br><br>' + campos.join('<br>'),
-                confirmButtonColor: '#7b3f1a'
+                html: 'Por favor completa:<br><br>' + mensajes.join('<br>'),
+                confirmButtonColor: '#7b3f1a',
+                didClose: function () {
+                    errores.forEach(function (e) { marcarCampoError(e.campo); });
+                }
             });
             return false;
         }
@@ -387,10 +578,10 @@
         showTabSuc('contacto', tabItems[0]);
         actualizarBotonesSuc();
         ['sucNombre', 'sucTelefono', 'sucCorreo', 'sucResponsable', 'sucCalle', 'sucNumExt', 'sucNumInt',
-            'sucColonia', 'sucCp', 'sucMunicipio', 'sucEstado', 'sucConcesionaria', 'sucReferencias', 'sucFolio']
+            'sucColonia', 'sucCp', 'sucMunicipio', 'sucEstado', 'sucReferencias', 'sucFolio']
             .forEach(function (id) {
                 var el = document.getElementById(id);
-                if (el) el.value = el.id === 'sucEstado' ? 'Yucat&aacute;n' : '';
+                if (el) el.value = el.id === 'sucEstado' ? 'Yucatán' : '';
             });
         $('#hdnSucFotoFachada, #hdnSucFotoAcceso, #hdnSucFotoReferencia, #hdnSucDocCatastral, #hdnSucDocCatastralNombre').val('');
         $('#sucFotoPreview1, #sucFotoPreview2, #sucFotoPreview3').hide().attr('src', '#');
@@ -398,7 +589,6 @@
         $('#sucDocCatastralNombre').hide();
         $('#sucDocCatastralPlaceholder').show();
         $('#modalSucursal input, #modalSucursal select, #modalSucursal textarea').prop('readonly', false).prop('disabled', false);
-        $('#btnGuardarSucursal').show();
         $('.modal-sucursal-titulo').text('AGREGAR SUCURSAL');
     };
 
@@ -415,19 +605,44 @@
     };
 
     window.guardarSucursalConValidacion = function () {
+        limpiarErroresEn('#modalSucursal');
+        var nombresTabsSuc = { 0: 'DATOS DE CONTACTO', 1: 'DIRECCIÓN', 2: 'FOTOS Y ARCHIVOS' };
+        var todosErrores = [];
+        for (var i = 0; i < tabsSuc.length; i++) {
+            var err = obtenerErroresTabSuc(i);
+            if (err.length > 0) {
+                err.forEach(function (e) {
+                    e.tab = i;
+                    marcarCampoError(e.campo);
+                    todosErrores.push(e);
+                });
+            }
+        }
+
+        if (todosErrores.length > 0) {
+            var primeraTab = Math.min.apply(null, todosErrores.map(function (e) { return e.tab; }));
+            var tabItems = document.querySelectorAll('#modalSucursal .tab-item-suc');
+            showTabSuc(tabsSuc[primeraTab], tabItems[primeraTab]);
+
+            var mensajes = todosErrores.map(function (e) {
+                return '&bull; <b>' + e.mensaje + '</b> <span style="color:var(--text3);font-size:12px;">(' + nombresTabsSuc[e.tab] + ')</span>';
+            });
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos requeridos',
+                html: 'Completa los siguientes datos obligatorios:<br><br>' + mensajes.join('<br>'),
+                confirmButtonColor: '#7b3f1a',
+                didClose: function () {
+                    todosErrores.forEach(function (e) { marcarCampoError(e.campo); });
+                }
+            });
+            return;
+        }
         var nombre = $('#sucNombre').val().trim();
         var telefono = $('#sucTelefono').val().trim();
         var correo = $('#sucCorreo').val().trim();
         var responsable = $('#sucResponsable').val().trim();
-        if (!nombre || !telefono || !correo || !responsable) {
-            var faltantes = [];
-            if (!nombre) faltantes.push('Nombre de Sucursal');
-            if (!telefono) faltantes.push('Tel&eacute;fono de sucursal');
-            if (!correo) faltantes.push('Correo electr&oacute;nico');
-            if (!responsable) faltantes.push('Nombre del responsable');
-            Swal.fire('Atenci&oacute;n', 'Completa los siguientes datos obligatorios:\n- ' + faltantes.join('\n- '), 'warning');
-            return;
-        }
+
         var nuevaSucursal = {
             NombreSucursal: nombre,
             TelefonoSucursal: telefono,
@@ -443,7 +658,6 @@
             Lat: $('#sucLat').val().trim(),
             Lng: $('#sucLng').val().trim(),
             FolioCatastral: $('#sucFolio').val().trim(),
-            Concesionaria: $('#sucConcesionaria').val().trim(),
             Referencias: $('#sucReferencias').val().trim(),
             FotoFachada: $('#hdnSucFotoFachada').val(),
             FotoAcceso: $('#hdnSucFotoAcceso').val(),
@@ -477,11 +691,10 @@
         $('#sucColonia').val(s.Colonia);
         $('#sucMunicipio').val(s.Municipio);
         $('#sucCp').val(s.Cp);
-        $('#sucEstado').val(s.Estado || 'Yucat&aacute;n');
+        $('#sucEstado').val(s.Estado || 'Yucatán');
         $('#sucLat').val(s.Lat);
         $('#sucLng').val(s.Lng);
         $('#sucFolio').val(s.FolioCatastral);
-        $('#sucConcesionaria').val(s.Concesionaria);
         $('#sucReferencias').val(s.Referencias);
 
         $('#hdnSucFotoFachada').val(s.FotoFachada || '');
@@ -509,8 +722,20 @@
         window.sucursalSoloLectura = false;
         $('#modalSucursal input, #modalSucursal select, #modalSucursal textarea').prop('readonly', false).prop('disabled', false);
         $('#modalSucursal button[onclick*="verificarDireccion(\'suc\')"]').prop('disabled', false);
-        $('#btnGuardarSucursal').show();
         $('.modal-sucursal-titulo').text('EDITAR SUCURSAL');
+
+        tabIdxSuc = 0;
+        var tabItemsEdit = document.querySelectorAll('#modalSucursal .tab-item-suc');
+        if (tabItemsEdit.length > 0) {
+            tabItemsEdit.forEach(function (t) {
+                t.classList.remove('active');
+                t.style.color = 'var(--text3)';
+                t.style.fontWeight = '600';
+                t.style.borderBottomColor = 'transparent';
+            });
+            tabItemsEdit[0].classList.add('active');
+        }
+        showTabSuc('contacto', tabItemsEdit.length > 0 ? tabItemsEdit[0] : null);
 
         var modal = document.getElementById('modalSucursal');
         if (modal) modal.style.display = 'flex';
@@ -532,11 +757,10 @@
         $('#sucColonia').val(s.Colonia);
         $('#sucMunicipio').val(s.Municipio);
         $('#sucCp').val(s.Cp);
-        $('#sucEstado').val(s.Estado || 'Yucat&aacute;n');
+        $('#sucEstado').val(s.Estado || 'Yucatán');
         $('#sucLat').val(s.Lat);
         $('#sucLng').val(s.Lng);
         $('#sucFolio').val(s.FolioCatastral);
-        $('#sucConcesionaria').val(s.Concesionaria);
         $('#sucReferencias').val(s.Referencias);
 
         setPreviewSuc(s.FotoFachada, 'sucFotoPreview1', 'sucFotoPlaceholder1', 'sucFotoSlot1');
@@ -600,10 +824,22 @@
         }
     };
 
+    function generarNombreUnico(nombreOriginal) {
+        var ts = Date.now();
+        var ext = '';
+        var base = nombreOriginal || 'archivo';
+        var idx = base.lastIndexOf('.');
+        if (idx > -1) {
+            ext = base.substring(idx);
+            base = base.substring(0, idx);
+        }
+        return base + '_' + ts + ext;
+    }
+
     window.previewDoc = function (input, nombreId, placeholderId, nombreTextoId, slotId, hiddenDocId, hiddenNameId) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-            var nombre = input.files[0].name;
+            var nombre = generarNombreUnico(input.files[0].name);
             reader.onload = function (e) {
                 var nombreTexto = document.getElementById(nombreTextoId);
                 var nombreEl = document.getElementById(nombreId);
@@ -864,6 +1100,11 @@
             if (window.estatusFiltro) $selectEstatus.val(window.estatusFiltro);
         }
 
+        // Ajustar RFC según tipo de persona
+        $(document).on('change', '#TipoPersona', function () {
+            actualizarMaxLengthRFC();
+        });
+
         // Filtros
         $('#filtroBusqueda').on('keyup', function () {
             var value = $(this).val().toLowerCase();
@@ -1035,6 +1276,11 @@
             toggleSucursales();
         });
 
+        // Quitar marca de error cuando el usuario empieza a corregir un campo
+        $(document).on('input change', '.form-input-error', function () {
+            $(this).removeClass('form-input-error');
+        });
+
         $(document).on('click', '[data-accion]', function () {
             var accion = $(this).data('accion');
             var id = $(this).data('id');
@@ -1043,35 +1289,100 @@
             else if (accion === 'baja') accionDarDeBaja(id);
         });
 
-        // Envío vía AJAX cuando el formulario está dentro del modal (evita recargar el layout completo).
+        // Bandera para evitar doble submit del formulario de prospecto.
+        var enviandoProspecto = false;
+
+        function setEnviandoProspecto(activo) {
+            enviandoProspecto = activo;
+            var $btn = $('#btnProspectoGuardar');
+            var $form = $('#frmProspecto');
+            if (activo) {
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+                $form.addClass('enviando-prospecto');
+            } else {
+                $btn.prop('disabled', false).html('Guardar');
+                $form.removeClass('enviando-prospecto');
+            }
+        }
+
+        // Envío del formulario de prospecto (AJAX en modal, normal en página completa).
         $(document).on('submit', '#frmProspecto', function (e) {
             var $form = $(this);
-            // Solo interceptar si el formulario está dentro del contenedor del modal.
-            if ($form.closest('#modalProspectoContainer').length === 0) {
+            var esModal = $form.closest('#modalProspectoContainer').length > 0;
+            var esNuevo = ($form.attr('action') || '').toLowerCase().indexOf('nuevo') !== -1;
+
+            // Evitar doble submit: si ya se está enviando, no hacer nada.
+            if (enviandoProspecto) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Validación completa de todas las pestañas y secciones
+            var nombresTabs = { 0: 'Datos Personales', 1: 'Dirección', 2: 'Fotos' };
+            limpiarErroresEn('#modalFormularioProspecto');
+            var todosErrores = [];
+            for (var i = 0; i < tabsProspecto.length; i++) {
+                var err = obtenerErroresTabProspecto(i);
+                if (err.length > 0) {
+                    err.forEach(function (e) {
+                        e.tab = i;
+                        marcarCampoError(e.campo);
+                        todosErrores.push(e);
+                    });
+                }
+            }
+
+            // Validar DATOS DE CONTACTO (sección de contactos)
+            var errContactos = obtenerErroresSeccionContactos();
+            if (errContactos.length > 0) {
+                errContactos.forEach(function (e) {
+                    e.tab = 0;
+                    marcarCampoError(e.campo);
+                    todosErrores.push(e);
+                });
+            }
+
+            // Validar GESTIÓN DE SUCURSALES solo si el prospecto indica que tiene sucursales
+            var tieneSuc = ($('#TieneSucursales').val() || '').toString().toLowerCase();
+            if (tieneSuc === 's&iacute;' || tieneSuc === 'si' || tieneSuc === 'sí' || tieneSuc === 'yes' || tieneSuc === 's') {
+                var errSuc = obtenerErroresSeccionSucursales();
+                if (errSuc.length > 0) {
+                    errSuc.forEach(function (e) {
+                        e.tab = 2;
+                        marcarCampoError(e.campo);
+                        todosErrores.push(e);
+                    });
+                }
+            }
+
+            if (todosErrores.length > 0) {
+                var primeraTab = Math.min.apply(null, todosErrores.map(function (e) { return e.tab; }));
+                var tabItems = document.querySelectorAll('#modalFormularioProspecto .tab-item');
+                showTab(tabsProspecto[primeraTab], tabItems[primeraTab]);
+
+                var mensajes = todosErrores.map(function (e) {
+                    return '&bull; <b>' + e.mensaje + '</b> <span style="color:var(--text3);font-size:12px;">(' + nombresTabs[e.tab] + ')</span>';
+                });
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos requeridos',
+                    html: 'Por favor corrige los siguientes errores antes de guardar:<br><br>' + mensajes.join('<br>'),
+                    confirmButtonColor: '#7b3f1a',
+                    didClose: function () {
+                        todosErrores.forEach(function (e) { marcarCampoError(e.campo); });
+                    }
+                });
+                return false;
+            }
+
+            if (!esModal) {
+                setEnviandoProspecto(true); // protección también en página completa
                 return true; // permitir envío normal en la página completa
             }
 
             e.preventDefault();
-
-            var esNuevo = ($form.attr('action') || '').toLowerCase().indexOf('nuevo') !== -1;
-
-            // Validación mínima de campos requeridos
-            var camposFaltantes = [];
-            if (!$('#Nombre').val().trim()) camposFaltantes.push('Razón Social / Nombre completo');
-            if (!$('#TipoPersona').val().trim()) camposFaltantes.push('Tipo de persona');
-            if (!$('#Telefono').val().trim()) camposFaltantes.push('Teléfono de contacto');
-            if (!$('#Email').val().trim()) camposFaltantes.push('Correo electrónico');
-            if (!$('#Contacto').val().trim()) camposFaltantes.push('Nombre completo de contacto');
-
-            if (camposFaltantes.length > 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Campos requeridos',
-                    html: 'Por favor completa los siguientes campos:<br><br>• ' + camposFaltantes.join('<br>• '),
-                    confirmButtonColor: '#7b3f1a'
-                });
-                return false;
-            }
+            setEnviandoProspecto(true);
 
             var formData = new FormData(this);
 
@@ -1082,6 +1393,7 @@
                 processData: false,
                 contentType: false,
                 success: function (res) {
+                    setEnviandoProspecto(false);
                     // Si la respuesta no es JSON (p. ej. redirección seguida por jQuery), recargar.
                     if (typeof res === 'string') {
                         window.location.href = window.urlBase || '/Prospectos';
@@ -1111,6 +1423,7 @@
                     }
                 },
                 error: function (xhr) {
+                    setEnviandoProspecto(false);
                     var msg = 'Error de comunicación con el servidor.';
                     if (xhr.responseText) {
                         // Si la respuesta contiene el formulario, reemplazar el modal con la vista de errores.

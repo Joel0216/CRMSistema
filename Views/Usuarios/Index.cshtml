@@ -36,8 +36,83 @@
     .rol-supervisor { background: #1565C0; }
     .rol-vendedor { background: #2E7D32; }
 
-    .modal-usuario .modal-header { background: #4E342E; color: white; }
-    .modal-usuario .modal-title { font-size: 15px; font-weight: 700; text-transform: uppercase; }
+    /* Modal de usuario al estilo prospecto */
+    #modalUsuarioOverlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(63,40,26,0.50);
+        backdrop-filter: blur(3px);
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 20px;
+    }
+    #modalUsuarioOverlay.show { display: flex; }
+    .modal-usuario-box {
+        background: white;
+        border-radius: 14px;
+        width: 850px;
+        max-width: 95%;
+        max-height: 95vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 32px rgba(63,40,26,0.15);
+        overflow: hidden;
+    }
+    .modal-usuario-header {
+        background: #4E342E;
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .modal-usuario-title { font-size: 16px; font-weight: 700; text-transform: uppercase; }
+    .modal-usuario-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .modal-usuario-section {
+        font-size: 12px;
+        font-weight: 800;
+        color: #5D4037;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 24px 0 14px;
+        border-bottom: 1px solid #EDE4D8;
+        padding-bottom: 6px;
+    }
+    .modal-usuario-section:first-child { margin-top: 0; }
+    .modal-usuario-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .modal-usuario-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #EDE4D8;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-shrink: 0;
+        background: #FAF6F1;
+    }
+    @@media (max-width: 767.98px) {
+        #modalUsuarioOverlay { padding: 0; }
+        .modal-usuario-box {
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+        .modal-usuario-header { border-radius: 0; }
+        .modal-usuario-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
@@ -71,48 +146,50 @@
 </div>
 
 <!-- Modal Usuario -->
-<div class="modal fade modal-usuario" id="modalUsuario" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitulo">Nuevo Usuario</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="uId" value="0" />
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Nombre *</label>
-                        <input type="text" class="form-control form-control-sm" id="uNombre" placeholder="Nombre" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Apellidos</label>
-                        <input type="text" class="form-control form-control-sm" id="uApellidos" placeholder="Apellidos" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Correo electrónico</label>
-                        <input type="email" class="form-control form-control-sm" id="uCorreo" placeholder="correo@ejemplo.com" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Nombre de usuario (login) *</label>
-                        <input type="text" class="form-control form-control-sm" id="uUsuario" placeholder="usuario" />
-                    </div>
-                    <div class="col-md-6" id="colPassword">
-                        <label class="form-label">Contraseña *</label>
-                        <input type="password" class="form-control form-control-sm" id="uPassword" placeholder="Contraseña temporal" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Rol *</label>
-                        <select class="form-select form-select-sm" id="uRol">
-                            <option value="">-- Seleccionar --</option>
-                        </select>
-                    </div>
+<div id="modalUsuarioOverlay" onclick="cerrarModalUsuario(event)">
+    <div class="modal-usuario-box" onclick="event.stopPropagation()">
+        <div class="modal-usuario-header">
+            <h5 class="modal-usuario-title" id="modalTitulo">Nuevo Usuario</h5>
+            <button type="button" onclick="cerrarModalUsuario()" style="background:rgba(255,255,255,0.2); color:white; border:none; border-radius:6px; padding:4px 12px; font-weight:600;">Cerrar</button>
+        </div>
+        <div class="modal-usuario-body">
+            <input type="hidden" id="uId" value="0" />
+            <div class="modal-usuario-section">Informaci&oacute;n personal</div>
+            <div class="modal-usuario-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre(s) *</label>
+                    <input type="text" class="form-control form-control-sm" id="uNombre" placeholder="Nombre(s)" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido(s)</label>
+                    <input type="text" class="form-control form-control-sm" id="uApellidos" placeholder="Apellido(s)" />
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Correo electr&oacute;nico *</label>
+                    <input type="email" class="form-control form-control-sm" id="uCorreo" placeholder="correo@ejemplo.com" />
                 </div>
             </div>
-            <div class="modal-footer" style="border-top:1px solid #eee;">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success btn-sm" onclick="guardarUsuario()">Guardar usuario</button>
+            <div class="modal-usuario-section">Acceso y rol</div>
+            <div class="modal-usuario-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre de usuario (login) *</label>
+                    <input type="text" class="form-control form-control-sm" id="uUsuario" placeholder="usuario" />
+                </div>
+                <div class="form-group" id="colPassword">
+                    <label class="form-label">Contrase&ntilde;a *</label>
+                    <input type="password" class="form-control form-control-sm" id="uPassword" placeholder="Contrase&ntilde;a temporal" />
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Rol *</label>
+                    <select class="form-select form-select-sm" id="uRol">
+                        <option value="">-- Seleccionar --</option>
+                    </select>
+                </div>
             </div>
+        </div>
+        <div class="modal-usuario-footer">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cerrarModalUsuario()">Cancelar</button>
+            <button type="button" class="btn btn-success btn-sm" onclick="guardarUsuario()">Guardar usuario</button>
         </div>
     </div>
 </div>
@@ -234,6 +311,17 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function validarEmail(correo) {
+            const partes = correo.split('@@');
+            if (partes.length !== 2) return false;
+            const usuario = partes[0];
+            const dominio = partes[1];
+            if (!usuario || !dominio) return false;
+            if (usuario.indexOf(' ') >= 0 || dominio.indexOf(' ') >= 0) return false;
+            const dominioPartes = dominio.split('.');
+            return dominioPartes.length >= 2 && dominioPartes.every(function(p) { return p.length > 0; });
+        }
+
         function abrirModal() {
             $('#modalTitulo').text('Nuevo Usuario');
             $('#uId').val(0);
@@ -244,7 +332,7 @@
             $('#uPassword').val('');
             $('#uRol').val('');
             $('#colPassword').show();
-            $('#modalUsuario').modal('show');
+            $('#modalUsuarioOverlay').addClass('show');
         }
 
         function editarUsuario(id) {
@@ -260,8 +348,19 @@
             $('#uPassword').val('');
             $('#uRol').val(u.rolId || '');
             $('#colPassword').hide();
-            $('#modalUsuario').modal('show');
+            $('#modalUsuarioOverlay').addClass('show');
         }
+
+        function cerrarModalUsuario(e) {
+            if (e && e.target !== document.getElementById('modalUsuarioOverlay') && e.target.closest('.modal-usuario-box')) return;
+            $('#modalUsuarioOverlay').removeClass('show');
+        }
+
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $('#modalUsuarioOverlay').hasClass('show')) {
+                cerrarModalUsuario();
+            }
+        });
 
         function guardarUsuario() {
             const id = parseInt($('#uId').val() || 0);
@@ -277,6 +376,14 @@
 
             if (!req.nombre || !req.usuario) {
                 Swal.fire('Atención', 'Nombre y usuario son obligatorios.', 'warning');
+                return;
+            }
+            if (!req.correo) {
+                Swal.fire('Atención', 'El correo electrónico es obligatorio.', 'warning');
+                return;
+            }
+            if (!validarEmail(req.correo)) {
+                Swal.fire('Atención', 'El correo electrónico no tiene un formato válido.', 'warning');
                 return;
             }
             if (!req.rolId) {
@@ -296,7 +403,7 @@
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
-                    $('#modalUsuario').modal('hide');
+                    $('#modalUsuarioOverlay').removeClass('show');
                     Swal.fire('Guardado', res.message, 'success').then(() => cargarUsuarios());
                 } else {
                     Swal.fire('Error', res.error, 'error');
@@ -386,12 +493,5 @@
             });
         }
 
-        // Si vino desde el menú rápido "Registrar usuario", abre el modal automáticamente.
-        $(function () {
-            if (sessionStorage.getItem('abrirModalUsuario') === '1') {
-                sessionStorage.removeItem('abrirModalUsuario');
-                setTimeout(abrirModal, 100);
-            }
-        });
     </script>
 }

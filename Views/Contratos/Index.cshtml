@@ -827,14 +827,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            ${items.map(it => `
+                            ${items.map(it => {
+                                const esUnicoCobro = (it.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!it.fecha_unica;
+                                const bgBadge = it.tipo_servicio === 'RSU' ? '#F57F17' : (esUnicoCobro ? '#2980B9' : '#4CAF50');
+                                const nombreServicio = it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
+                                const bgDia = it.tipo_servicio === 'RSU' ? '#FFECB3' : (esUnicoCobro ? '#D6EAF8' : '#C8E6C9');
+                                const colorDia = it.tipo_servicio === 'RSU' ? '#F57F17' : (esUnicoCobro ? '#2980B9' : '#2E7D32');
+                                const diasHtml = esUnicoCobro && it.fecha_unica
+                                    ? `<span class="badge-dia" style="background: ${bgDia}; color: ${colorDia};">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>`
+                                    : it.dias_asignados.map(d => `<span class="badge-dia" style="background: ${bgDia}; color: ${colorDia};">${d.substring(0, 3)}</span>`).join(' ');
+                                return `
                                 <tr>
-                                    <td><span class="badge-tipo" style="background: ${it.tipo_servicio === 'RSU' ? '#F57F17' : '#4CAF50'};">${it.tipo_servicio}</span></td>
-                                    <td style="font-weight: 600;">${it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial'}</td>
+                                    <td><span class="badge-tipo" style="background: ${bgBadge};">${it.tipo_servicio}</span></td>
+                                    <td style="font-weight: 600;">${nombreServicio}</td>
                                     <td>${renderDetalleServicio(it)}</td>
                                     <td style="text-align: center;">
                                         <div style="display: flex; gap: 2px; justify-content: center;">
-                                            ${it.dias_asignados.map(d => `<span class="badge-dia" style="background: ${it.tipo_servicio === 'RSU' ? '#FFECB3' : '#C8E6C9'}; color: ${it.tipo_servicio === 'RSU' ? '#F57F17' : '#2E7D32'};">${d.substring(0, 3)}</span>`).join(' ')}
+                                            ${diasHtml}
                                         </div>
                                     </td>
                                     <td style="text-align: center; font-weight: 600;">${formatMXN(it.precio_unitario_calculado)}</td>
@@ -842,7 +851,8 @@
                                     <td style="text-align: center;">${it.porcentaje_descuento || 0}%</td>
                                     <td style="text-align: center; font-weight: bold; color: #2E7D32;">${formatMXN(it.subtotal)}</td>
                                 </tr>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </tbody>
                     </table>
                 `;
@@ -880,10 +890,11 @@
 
             const rawTipo = (s.tipo_residuo || s.tipo_servicio || '').toString().toUpperCase();
             const isRsu = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(s.costo_tonelada) || 0) === 0 && (Number(s.costo_disposicion) || 0) === 0));
+            const esUnico = (s.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!s.fecha_unica;
             const tipo = isRsu ? 'RSU' : 'RME';
 
             const bolsas = isRsu ? Number(s.volumen_estimado || s.bolsas || 0) : 0;
-            const recolectores = !isRsu ? Number(s.recolectores || s.volumen_estimado || 0) : 0;
+            const recolectores = !isRsu ? (esUnico ? 1 : Number(s.recolectores || s.volumen_estimado || 0)) : 0;
 
             const costoTonelada = Number(s.costo_tonelada || 0);
             const costoDisposicion = Number(s.costo_disposicion || 0);
@@ -901,6 +912,8 @@
             if (isRsu) {
                 const bolsasMensuales = (bolsas * diasPorSemana * 52) / 12;
                 subtotal = bolsasMensuales * precioUnitario * (1 + porcentaje) * (1 - descuento);
+            } else if (esUnico) {
+                subtotal = precioUnitario * (1 + porcentaje) * (1 - descuento);
             } else {
                 const viajesMensuales = recolectores * diasPorSemana * 4;
                 subtotal = precioUnitario * viajesMensuales * (1 + porcentaje) * (1 - descuento);
@@ -918,12 +931,23 @@
         }
 
         function renderDetalleServicio(it) {
+            const esUnico = (it.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!it.fecha_unica;
             if (it.tipo_servicio === 'RSU') {
                 return `
                     <div style="display: grid; grid-template-columns: 70px 1fr; gap: 2px 6px;">
                         <span style="color: #555;">Producto:</span><span style="font-weight: 600;">${it.tipo_residuo || '—'}</span>
                         <span style="color: #555;">Ruta:</span><span style="color: #1565C0;">${it.ruta || 'Por asignar'}</span>
                         <span style="color: #555;">Bolsas:</span><span style="font-weight: 600;">${it.bolsas}</span>
+                    </div>`;
+            }
+            if (esUnico) {
+                return `
+                    <div style="display: grid; grid-template-columns: 80px 1fr; gap: 2px 6px;">
+                        <span style="color: #555;">Unidad:</span><span style="color: #1565C0;">${it.tipo_unidad || 'Camión 3.5 Ton'}</span>
+                        <span style="color: #555;">Fecha:</span><span style="font-weight: 600;">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>
+                        <span style="color: #555;">Recolecciones:</span><span style="font-weight: 600;">${it.recolectores || 1}</span>
+                        <span style="color: #555;">Turno:</span><span style="color: #F57F17; font-weight: 600; text-transform: capitalize;">${it.turno ? it.turno.toLowerCase() : 'Por asignar'}</span>
+                        <span style="color: #555;">Cobro:</span><span style="color: #27AE60; font-weight: 600;">Una sola vez</span>
                     </div>`;
             }
             return `
@@ -1350,6 +1374,7 @@
                 recolectores: s.recolectores,
                 turno: s.turno,
                 ruta: s.ruta || 'Por asignar',
+                fecha_unica: s.fecha_unica || null,
                 costo_tonelada: s.costo_tonelada,
                 costo_disposicion: s.costo_disposicion
             }));
@@ -1459,18 +1484,25 @@
                     if (desc > 0 && desc < 1) descuentoGlobal += (it.subtotal / (1 - desc)) - it.subtotal;
                 });
 
-                const filas = items.map(it => `
+                const filas = items.map(it => {
+                    const esUnicoCobro = (it.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!it.fecha_unica;
+                    const nombreServicio = it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
+                    const diasHtml = esUnicoCobro && it.fecha_unica
+                        ? (it.fecha_unica || '').split('-').reverse().join('/')
+                        : it.dias_asignados.map(d => d.substring(0, 3)).join(' ');
+                    return `
                     <tr>
                         <td>${it.tipo_servicio}</td>
-                        <td>${it.tipo_servicio === 'RSU' ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial'}</td>
+                        <td>${nombreServicio}</td>
                         <td>${renderDetalleServicio(it).replace(/style="[^"]*"/g, '').replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '<br>')}</td>
-                        <td style="text-align:center">${it.dias_asignados.map(d => d.substring(0, 3)).join(' ')}</td>
+                        <td style="text-align:center">${diasHtml}</td>
                         <td style="text-align:right">${formatMXN(it.precio_unitario_calculado)}</td>
                         <td style="text-align:center">${it.porcentaje_adicional || 0}%</td>
                         <td style="text-align:center">${it.porcentaje_descuento || 0}%</td>
                         <td style="text-align:right">${formatMXN(it.subtotal)}</td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
 
                 serviciosHtml += `
                     <h3 style="color:#D84315; font-size:11px; border-bottom:1px solid #eee; padding-bottom:4px; margin-top:12px; margin-bottom:6px;">${g.nombre.toUpperCase()}</h3>

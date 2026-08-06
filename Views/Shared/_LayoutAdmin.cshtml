@@ -18,7 +18,7 @@
     @Styles.Render("~/Content/css")
     @RenderSection("styles", required: false)
 </head>
-<body class="modal-open" style="overflow: auto;">
+<body class="modal-open" style="overflow: auto;" autocomplete="off">
     <div class="layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -33,16 +33,17 @@
             }
 
             <nav class="sidebar-nav">
-                @foreach (var menu in permisosMenu)
+                @foreach (var menu in permisosMenu.Where(m => !string.Equals(m.Nombre, "INDICADORES", StringComparison.OrdinalIgnoreCase)))
                 {
                     <div>
                         <div class="nav-section-title">@menu.Nombre</div>
-                        @foreach (var sm in menu.SubMenus)
+                        @foreach (var sm in menu.SubMenus.Where(sm => !string.Equals(sm.Nombre, "Registrar usuario", StringComparison.OrdinalIgnoreCase)
+                                                              && !string.Equals(sm.Nombre, "Reportes", StringComparison.OrdinalIgnoreCase)
+                                                              && !string.Equals(sm.Nombre, "INDICADORES Reportes", StringComparison.OrdinalIgnoreCase)))
                         {
                             var activeClass = ViewBag.ActiveMenu != null && ViewBag.ActiveMenu.ToString().Equals(sm.Nombre.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? "active" : "";
                             var iconHtml = !string.IsNullOrEmpty(sm.Icono) ? $"<i class='fas {sm.Icono} me-2'></i> " : "";
-                            var linkId = sm.Nombre == "Registrar usuario" ? "id=btnRegistrarUsuarioMenu" : "";
-                            <a href="@Url.Action(sm.Accion, sm.Controlador)" class="nav-link @activeClass" @linkId>
+                            <a href="@Url.Action(sm.Accion, sm.Controlador)" class="nav-link @activeClass">
                                 @Html.Raw(iconHtml)@sm.Nombre
                             </a>
                         }
@@ -133,10 +134,6 @@
                 e.preventDefault();
                 $('#formCambiarPassword')[0].reset();
                 modal.show();
-            });
-
-            $('#btnRegistrarUsuarioMenu').on('click', function (e) {
-                sessionStorage.setItem('abrirModalUsuario', '1');
             });
 
             $('#btnGuardarPassword').on('click', function () {

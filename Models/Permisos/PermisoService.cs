@@ -98,16 +98,15 @@ namespace CRMSistema.Models.Permisos
                     new SubMenuPermisoModel { Id = 6, MenuId = 2, Nombre = "Contratos por Autorizar", Controlador = "ContratosPorAutorizar", Accion = "Index", Orden = 5 },
                     new SubMenuPermisoModel { Id = 7, MenuId = 2, Nombre = "Contratos Autorizados", Controlador = "ContratosAutorizados", Accion = "Index", Orden = 6 }
                 }},
+                // OPERACIONES: módulos para Coordinador+, Supervisor+ y Superadmin.
+                // - Rutas Cotizadas  ->  Controllers/RutasCotizadas/RutasCotizadasController.cs
+                // - Manifiestos      ->  Controllers/Manifiestos/ManifiestosController.cs
                 new MenuPermisoModel { Id = 3, Nombre = "OPERACIONES", Orden = 3, SubMenus = new List<SubMenuPermisoModel> {
                     new SubMenuPermisoModel { Id = 8, MenuId = 3, Nombre = "Rutas Cotizadas", Controlador = "RutasCotizadas", Accion = "Index", Orden = 1 },
                     new SubMenuPermisoModel { Id = 9, MenuId = 3, Nombre = "Manifiestos", Controlador = "Manifiestos", Accion = "Index", Orden = 2 }
                 }},
-                new MenuPermisoModel { Id = 4, Nombre = "INDICADORES", Orden = 4, SubMenus = new List<SubMenuPermisoModel> {
-                    new SubMenuPermisoModel { Id = 10, MenuId = 4, Nombre = "Reportes", Controlador = "Indicadores", Accion = "Index", Icono = "fa-chart-line", Orden = 1 }
-                }},
-                new MenuPermisoModel { Id = 5, Nombre = "ADMINISTRACIÓN", Orden = 5, SubMenus = new List<SubMenuPermisoModel> {
-                    new SubMenuPermisoModel { Id = 11, MenuId = 5, Nombre = "Usuarios", Controlador = "Usuarios", Accion = "Index", Icono = "fa-users-cog", Orden = 1 },
-                    new SubMenuPermisoModel { Id = 12, MenuId = 5, Nombre = "Registrar usuario", Controlador = "Usuarios", Accion = "Index", Icono = "fa-user-plus", Orden = 2 }
+                new MenuPermisoModel { Id = 4, Nombre = "ADMINISTRACIÓN", Orden = 4, SubMenus = new List<SubMenuPermisoModel> {
+                    new SubMenuPermisoModel { Id = 10, MenuId = 4, Nombre = "Usuarios", Controlador = "Usuarios", Accion = "Index", Icono = "fa-users-cog", Orden = 1 }
                 }}
             };
 
@@ -138,10 +137,8 @@ namespace CRMSistema.Models.Permisos
                         sm.Nombre == "Manifiestos")
                         return esCoordinador;
 
-                    // Jefe+: indicadores y usuarios
-                    if (sm.Nombre == "Reportes" ||
-                        sm.Nombre == "Usuarios" ||
-                        sm.Nombre == "Registrar usuario")
+                    // Jefe+: usuarios
+                    if (sm.Nombre == "Usuarios")
                         return esJefe;
 
                     return esSuperadmin;

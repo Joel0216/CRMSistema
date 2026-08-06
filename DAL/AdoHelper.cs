@@ -14,12 +14,20 @@ namespace CRMSistema.DAL
     /// </summary>
     public static class AdoHelper
     {
+        private const int DefaultTimeout = 30;
+
         public static List<dynamic> Query(string sql, CommandType commandType = CommandType.Text, params SqlParameter[] parameters)
+        {
+            return Query(sql, commandType, DefaultTimeout, parameters);
+        }
+
+        public static List<dynamic> Query(string sql, CommandType commandType, int commandTimeout, params SqlParameter[] parameters)
         {
             using (var con = Db.GetConnection())
             using (var cmd = new SqlCommand(sql, con))
             {
                 cmd.CommandType = commandType;
+                cmd.CommandTimeout = commandTimeout;
                 if (parameters != null && parameters.Length > 0)
                     cmd.Parameters.AddRange(parameters);
 
@@ -31,10 +39,16 @@ namespace CRMSistema.DAL
 
         public static List<T> Query<T>(string sql, CommandType commandType = CommandType.Text, params SqlParameter[] parameters)
         {
+            return Query<T>(sql, commandType, DefaultTimeout, parameters);
+        }
+
+        public static List<T> Query<T>(string sql, CommandType commandType, int commandTimeout, params SqlParameter[] parameters)
+        {
             using (var con = Db.GetConnection())
             using (var cmd = new SqlCommand(sql, con))
             {
                 cmd.CommandType = commandType;
+                cmd.CommandTimeout = commandTimeout;
                 if (parameters != null && parameters.Length > 0)
                     cmd.Parameters.AddRange(parameters);
 
@@ -46,10 +60,16 @@ namespace CRMSistema.DAL
 
         public static dynamic QuerySingle(string sql, CommandType commandType = CommandType.Text, params SqlParameter[] parameters)
         {
+            return QuerySingle(sql, commandType, DefaultTimeout, parameters);
+        }
+
+        public static dynamic QuerySingle(string sql, CommandType commandType, int commandTimeout, params SqlParameter[] parameters)
+        {
             using (var con = Db.GetConnection())
             using (var cmd = new SqlCommand(sql, con))
             {
                 cmd.CommandType = commandType;
+                cmd.CommandTimeout = commandTimeout;
                 if (parameters != null && parameters.Length > 0)
                     cmd.Parameters.AddRange(parameters);
 
@@ -65,10 +85,16 @@ namespace CRMSistema.DAL
 
         public static T QuerySingle<T>(string sql, CommandType commandType = CommandType.Text, params SqlParameter[] parameters)
         {
+            return QuerySingle<T>(sql, commandType, DefaultTimeout, parameters);
+        }
+
+        public static T QuerySingle<T>(string sql, CommandType commandType, int commandTimeout, params SqlParameter[] parameters)
+        {
             using (var con = Db.GetConnection())
             using (var cmd = new SqlCommand(sql, con))
             {
                 cmd.CommandType = commandType;
+                cmd.CommandTimeout = commandTimeout;
                 if (parameters != null && parameters.Length > 0)
                     cmd.Parameters.AddRange(parameters);
 
@@ -84,10 +110,16 @@ namespace CRMSistema.DAL
 
         public static int Execute(string sql, CommandType commandType = CommandType.Text, params SqlParameter[] parameters)
         {
+            return Execute(sql, commandType, DefaultTimeout, parameters);
+        }
+
+        public static int Execute(string sql, CommandType commandType, int commandTimeout, params SqlParameter[] parameters)
+        {
             using (var con = Db.GetConnection())
             using (var cmd = new SqlCommand(sql, con))
             {
                 cmd.CommandType = commandType;
+                cmd.CommandTimeout = commandTimeout;
                 if (parameters != null && parameters.Length > 0)
                     cmd.Parameters.AddRange(parameters);
 

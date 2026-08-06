@@ -532,18 +532,22 @@
             items.forEach(it => {
                 const rawTipo = (it.tipo_residuo || it.tipo_servicio || '').toString().toUpperCase();
                 const isRSU = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(it.costo_tonelada) || 0) === 0 && (Number(it.costo_disposicion) || 0) === 0));
-                const bg = isRSU ? '#F57F17' : '#4CAF50';
+                const esUnico = (it.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!it.fecha_unica;
+                const bg = isRSU ? '#F57F17' : (esUnico ? '#2980B9' : '#4CAF50');
+                const tipoBadge = isRSU ? 'RSU' : 'RME';
                 const dias = Array.isArray(it.dias_asignados)
                     ? it.dias_asignados
                     : (it.dias_asignados || '').toString().split(',').filter(Boolean);
-                const diasHtml = dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
-                const cantidad = isRSU ? (it.volumen_estimado || 0) : (it.recolectores || 0);
+                const diasHtml = esUnico && it.fecha_unica
+                    ? `<span style="background: #D6EAF8; color: #2980B9; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>`
+                    : dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
+                const cantidad = isRSU ? (it.volumen_estimado || 0) : (esUnico ? 1 : (it.recolectores || 0));
                 const pu = isRSU ? (Number(it.precio_unitario) || 18.60) : ((Number(it.costo_tonelada) || 0) + (Number(it.costo_disposicion) || 0));
                 const subtotal = calcularSubtotalItem(it);
 
                 html += `
                     <tr>
-                        <td style="border: 1px solid #ccc;"><span style="background: ${bg}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">${isRSU ? 'RSU' : 'RME'}</span></td>
+                        <td style="border: 1px solid #ccc;"><span style="background: ${bg}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">${tipoBadge}</span></td>
                         <td style="border: 1px solid #ccc; font-weight: 600;">${it.tipo_residuo || '—'}</td>
                         <td style="border: 1px solid #ccc;">${it.ruta || 'Por asignar'}</td>
                         <td style="border: 1px solid #ccc; text-align: center;"><div style="display: flex; gap: 2px; justify-content: center;">${diasHtml}</div></td>
@@ -567,6 +571,7 @@
         function calcularSubtotalItem(i) {
             const rawTipo = (i.tipo_residuo || i.tipo_servicio || '').toString().toUpperCase();
             const isRSU = !rawTipo.includes('ESPECIAL') && (rawTipo.includes('RSU') || rawTipo.includes('URBANO') || rawTipo.includes('SÓLIDO') || rawTipo.includes('SOLIDO') || ((Number(i.costo_tonelada) || 0) === 0 && (Number(i.costo_disposicion) || 0) === 0));
+            const esUnico = (i.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!i.fecha_unica;
             const dias = Array.isArray(i.dias_asignados)
                 ? i.dias_asignados
                 : (i.dias_asignados || '').toString().split(',').filter(Boolean);
@@ -578,6 +583,8 @@
             if (isRSU) {
                 const bolsasMensuales = ((i.volumen_estimado || 0) * diasPorSemana * 52) / 12;
                 base = bolsasMensuales * (Number(i.precio_unitario) || 18.60);
+            } else if (esUnico) {
+                base = (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
             } else {
                 const viajesMensuales = (i.recolectores || 0) * diasPorSemana * 4;
                 const pu = (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Web.Mvc;
 using CRMSistema.Controllers.Base;
+using CRMSistema.DAL;
 using CRMSistema.DAL.Cotizador;
 using CRMSistema.DAL.Prospectos;
 using CRMSistema.DAL.Usuarios;
@@ -109,12 +110,11 @@ namespace CRMSistema.Controllers.Prospectos
         public ActionResult PartialNuevo()
         {
             ViewBag.Accion = "Nuevo";
-            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags();
             return PartialView("_FormularioProspecto", new ProspectoViewModel
             {
                 Estatus = "Nuevo",
-                TipoPersona = "Moral",
+                TipoPersona = null,
                 TieneSucursales = "No",
                 Estado = "Yucatán"
             });
@@ -126,7 +126,6 @@ namespace CRMSistema.Controllers.Prospectos
             if (model == null) return HttpNotFound();
 
             ViewBag.Accion = "Editar";
-            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags(id);
             return PartialView("_FormularioProspecto", model);
         }
@@ -137,7 +136,6 @@ namespace CRMSistema.Controllers.Prospectos
             if (model == null) return HttpNotFound();
 
             ViewBag.Accion = "Detalle";
-            ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags(id);
             return PartialView("_FormularioProspecto", model);
         }
@@ -149,7 +147,7 @@ namespace CRMSistema.Controllers.Prospectos
             ViewBag.Accion = "Nuevo";
             ViewBag.RolActual = Session["Rol"]?.ToString() ?? "";
             CargarViewBags();
-            return View("Formulario", new ProspectoViewModel { Estatus = "Nuevo", TipoPersona = "Moral", TieneSucursales = "No" });
+            return View("Formulario", new ProspectoViewModel { Estatus = "Nuevo", TipoPersona = null, TieneSucursales = "No", Estado = "Yucatán" });
         }
 
         [HttpPost]
@@ -174,6 +172,7 @@ namespace CRMSistema.Controllers.Prospectos
 
             try
             {
+                SimpleLog.Write("Nuevo prospecto POST inicio");
                 var apiModel = ToApiModel(model);
                 var empresaId = _dal.UpsertEmpresa((apiModel.nombre ?? "").Trim(), apiModel.rfc);
                 var creadoPor = Session["UsuarioId"] as int?;
@@ -191,10 +190,27 @@ namespace CRMSistema.Controllers.Prospectos
                     vendedorId = model.VendedorId;
                 }
 
+                // Validar jerarquía del vendedor asignado.
+                if (vendedorId.HasValue)
+                {
+                    var vendedor = _usuariosDal.ObtenerPorId(vendedorId.Value);
+                    if (vendedor == null || !AppRoles.PuedeAsignarRol(rol, vendedor.rol))
+                    {
+                        var error = "No tienes permiso para asignar este usuario; selecciona uno de menor rango.";
+                        if (Request.IsAjaxRequest())
+                            return Json(new { success = false, error });
+
+                        ModelState.AddModelError("VendedorId", error);
+                        CargarViewBags();
+                        return View("Formulario", model);
+                    }
+                }
+
                 var nuevoId = _dal.Crear(apiModel, empresaId, (apiModel.contacto ?? "").Trim(), (apiModel.nombre ?? "").Trim(), creadoPor, vendedorId);
                 _dal.InsertarSucursales(nuevoId, apiModel.sucursales);
                 _dal.InsertarContactos(nuevoId, apiModel.contactos);
                 TempData["Success"] = "Prospecto registrado correctamente.";
+                SimpleLog.Write($"Nuevo prospecto POST fin OK: id={nuevoId}");
 
                 if (Request.IsAjaxRequest())
                     return Json(new { success = true, id = nuevoId, message = "Prospecto registrado correctamente." });
@@ -203,10 +219,13 @@ namespace CRMSistema.Controllers.Prospectos
             }
             catch (Exception ex)
             {
-                if (Request.IsAjaxRequest())
-                    return Json(new { success = false, error = "Error al guardar: " + ex.Message });
+                var error = SqlErrorHelper.BuildMessage(ex, "guardar el nuevo prospecto");
+                SimpleLog.Write($"Nuevo prospecto POST ERROR: {ex.GetType().Name}: {ex.Message}");
 
-                ModelState.AddModelError("", "Error al guardar: " + ex.Message);
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error });
+
+                ModelState.AddModelError("", error);
                 CargarViewBags();
                 return View("Formulario", model);
             }
@@ -282,10 +301,13 @@ namespace CRMSistema.Controllers.Prospectos
             }
             catch (Exception ex)
             {
-                if (Request.IsAjaxRequest())
-                    return Json(new { success = false, error = "Error al actualizar: " + ex.Message });
+                var error = SqlErrorHelper.BuildMessage(ex, "actualizar el prospecto");
+                SimpleLog.Write($"Editar prospecto POST ERROR id={id}: {ex.GetType().Name}: {ex.Message}");
 
-                ModelState.AddModelError("", "Error al actualizar: " + ex.Message);
+                if (Request.IsAjaxRequest())
+                    return Json(new { success = false, error });
+
+                ModelState.AddModelError("", error);
                 CargarViewBags(id);
                 return View("Formulario", model);
             }
@@ -492,12 +514,18 @@ namespace CRMSistema.Controllers.Prospectos
 
         private void CargarViewBags(int? prospectoId = null)
         {
+            var rolActual = Session["Rol"]?.ToString() ?? "";
+            ViewBag.RolActual = rolActual;
+            ViewBag.RequiereVendedor = AppRoles.EsSupervisorOAdmin(rolActual);
             ViewBag.TiposPersona = new[] { "Física", "Moral" };
             ViewBag.EstatusLista = new[] { "Nuevo", "En revisión", "En seguimiento", "Cotizado", "Aprobado", "Rechazado", "Adeudo", "Inactivo" };
             ViewBag.SiNo = new[] { "No", "Sí" };
             try
             {
-                ViewBag.Vendedores = _usuariosDal.ObtenerActivos().Where(u => AppRoles.TieneRol(u.rol, AppRoles.Vendedor)).ToList();
+                // Solo se pueden asignar usuarios cuyo rol sea exactamente Vendedor.
+                ViewBag.Vendedores = _usuariosDal.ObtenerActivos()
+                    .Where(u => string.Equals(u.rol, AppRoles.Vendedor, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
             catch
             {

@@ -90,26 +90,43 @@ namespace CRMSistema.DAL.Cotizador
                 new SqlParameter("@Password_Temporal", passwordTemporal));
         }
 
+        private static int? ParseIntNullable(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            if (int.TryParse(value, out int result)) return result;
+            return null;
+        }
+
         public long CrearServicioCotizado(ServicioCotizadoModel model)
         {
+            const string sql = @"INSERT INTO dbo.crm_servicios_cotizados
+                (trato_id, tipo_residuo, frecuencia, periodicidad_pago, volumen_estimado, precio_unitario,
+                 dias_asignados, porcentaje_adicional, porcentaje_descuento, sucursal_id, Tipo_Unidad,
+                 Tipo_Cobro, Recolectores, Turno, Fecha_Unica, Ruta, Costo_Tonelada, Costo_Disposicion)
+                VALUES
+                (@Trato_ID, @Tipo_Residuo, @Frecuencia, @Periodicidad_Pago, @Volumen_Estimado, @Precio_Unitario,
+                 @Dias_Asignados, @Porcentaje_Adicional, @Porcentaje_Descuento, @Sucursal_ID, @Tipo_Unidad,
+                 @Tipo_Cobro, @Recolectores, @Turno, @Fecha_Unica, @Ruta, @Costo_Tonelada, @Costo_Disposicion);
+                SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
+
             using (var db = Db.GetConnection())
-            using (var cmd = new SqlCommand("SP_ServiciosCotizados_Insert", db))
+            using (var cmd = new SqlCommand(sql, db))
             {
-                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@Trato_ID", model.trato_id);
-                cmd.Parameters.AddWithValue("@Tipo_Residuo", model.tipo_residuo);
-                cmd.Parameters.AddWithValue("@Frecuencia", model.frecuencia);
-                cmd.Parameters.AddWithValue("@Periodicidad_Pago", model.periodicidad_pago);
+                cmd.Parameters.AddWithValue("@Tipo_Residuo", (object)model.tipo_residuo ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Frecuencia", (object)model.frecuencia ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Periodicidad_Pago", (object)model.periodicidad_pago ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Volumen_Estimado", (object)model.volumen_estimado ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Precio_Unitario", (object)model.precio_unitario ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Dias_Asignados", model.dias_asignados);
+                cmd.Parameters.AddWithValue("@Dias_Asignados", (object)model.dias_asignados ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Porcentaje_Adicional", (object)model.porcentaje_adicional ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Porcentaje_Descuento", (object)model.porcentaje_descuento ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Sucursal_ID", (object)model.sucursal_id ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Sucursal_ID", (object)ParseIntNullable(model.sucursal_id) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Tipo_Unidad", (object)model.tipo_unidad ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Tipo_Cobro", (object)model.tipo_cobro ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Recolectores", (object)model.recolectores ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Turno", (object)model.turno ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Fecha_Unica", (object)model.fecha_unica ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Ruta", (object)model.ruta ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Costo_Tonelada", (object)model.costo_tonelada ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Costo_Disposicion", (object)model.costo_disposicion ?? DBNull.Value);
@@ -121,27 +138,56 @@ namespace CRMSistema.DAL.Cotizador
 
         public List<ServicioCotizadoModel> ObtenerServiciosCotizados(int tratoId)
         {
-            return AdoHelper.Query<ServicioCotizadoModel>("SP_ServiciosCotizados_GetByTrato", CommandType.StoredProcedure,
+            const string sql = @"SELECT id, trato_id, tipo_residuo, frecuencia, periodicidad_pago,
+                                        volumen_estimado, precio_unitario, dias_asignados,
+                                        porcentaje_adicional, porcentaje_descuento, sucursal_id,
+                                        Tipo_Unidad, Tipo_Cobro, Recolectores, Turno, Ruta,
+                                        Costo_Tonelada, Costo_Disposicion, Capacidad_Toneladas,
+                                        Fecha_Unica, fecha_creacion
+                                 FROM dbo.crm_servicios_cotizados
+                                 WHERE trato_id = @Trato_ID";
+            return AdoHelper.Query<ServicioCotizadoModel>(sql, CommandType.Text,
                 new SqlParameter("@Trato_ID", tratoId));
         }
 
         public void ActualizarServicioCotizado(int id, ServicioCotizadoModel model)
         {
-            AdoHelper.Execute("SP_ServiciosCotizados_Update", CommandType.StoredProcedure,
+            const string sql = @"UPDATE dbo.crm_servicios_cotizados
+                SET tipo_residuo = @Tipo_Residuo,
+                    frecuencia = @Frecuencia,
+                    periodicidad_pago = @Periodicidad_Pago,
+                    volumen_estimado = @Volumen_Estimado,
+                    precio_unitario = @Precio_Unitario,
+                    dias_asignados = @Dias_Asignados,
+                    porcentaje_adicional = @Porcentaje_Adicional,
+                    porcentaje_descuento = @Porcentaje_Descuento,
+                    sucursal_id = @Sucursal_ID,
+                    Tipo_Unidad = @Tipo_Unidad,
+                    Tipo_Cobro = @Tipo_Cobro,
+                    Recolectores = @Recolectores,
+                    Turno = @Turno,
+                    Fecha_Unica = @Fecha_Unica,
+                    Ruta = @Ruta,
+                    Costo_Tonelada = @Costo_Tonelada,
+                    Costo_Disposicion = @Costo_Disposicion
+                WHERE id = @ID";
+
+            AdoHelper.Execute(sql, CommandType.Text,
                 new SqlParameter("@ID", id),
-                new SqlParameter("@Tipo_Residuo", model.tipo_residuo),
-                new SqlParameter("@Frecuencia", model.frecuencia ?? "Semanal"),
-                new SqlParameter("@Periodicidad_Pago", model.periodicidad_pago ?? "Mensual"),
+                new SqlParameter("@Tipo_Residuo", (object)model.tipo_residuo ?? DBNull.Value),
+                new SqlParameter("@Frecuencia", (object)model.frecuencia ?? "Semanal"),
+                new SqlParameter("@Periodicidad_Pago", (object)model.periodicidad_pago ?? "Mensual"),
                 new SqlParameter("@Volumen_Estimado", (object)model.volumen_estimado ?? DBNull.Value),
                 new SqlParameter("@Precio_Unitario", (object)model.precio_unitario ?? DBNull.Value),
-                new SqlParameter("@Dias_Asignados", model.dias_asignados ?? ""),
+                new SqlParameter("@Dias_Asignados", (object)model.dias_asignados ?? ""),
                 new SqlParameter("@Porcentaje_Adicional", (object)model.porcentaje_adicional ?? DBNull.Value),
                 new SqlParameter("@Porcentaje_Descuento", (object)model.porcentaje_descuento ?? DBNull.Value),
-                new SqlParameter("@Sucursal_ID", (object)model.sucursal_id ?? DBNull.Value),
+                new SqlParameter("@Sucursal_ID", (object)ParseIntNullable(model.sucursal_id) ?? DBNull.Value),
                 new SqlParameter("@Tipo_Unidad", (object)model.tipo_unidad ?? DBNull.Value),
                 new SqlParameter("@Tipo_Cobro", (object)model.tipo_cobro ?? DBNull.Value),
                 new SqlParameter("@Recolectores", (object)model.recolectores ?? DBNull.Value),
                 new SqlParameter("@Turno", (object)model.turno ?? DBNull.Value),
+                new SqlParameter("@Fecha_Unica", (object)model.fecha_unica ?? DBNull.Value),
                 new SqlParameter("@Ruta", (object)model.ruta ?? DBNull.Value),
                 new SqlParameter("@Costo_Tonelada", (object)model.costo_tonelada ?? DBNull.Value),
                 new SqlParameter("@Costo_Disposicion", (object)model.costo_disposicion ?? DBNull.Value));
@@ -149,8 +195,8 @@ namespace CRMSistema.DAL.Cotizador
 
         public void EliminarServicioCotizado(int id)
         {
-            AdoHelper.Execute("SP_ServiciosCotizados_Delete", CommandType.StoredProcedure,
-                new SqlParameter("@ID", id));
+            const string sql = "DELETE FROM dbo.crm_servicios_cotizados WHERE id = @ID";
+            AdoHelper.Execute(sql, CommandType.Text, new SqlParameter("@ID", id));
         }
 
         // ─────────────────────────────────────────────────────────

@@ -539,8 +539,11 @@
 
             let html = '';
             items.forEach(s => {
+                const esUnico = (s.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!s.fecha_unica;
                 const tipo = s.tipo_servicio || ((s.tipo_residuo || '').toUpperCase().includes('ESPECIAL') ? 'RME' : 'RSU');
-                const dias = s.dias_asignados.map(d => d.substring(0, 3)).join(' ');
+                const dias = esUnico && s.fecha_unica
+                    ? (s.fecha_unica || '').split('-').reverse().join('/')
+                    : s.dias_asignados.map(d => d.substring(0, 3)).join(' ');
                 html += `<span class="chip-servicio">Recolección ${tipo} | ${dias || 'Por definir'} | ${s.frecuencia || 'Semanal'} x${s.volumen_estimado || 1}</span>`;
             });
             $('#serviciosChips').html(html);
@@ -562,6 +565,7 @@
                 : (s.dias_asignados || '').toString().split(',').filter(Boolean);
 
             const rawTipo = (s.tipo_residuo || s.tipo_servicio || '').toString().toUpperCase();
+            const esUnico = (s.tipo_cobro || '').toString().toUpperCase() === 'UNICO' || !!s.fecha_unica;
             const tipo = rawTipo.includes('RSU') ? 'RSU' : 'RME';
             const isRsu = tipo === 'RSU';
 
@@ -572,9 +576,13 @@
             const costoDisposicion = Number(s.costo_disposicion || 0);
             const precioUnitarioDb = Number(s.precio_unitario || 0);
 
-            const precioUnitario = isRsu
+            let precioUnitario = isRsu
                 ? (precioUnitarioDb || 18.60)
                 : ((costoTonelada + costoDisposicion) || precioUnitarioDb);
+
+            if (esUnico) {
+                precioUnitario = costoTonelada + costoDisposicion;
+            }
 
             const diasPorSemana = diasAsignados.length || 1;
             const porcentaje = Number(s.porcentaje_adicional || 0) / 100;
@@ -584,6 +592,8 @@
             if (isRsu) {
                 const bolsasMensuales = (bolsas * diasPorSemana * 52) / 12;
                 subtotal = bolsasMensuales * precioUnitario * (1 + porcentaje) * (1 - descuento);
+            } else if (esUnico) {
+                subtotal = precioUnitario * (1 + porcentaje) * (1 - descuento);
             } else {
                 const viajesMensuales = recolectores * diasPorSemana * 4;
                 subtotal = precioUnitario * viajesMensuales * (1 + porcentaje) * (1 - descuento);

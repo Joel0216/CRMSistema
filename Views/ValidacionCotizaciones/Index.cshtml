@@ -530,10 +530,13 @@
             let html = '';
             items.forEach(it => {
                 const isRSU = (it.tipo_servicio || '').toUpperCase() === 'RSU';
-                const badgeColor = isRSU ? '#E67E22' : '#27AE60';
+                const esUnico = (it.tipo_cobro || '').toUpperCase() === 'UNICO' || !!it.fecha_unica;
+                const badgeColor = isRSU ? '#E67E22' : (esUnico ? '#2980B9' : '#27AE60');
                 const tipoTexto = isRSU ? 'Residuos Sólidos Urbanos' : 'Residuos de Manejo Especial';
                 const dias = Array.isArray(it.dias_asignados) ? it.dias_asignados : (it.dias_asignados || '').toString().split(',').filter(Boolean);
-                const diasHtml = dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
+                const diasHtml = esUnico && it.fecha_unica
+                    ? `<span style="background: #D6EAF8; color: #2980B9; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>`
+                    : dias.map(d => `<span style="background: ${isRSU ? '#FFECB3' : '#C8E6C9'}; color: ${isRSU ? '#F57F17' : '#2E7D32'}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">${d.substring(0, 3)}</span>`).join(' ');
                 const pu = isRSU ? (Number(it.precio_unitario) || 18.60) : ((Number(it.costo_tonelada) || 0) + (Number(it.costo_disposicion) || 0));
                 const puColor = isRSU ? '#333' : '#2E7D32';
                 const subtotal = calcularSubtotalItem(it);
@@ -545,6 +548,15 @@
                             <span style="color: #666;">Producto:</span><span style="font-weight: 700; color: #333;">${it.tipo_residuo || '—'}</span>
                             <span style="color: #666;">Ruta:</span><span style="color: #3498DB; font-weight: 700;">${it.ruta || 'Por asignar'}</span>
                             <span style="color: #666;">Bolsas:</span><span style="font-weight: 700; color: #333;">${it.bolsas || 0}</span>
+                        </div>`;
+                } else if (esUnico) {
+                    detalles = `
+                        <div style="display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; align-items: center; font-size:11px;">
+                            <span style="color: #666;">Unidad:</span><span style="color: #3498DB; font-weight: 700;">${it.tipo_unidad || 'N/A'}</span>
+                            <span style="color: #666;">Fecha:</span><span style="font-weight: 700; color: #333;">${(it.fecha_unica || '').split('-').reverse().join('/')}</span>
+                            <span style="color: #666;">Recolecciones:</span><span style="font-weight: 700; color: #333;">${it.recolectores || 1}</span>
+                            <span style="color: #666;">Turno:</span><span style="color: #E67E22; font-weight: 700; text-transform: capitalize;">${(it.turno || '').toLowerCase()}</span>
+                            <span style="color: #666;">Cobro:</span><span style="font-weight: 700; color: #27AE60;">Una sola vez</span>
                         </div>`;
                 } else {
                     detalles = `
@@ -581,6 +593,7 @@
 
         function calcularSubtotalItem(i) {
             const isRSU = (i.tipo_servicio || '').toUpperCase() === 'RSU';
+            const esUnico = (i.tipo_cobro || '').toUpperCase() === 'UNICO' || !!i.fecha_unica;
             const dias = Array.isArray(i.dias_asignados) ? i.dias_asignados : (i.dias_asignados || '').toString().split(',').filter(Boolean);
             const diasPorSemana = dias.length || 1;
             const adicional = (Number(i.porcentaje_adicional) || 0) / 100;
@@ -590,6 +603,8 @@
             if (isRSU) {
                 const bolsasMensuales = ((i.bolsas || 0) * diasPorSemana * 52) / 12;
                 base = bolsasMensuales * (Number(i.precio_unitario) || 18.60);
+            } else if (esUnico) {
+                base = (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
             } else {
                 const viajesMensuales = (i.recolectores || 0) * diasPorSemana * 4;
                 const pu = (Number(i.costo_tonelada) || 0) + (Number(i.costo_disposicion) || 0);
@@ -697,12 +712,8 @@
                     }).then(r => r.json()).then(res => {
                         if (res.success) {
                             Swal.fire('Autorizada', `${res.message}\nFolio: ${res.folio}`, 'success').then(() => {
-                                if (res.redirectUrl) {
-                                    window.location.href = res.redirectUrl;
-                                } else {
-                                    cerrarDetalle();
-                                    cargarPendientes();
-                                }
+                                cerrarDetalle();
+                                cargarPendientes();
                             });
                         } else {
                             Swal.fire('Error', res.error, 'error');

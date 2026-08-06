@@ -68,7 +68,7 @@ WHERE LOWER(r.Nombre) = 'coordinador'
       'Rutas Cotizadas', 'Manifiestos'
   );
 
--- Jefe: todo lo de Coordinador + Reportes + Usuarios + Registrar usuario
+-- Jefe: todo lo de Coordinador + Usuarios + Registrar usuario
 INSERT INTO crm_permiso (rol_id, submenu_id, activo)
 SELECT r.RolId, sm.id, 1
 FROM roles r
@@ -78,7 +78,7 @@ WHERE LOWER(r.Nombre) = 'jefe'
       'Dashboard', 'Prospectos', 'Cotizador', 'Contratos', 'Contratos Autorizados',
       'Cotizaciones por Aprobar', 'Contratos por Autorizar',
       'Rutas Cotizadas', 'Manifiestos',
-      'Reportes', 'Usuarios', 'Registrar usuario'
+      'Usuarios', 'Registrar usuario'
   );
 
 -- Superadmin: todos los submenus activos

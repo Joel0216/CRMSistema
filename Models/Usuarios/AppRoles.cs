@@ -83,5 +83,28 @@ namespace CRMSistema.Models.Usuarios
         {
             return string.Equals(rolActual, rolRequerido, StringComparison.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// Devuelve un peso jerárquico para un rol. Mayor valor = mayor privilegio.
+        /// </summary>
+        public static int JerarquiaRol(string rol)
+        {
+            if (EsSuperadmin(rol)) return 5;
+            if (EsJefe(rol) && !EsSuperadmin(rol)) return 4;
+            if (EsCoordinador(rol) && !EsJefe(rol)) return 3;
+            if (EsSupervisorOAdmin(rol) && !EsCoordinador(rol)) return 2;
+            if (EsVendedor(rol) && !EsSupervisorOAdmin(rol)) return 1;
+            return 0;
+        }
+
+        /// <summary>
+        /// Determina si un usuario con el rol <paramref name="rolAsignador"/> puede asignar
+        /// tareas/prospectos a un usuario con el rol <paramref name="rolAsignado"/>.
+        /// Requiere que el rol asignador sea estrictamente mayor jerárquicamente.
+        /// </summary>
+        public static bool PuedeAsignarRol(string rolAsignador, string rolAsignado)
+        {
+            return JerarquiaRol(rolAsignador) > JerarquiaRol(rolAsignado);
+        }
     }
 }

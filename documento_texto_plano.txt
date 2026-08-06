@@ -1,0 +1,703 @@
+﻿Universidad Tecnológica Metropolitana
+División TICS
+Proyecto  de 
+titulación
+“Sistema CRM Ambiental (Eco-Sales CRM)”
+Para obtener el Título de
+Técnico superior universitario en Tecnologías de la Información y Comunicación Área Desarrollo de Software Multiplataforma
+Joel Antonio Pool Martinez
+Mérida, Yucatán, Mayo-Agosto 2026
+CARTA RESPONSIVA. 
+Aunque este trabajo hubiere servido para obtener el título de Técnico Superior Universitario en Desarrollo de Software Multiplataforma y hubiere sido aprobado por la Dirección de Tecnologías de la Información y Comunicación, sólo su autor es responsable de las doctrinas en él emitidas.
+CARTA DE LIBERACIÓN EMPRESARIAL. 
+3 al 6 de agosto
+CARTA DE LIBERACIÓN ACADÉMICA. 
+AGRADECIMIENTOS (OPCIONAL) 
+ÍNDICE 
+Proyecto  de titulación
+1
+CARTA RESPONSIVA.
+3
+CARTA DE LIBERACIÓN EMPRESARIAL.
+4
+CARTA DE LIBERACIÓN ACADÉMICA.
+5
+AGRADECIMIENTOS (OPCIONAL)
+6
+ÍNDICE
+7
+INTRODUCCIÓN
+9
+CAPÍTULO I “MARCO CONTEXTUAL”.
+1
+1.1 SITUACIÓN QUE GUARDA LA EMPRESA.
+1
+1.2 PLANTEAMIENTO DEL PROBLEMA.
+3
+1.3 JUSTIFICACIÓN
+4
+1.3.1 Evidencias de la Problemática y Necesidad de Medidas Correctivas
+4
+1.3.2 El CRM como Estrategia para Enfrentar la Problemática
+4
+1.3.3 Beneficios Futuros para la Empresa
+4
+1.4 OBJETIVOS
+5
+1.4.1 Objetivo General
+5
+1.4.2 Objetivos Específicos
+5
+CAPÍTULO II “MARCO TEÓRICO”.
+9
+2.1 FUNDAMENTOS DE LA GESTIÓN DE RELACIONES CON EL CLIENTE (CRM)
+9
+2.2 DIMENSIONES DEL CRM: ENFOQUES Y APLICACIONES
+10
+2.3 DIMENSIONES ESTRATÉGICAS DEL CRM
+11
+2.3.1 CRM Operacional y Automatización de la Fuerza de Ventas
+12
+2.3.2 CRM Analítico e Inteligencia de Negocios
+12
+2.3.3 CRM Colaborativo e Integración de Canales
+13
+2.3.4 Particularidad del CRM en el Sector Ambiental
+13
+2.4 ARQUITECTURA DE BASES DE DATOS CENTRALIZADAS Y AUTOMATIZACIÓN
+14
+2.4.1 Arquitectura y Motor de SQL Server
+15
+2.5 TECNOLOGÍAS DE DESARROLLO DE SOFTWARE EN EL ENTORNO EMPRESARIAL
+16
+2.5.1 Lenguaje de Programación C# y .NET Framework 4.8
+16
+2.5.2 Capa de Acceso a Datos: ADO.NET vs ORMs
+18
+2.5.3 Arquitectura Modelo-Vista-Controlador (MVC) en ASP.NET
+19
+2.5.4 El Motor de Vistas Razor y Server-Side Rendering (SSR)
+20
+2.5.5 Tecnologías Frontend Complementarias (Bootstrap y jQuery)
+21
+2.5.6 SQL (Base de Datos Relacional) y la Integridad de la Información
+22
+2.5.7 Por qué SQL Server es la mejor opción para este CRM
+22
+2.5.8 Política Cero Papel (Desmaterialización) y Deuda Técnica
+23
+2.6 ARQUITECTURA DE INTERFAZ DE USUARIO (UI) Y EXPERIENCIA DE USUARIO (UX)
+24
+2.6.1 Teoría de la Carga Cognitiva en Software Empresarial
+24
+2.6.2 Psicología del Color y Respuesta Emocional en Sistemas Ecológicos
+25
+2.7 ARQUITECTURA WEB BASADA EN CONTROLADORES Y VISTAS HTTP
+25
+2.8 SEGURIDAD DE LA INFORMACIÓN Y CIBERSEGURIDAD EN ENTORNOS CRM
+26
+2.8.1 Autenticación y Autorización en ASP.NET (Sesiones)
+27
+2.8.2 Mitigación de Vulnerabilidades Web (OWASP Top 10)
+27
+2.9 PLANES DE CONTINUIDAD DE NEGOCIO Y ALTA DISPONIBILIDAD DE DATOS
+28
+2.9.1 Tolerancia a Fallos y Redundancia (RAID)
+29
+2.9.2 Modelos de Respaldo y Objetivos de Recuperación
+29
+2.10 BENEFICIOS AMBIENTALES Y OPTIMIZACIÓN: EL PROPÓSITO FUNDAMENTAL DE UN CRM ECOLÓGICO
+30
+2.10.1 ¿Para qué sirve verdaderamente un CRM enfocado al sector ecológico?
+30
+2.10.2 Impacto Positivo Multidimensional (Green Computing)
+31
+2.10.3 Conclusión del Marco Teórico
+32
+CAPÍTULO III "METODOLOGÍA O PROPUESTA A IMPLEMENTAR"
+33
+3.1 METODOLOGÍA DE DESARROLLO
+33
+3.2 FASES DEL DESARROLLO DEL SISTEMA
+35
+3.2.1 Fase 1. Diagnóstico y análisis de requerimientos
+35
+3.2.2 Fase 2. Diseño de la arquitectura del software y el modelo de datos
+37
+3.2.3 Fase 3. Desarrollo del backend de Controladores en C#
+39
+3.2.4 Fase 4. Desarrollo de la Interfaz de Usuario (Frontend con Razor)
+41
+3.2.5 Fase 5. Seguridad, Validación y Control de Acceso
+44
+3.2.6 Fase 6. Migración de consultas SQL a Stored Procedures
+46
+3.2.7 Fase 7. Limpieza, estandarización y consolidación del repositorio
+47
+3.3 RELACIÓN CON EL MARCO TEÓRICO
+48
+3.4 LIMITACIONES DEL DESARROLLO ACTUAL Y TRABAJO PENDIENTE
+49
+3.5 CONCLUSIÓN DEL CAPÍTULO
+51
+3.6 HERRAMIENTAS Y AMBIENTES DE DESARROLLO UTILIZADOS
+52
+3.7 MATRIZ DE ACTORES Y RESPONSABILIDADES
+53
+3.8 Lecciones aprendidas y recomendaciones
+54
+CAPÍTULO IV “RESULTADOS Y EXPERIENCIAS”.
+56
+4.1 Entorno de Pruebas y Configuración de Despliegue
+56
+4.3 Pruebas de Funcionalidad y de Integración (Backend)
+57
+4.4 Pruebas de Interfaz de Usuario y Usabilidad (Frontend)
+58
+4.5 Análisis de Rendimiento y Seguridad
+59
+4.6 Resultados Obtenidos
+59
+4.7 Discusión de Resultados
+60
+CONCLUSIONES
+61
+ANEXOS
+63
+Resumen
+67
+REFERENCIAS BIBLIOGRÁFICAS
+68
+INTRODUCCIÓN
+El presente trabajo propone el desarrollo e implementación de un Sistema CRM Ambiental (Eco-Sales CRM) orientado a optimizar el ciclo de ventas y la gestión comercial en empresas dedicadas al manejo de residuos sólidos urbanos y de manejo especial en México. La gestión eficiente de residuos representa uno de los mayores retos ambientales, sociales y económicos en México y América Latina, donde la creciente generación de desechos y la presión normativa exigen soluciones tecnológicas avanzadas. En este contexto, la adopción de sistemas CRM se ha consolidado como una estrategia clave para mejorar la relación con los clientes, optimizar procesos de ventas y asegurar el cumplimiento normativo en sectores altamente regulados.
+Desde una perspectiva académica y científica, esta investigación contribuye a la profesionalización de la gestión comercial y a la modernización de la infraestructura tecnológica en el sector ambiental mexicano, donde la innovación y la digitalización aún presentan rezagos significativos. Este estudio se enfoca en el sector de servicios ambientales, particularmente en empresas que ofrecen recolección y manejo de residuos, con una delimitación temporal que abarca la última década. La unidad de análisis es el departamento de ventas de dichas empresas, el cual es responsable de la captación, seguimiento y conversión de prospectos en clientes.
+Actualmente, la gestión comercial enfrenta problemas de ineficiencia, baja cobertura y falta de seguimiento, lo que limita el crecimiento empresarial y afecta la calidad del servicio. A pesar de contar con un marco legal robusto, como la Ley General para la Prevención y Gestión Integral de los Residuos (LGPGIR) y las Normas Oficiales Mexicanas, la carencia de una herramienta digital integrada dificulta la trazabilidad y la toma de decisiones. Ante este panorama, el objetivo general de este proyecto es optimizar el ciclo de ventas mediante la implementación de un sistema CRM automatizado que centralice la gestión de prospectos y facilite la toma de decisiones basada en datos reales.
+Finalmente, el sustento teórico y metodológico se apoya en la conceptualización del CRM como una filosofía organizacional centrada en el cliente, integrando dimensiones operacionales, analíticas y colaborativas que enfatizan la importancia de atraer, retener y fidelizar clientes a largo plazo. El desarrollo del sistema se basa en metodologías ágiles, permitiendo una entrega incremental y adaptativa del software, facilitando la incorporación de mejoras continuas y la alineación con las necesidades del usuario final. El procedimiento incluye el análisis de requerimientos, diseño, desarrollo iterativo, pruebas y capacitación del personal de venta
+CAPÍTULO I “MARCO CONTEXTUAL”.
+En este capítulo se procede a desarrollar el marco contextual del proyecto terminal de grado, estableciendo de manera formal la situación actual de la corporación, sus antecedentes operativos, el entorno socioeconómico y geográfico donde influye, la estructura de su capital humano y la justificación técnica detallada de la plataforma propuesta. El análisis de este entorno permite comprender los flujos de información y los puntos de fricción que justifican la ingeniería de software aplicada.
+1.1 SITUACIÓN QUE GUARDA LA EMPRESA.
+Sau Ecolsur Sana constituye la denominación comercial y operativa que agrupa a tres organizaciones líderes en el ramo de la gestión, tratamiento y disposición final de residuos en el estado de Yucatán, consolidadas formalmente bajo el corporativo denominado grupo Ciclo Ambiental. Esta infraestructura empresarial está compuesta de manera estratégica por tres unidades de negocio complementarias e independientes: Saneamiento Sana (SANA), dedicada fundamentalmente a la recolección masiva de residuos sólidos urbanos (RSU), atendiendo a una población superior a los 180,000 usuarios regulados distribuidos en más de 300 colonias y fraccionamientos de los municipios de Mérida y Kanasín, lo cual representa el movimiento de aproximadamente el 65% de los desechos generados en la capital yucateca.
+Figura 1 [Imagen de fachada de Sau. Ecolsur. Sana] C. 15 196, García Ginerés, 97070 Mérida, Yuc.
+La segunda unidad de negocio corresponde a Ecolsur, una empresa pionera en el manejo integral de residuos peligrosos (RP) y residuos de manejo especial (RME), la cual cuenta con una trayectoria comprobable de más de 20 años en el mercado del sureste mexicano, manteniendo oficinas operativas en Umán y Mérida, así como una flota especializada que supera las 100 unidades de transporte pesado. Finalmente, la tercera unidad es Servicios Ambientales Urbanos (SAU), encargada directa de la administración y operación técnica de la planta de separación de residuos sólidos urbanos en Mérida, participando de forma activa en proyectos de Acumulación, reciclaje y valorización de subproductos en constante colaboración con el sector público y desarrollos habitacionales privados.
+A pesar del liderazgo sectorial y la robusta capacidad logística del grupo Ciclo Ambiental, la estructura comercial adolece de un grave problema de fragmentación tecnológica. La operación independiente de las tres unidades de negocio ha propiciado la dispersión de la información comercial, debido a que cada empresa administra sus bases de datos de prospectos y clientes en silos de información aislados. Esta desconexión digital e institucional genera duplicidad de esfuerzos entre los ejecutivos de ventas, debilita la trazabilidad comercial de los grandes generadores y limita de forma crítica la visibilidad de la gerencia general para realizar proyecciones comerciales integrales o tomar decisiones estratégicas basadas en datos unificados.El capital humano técnico responsable de mitigar estos atraso tecnológicos se encuentra estructurado en un entorno de oficinas compartidas que propicia la colaboración directa. El equipo de desarrollo tecnológico está integrado por un equipo de 2 Coordinadores de Proyectos, responsables de la gestión de requerimientos, control de documentación y definición de entregables; un Desarrollador Senior backend, encargado del diseño de las arquitecturas de bases de datos relacionales y la lógica de negocio; y una Desarrolladora Junior frontend, dedicada a la maquetación de interfaces de usuario (UI/UX). Adicionalmente, el departamento cuenta con una especialista en Aseguramiento de Calidad (QA Tester Junior) para el soporte técnico y control de fallas, y un ingeniero de sistemas en el área de servidores (SAI).
+El funcionamiento interno del corporativo Ciclo Ambiental está determinado por cinco macroprocesos secuenciales que interactúan de forma constante para asegurar la prestación del servicio. El ciclo administrativo inicia en el área de Ventas RSU y RME, donde los asesores realizan la prospección, cotización y formalización de los contratos legales. Una vez concretada la venta, la información se transfiere al departamento de Operaciones, el cual genera las órdenes de servicio correspondientes y coordina la logística, asignación de camiones compactadores y programación de rutas críticas de recolección en campo, asegurando el cumplimiento operativo de la Ley General para la Prevención y Gestión Integral de los Residuos.
+Posterior a la recolección, el proceso avanza hacia el área de Facturación, encargada de validar las evidencias operativas del servicio prestado para proceder con la emisión formal de los Comprobantes Fiscales Digitales por Internet (CFDI) en estricto apego a las disposiciones vigentes del Servicio de Administración Tributaria (SAT). Con la factura emitida, el departamento de Cobranza asume la responsabilidad de realizar el monitoreo de saldos, la gestión de cobranza en campo mediante aplicaciones móviles y la recuperación de la cartera vencida utilizando el software Mpro. El flujo concluye en el área de Comunicación y Atención al Cliente, donde se procesan las incidencias operativas, solicitudes de aclaración y estrategias de postventa orientadas a la fidelización.
+1.2 PLANTEAMIENTO DEL PROBLEMA.
+La problemática central del grupo empresarial radica en la ineficiencia operativa del ciclo de ventas provocada por la ausencia de un mecanismo automatizado y centralizado para la administración de clientes potenciales. La dispersión de la información en formatos físicos y archivos locales impide que los ejecutivos comerciales ejecuten un seguimiento oportuno de los prospectos interesados en servicios ambientales. Esta carencia tecnológica incrementa el tiempo de respuesta comercial, propicia la pérdida sistemática de oportunidades de negocio frente a la competencia y satura al personal de ventas con cargas administrativas manuales, reduciendo su productividad y su enfoque en el cierre efectivo de acuerdos contractuales.
+De forma paralela, la organización enfrenta una severa presión regulatoria derivada de la naturaleza de los servicios ambientales que ofrece en la región. Al gestionar residuos sólidos urbanos y de manejo especial, el corporativo está sujeto a un marco normativo estricto fiscalizado por organismos como la SEMARNAT y la normatividad del esquema REPSE. La falta de una herramienta digital integrada dificulta la vinculación inmediata entre el expediente comercial del cliente y las evidencias operativas de la disposición final de los residuos. Esta desarticulación de datos vulnera a la empresa ante auditorías legales y contractuales, elevando el riesgo de sanciones económicas y fiscales por falta de trazabilidad digital.
+1.3 JUSTIFICACIÓN
+1.3.1 Evidencias de la Problemática y Necesidad de Medidas Correctivas
+El crecimiento de la demanda y la complejidad operativa requieren soluciones tecnológicas que permitan centralizar y automatizar la gestión comercial al mismo tiempo que la presión normativa derivada de la LGPGIR (Ley General para la Prevención y Gestión Integral de los Residuos), las NOMs (Normas Oficiales Mexicanas), el REPSE (Registro de Prestadoras de Servicios Especializados u Obras Especializadas) y el SAT (Servicio de Administración Tributaria) exige trazabilidad y reportes precisos lo que solo puede lograrse con sistemas integrados y automatizados sumado a que diversos estudios académicos demuestran que la adopción de sistemas CRM en empresas de servicios incrementa la tasa de conversión de prospectos a clientes mejora la productividad y facilita el cumplimiento normativo 
+1.3.2 El CRM como Estrategia para Enfrentar la Problemática
+Un sistema CRM ambiental permitirá centralizar la información de prospectos y clientes automatizar el seguimiento y la generación de reportes y facilitar el cumplimiento normativo del mismo modo que la automatización reducirá la carga administrativa mejorará la productividad del equipo de ventas y aumentará la tasa de conversión de prospectos a clientes además de que el CRM facilitará la documentación y reporte de contratos y servicios ayudando a cumplir con las obligaciones ante la SEMARNAT y otras autoridades minimizando riesgos de sanciones y fortaleciendo la confianza institucional
+1.3.3 Beneficios Futuros para la Empresa
+La productividad se incrementará mediante la reducción de tareas administrativas y un mayor enfoque en actividades de alto valor al mismo tiempo que se fortalecerá el cumplimiento normativo a través de una mejor trazabilidad y documentación para auditorías y reportes regulatorios permitiendo además optimizar la conversión de ventas gracias a un seguimiento oportuno y personalizado que incrementa la tasa de cierre de contratos sumado a una proyección de imagen profesional que mejora la percepción ante clientes autoridades y la sociedad lo que en conjunto derivará en una mayor sostenibilidad y competitividad aportando una mayor capacidad de adaptación ante regulatorios y de mercado
+1.4 OBJETIVOS
+1.4.1 Objetivo General
+Desarrollar, implementar y desplegar un sistema CRM ambiental automatizado para Sau Ecolsur Sana, denominado Eco-Sales CRM, que centralice en una única base de datos relacional SQL Server la información comercial, operativa y normativa de la organización, permitiendo gestionar de forma integral el ciclo de vida del cliente desde el primer contacto como prospecto hasta la firma del contrato, la ejecución recurrente del servicio ambiental y la emisión de manifiestos y reportes de trazabilidad. El sistema optimizará la gestión comercial, reducirá la dependencia de procesos manuales en papel, automatizará el seguimiento de oportunidades, facilitará la toma de decisiones basada en datos reales y medibles en tiempo real, y garantizará el cumplimiento de las regulaciones ambientales vigentes, alineando los procesos de ventas, operaciones, facturación y cumplimiento normativo bajo una misma plataforma tecnológica moderna, robusta y escalable.
+1.4.2 Objetivos Específicos
+Diseñar las vistas del CRM con Razor, HTML5, CSS3, Bootstrap 5., jQuery 3.7.1 y jQuery Validation, aplicando principios de usabilidad, minimalismo funcional, diseño responsive y consistencia visual para los módulos de prospectos, cotizaciones, contratos, manifiestos y dashboard. Se elaborarán componentes reutilizables en HTML/JS, layouts compartidos en Views/Shared, flujos de navegación claros y pruebas de validación con los usuarios finales, garantizando que la interfaz reduzca el agotamiento mental del operador, minimice errores de captura y refleja la identidad sostenible de la empresa.
+Diseñar la arquitectura MVC de .NET Framework 4.8 y el modelo relacional de datos en Microsoft SQL Server, definiendo entidades normalizadas para empresas, prospectos, sucursales, contactos, usuarios, servicios, cotizaciones, tratos, contratos, manifiestos, archivos adjuntos, notificaciones y bitácoras de actividad. Se asegurará una estructura escalable y consistente mediante el uso de Stored Procedures, vistas, índices, restricciones de integridad referencial, transacciones ACID y un plan de respaldo que garantice la recuperación ante desastres, eliminando las islas de información y asegurando un único punto de verdad corporativo.
+Desarrollar la lógica de negocio, los controladores y los servicios del CRM utilizando C# sobre ASP.NET MVC 5 y .NET Framework 4.8, aprovechando el CLR, la seguridad de tipos del lenguaje y la integración nativa con ADO.NET y Microsoft SQL Server. Se implementarán controladores que atiendan verbos HTTP estándar (GET, POST) para los recursos del CRM, aplicando el patrón Modelo-Vista-Controlador (MVC), el principio de separación de responsabilidades y un control de acceso básico basado en roles (admin, vendedor, cliente), asegurando un código mantenible, seguro y preparado para escalar junto con la operación comercial.
+ Desarrollar el frontend moderno e interactivo de CRM utilizando Razor, HTML5, CSS3, JavaScript, jQuery 3.7.1, Bootstrap 5.3.8 y jQuery Validation, construyendo vistas basadas en componentes HTML reutilizables, consumo de endpoints JSON del backend, modales controlados con JavaScript nativo, tablas dinámicas, mapas (Leaflet) y visualización de datos con Chart.js y notificaciones con SweetAlert2. La experiencia de usuario será fluida, responsive y alineada a los flujos comerciales reales de Sau Ecolsur Sana.
+ Automatizar los mecanismos de seguimiento de prospectos implementando funcionalidades que permitan:
+Asignar vendedores.
+Cambiar estatus de prospectos.
+Registrar rechazos con motivo.
+Adjuntar evidencia fotográfica y documental.
+Gestionar múltiples sucursales y contactos por empresa.
+Generar borradores de cotizaciones.
+Registrar notificaciones en base de datos (con envío real de correo electrónico en fases posteriores).
+Programar recordatorios y alertas comerciales (funcionalidad planeada).
+Implementar el módulo de cotizaciones, contratos y manifiestos ambientales, que permita:
+Estructurar servicios de recolección, transporte y disposición final de residuos sólidos urbanos, biológico-infecciosos y de manejo especial.
+Generar cotizaciones formalizadas (HTML inicial; PDF en fases posteriores).
+Convertir prospectos en clientes mediante contratos vinculantes.
+Documentar la trazabilidad de los servicios a través de manifiestos electrónicos. 
+Implementar un módulo de dashboards y tableros estadísticos que permita medir, visualizar y analizar los indicadores clave de rendimiento (KPIs) del área comercial y operativa, tales como tasas de conversión de prospectos a clientes, cumplimiento de metas de ventas, distribución geográfica de la cartera, origen de prospectos, pipeline de oportunidades, adeudos, cotizaciones enviadas, contratos autorizados, servicios cotizados y volumetría estimada de residuos. El módulo apoyará la toma de decisiones gerenciales basadas en datos reales y medibles, sustituyendo las decisiones empíricas por análisis objetivos.
+Implementar el envío real de notificaciones por correo electrónico (SMTP) para eventos comerciales clave, tales como:
+Asignación de vendedor.
+Envío de cotizaciones al cliente.
+Recordatorios de seguimiento.
+Notificación de rechazo o aprobación.
+Implementar la generación de documentos PDF para cotizaciones formales, contratos y manifiestos, utilizando una librería adecuada para .NET Framework 4.8. Actualmente el sistema genera un archivo HTML de resumen de cotización (Validación {id}.html) como paso previo; en siguientes iteraciones se convertirá a PDF.
+Garantizar la seguridad de la información aplicando buenas prácticas de ciberseguridad:
+Parametrización de consultas mediante Stored Procedures para prevenir inyección SQL.
+Autenticación basada en FormsAuthentication + sesión ASP.NET.
+Control de acceso básico basado en roles (admin, vendedor, cliente).
+Sanitización de contenido dinámico en vistas Razor para mitigar ataques XSS.
+Protección de formularios con AntiForgeryToken.
+Desplegar el sistema Eco-Sales CRM en la infraestructura corporativa de Sau Ecolsur Sana, integrando las bases de datos y procesos de las áreas comercial, operativa, administrativa y de cumplimiento normativo. El despliegue incluirá la configuración sobre Internet Information Services (IIS) / IIS Express, la migración controlada de información histórica, la capacitación del personal de ventas y operaciones, la elaboración de manuales técnicos y de usuario, la definición de roles y permisos, y la implementación de un plan de respaldo y recuperación ante desastres, asegurando la adopción tecnológica del personal, la continuidad del negocio y el cumplimiento de los objetivos estratégicos de digitalización y sostenibilidad ambiental.
+ Promover una política de cero papel mediante la digitalización de contratos, cotizaciones, manifiestos de recolección, firmas de acuerdos, reportes operativos y evidencia fotográfica, almacenados directamente en la base de datos SQL Server. Esta transformación digital reducirá el consumo de papel, cartuchos de tinta, espacio físico de archivo y la huella de carbono administrativa, alineando la operación del CRM con los principios de Green IT, economía circular y responsabilidad ambiental corporativa.
+  Establecer las bases para la trazabilidad ambiental y transparencia regulatoria del cliente, generando reportes históricos y certificados digitales que documenten la correcta recolección, transporte, tratamiento y disposición final de los residuos. Esta trazabilidad permitirá a Sau Ecolsur Sana y a sus clientes corporativos superar auditorías gubernamentales, mantener y renovar certificaciones ambientales como ISO 14001, y demostrar cumplimiento normativo ante dependencias regulatorias, consolidando la confianza y la reputación de marca de la organización.
+CAPÍTULO II “MARCO TEÓRICO”.
+En este capítulo se desarrollan los fundamentos teóricos, conceptuales y tecnológicos que sustentan el diseño, construcción e implementación del Sistema CRM Ambiental (Eco-Sales CRM) para la corporación Sau Ecolsur Sana. El objetivo es proporcionar un marco de referencia académico que justifique las decisiones técnicas adoptadas, alineándose con las necesidades operativas, comerciales y normativas de una empresa dedicada a la gestión integral de residuos sólidos urbanos y de manejo especial en el estado de Yucatán. Se abordan los principios de gestión de relaciones con el cliente (CRM), la arquitectura de bases de datos centralizadas, las tecnologías de software empresarial seleccionadas, los principios de experiencia de usuario y seguridad de la información, así como los beneficios ambientales derivados de la digitalización de procesos comerciales.
+2.1 FUNDAMENTOS DE LA GESTIÓN DE RELACIONES CON EL CLIENTE (CRM)
+La gestión de las relaciones con el cliente, conocida internacionalmente por sus siglas CRM (Customer Relationship Management), ha evolucionado de ser una simple herramienta de registro de datos de contactos a convertirse en una estrategia organizacional integral orientada a conocer, anticipar y satisfacer las necesidades de los clientes a lo largo de todo su ciclo de vida. Desde la perspectiva académica, el CRM no se limita a un software; es una filosofía de negocio que integra procesos, personas y tecnología para maximizar el valor de cada relación comercial.
+Según Sánchez Carvajal (2011), un sistema CRM permite a las organizaciones gestionar de manera sistemática la información de sus clientes, transformando datos operativos en conocimiento estratégico que mejora la toma de decisiones. En el ámbito corporativo, el CRM se conceptualiza como la convergencia de la tecnología, los procesos internos y el capital humano, orientada a crear una experiencia de valor tanto para el cliente como para la empresa. Grönroos (2007) enfatiza que el marketing relacional busca identificar, establecer, mantener y reforzar relaciones exitosas con los clientes, haciendo uso de la tecnología como habilitador clave.
+Para empresas prestadoras de servicios de carácter especializado y regulado, como las dedicadas al manejo de residuos, la implementación de un CRM deja de ser una opción competitiva para convertirse en una necesidad operativa. La trazabilidad de cada cotización, contrato, servicio realizado y manifiesto ambiental exige una plataforma que centralice la información comercial y normativa, reduciendo el riesgo de pérdida de datos y garantizando la auditabilidad de los procesos ante organismos reguladores.
+En el caso particular de Eco-Sales CRM, el sistema busca gestionar el ciclo completo del cliente corporativo: desde el primer contacto como prospecto, pasando por la cotización de servicios, la formalización de contratos, la ejecución recurrente del servicio ambiental y la emisión de manifiestos de recolección. Esta visión integral del CRM justifica la selección de una arquitectura robusta, segura y escalable que soporte el crecimiento comercial y normativo de la organización.
+2.2 DIMENSIONES DEL CRM: ENFOQUES Y APLICACIONES
+El estudio teórico del CRM revela que no se trata de un bloque monolítico de software, sino de una arquitectura multidimensional compuesta por enfoques operacional, analítico y colaborativo. Cada una de estas dimensiones responde a necesidades específicas de la organización y, en conjunto, permiten una gestión relacional completa y efectiva con los clientes.
+El CRM Operacional se centra teóricamente en la automatización de los procesos de cara al cliente, lo que comúnmente se denomina automatización de la fuerza de ventas (Sales Force Automation, SFA). Incluye la captura de prospectos, el seguimiento de oportunidades, la asignación de vendedores, la generación de cotizaciones y la gestión de contratos. Su propósito es reducir la carga administrativa del equipo comercial y asegurar que ninguna oportunidad de venta se pierda por falta de seguimiento.
+El CRM Analítico, por su parte, tiene como enfoque teórico principal el análisis profundo de datos comerciales y la Inteligencia de Negocios (Business Intelligence, BI). A través de técnicas de data mining, el análisis de tasas de conversión, la segmentación geográfica de prospectos y el monitoreo del pipeline comercial, este enfoque permite a la gerencia tomar decisiones basadas en evidencia. Mendoza Martínez (2021) señala que el acceso a métricas actualizadas facilita la planificación y el pronóstico de ventas, sustituyendo las decisiones empíricas por análisis objetivos.
+Finalmente, el CRM Colaborativo busca la sincronización de los canales de comunicación e interacción con el cliente, integrando áreas comerciales, operativas, administrativas y de cumplimiento normativo. Este enfoque resulta especialmente relevante en el sector ambiental, donde la cotización, programación de servicios, recolección de residuos, emisión de manifiestos y facturación involucran a múltiples departamentos que deben compartir información en tiempo real.
+2.3 DIMENSIONES ESTRATÉGICAS DEL CRM
+El modelo teórico del CRM se divide en tres dimensiones operativas fundamentales que deben interactuar de manera coordinada para generar valor: operacional, analítica y colaborativa. A continuación se describe cada una de ellas y su aplicación concreta dentro del CRM ambiental propuesto.
+2.3.1 CRM Operacional y Automatización de la Fuerza de Ventas
+El CRM operacional constituye la dimensión encargada de la automatización e integración de los procesos de negocio que tienen contacto directo con el cliente. En la práctica de la ingeniería de software, el CRM operacional se traduce en módulos específicos para la captura estandarizada de datos de clientes potenciales, el seguimiento de oportunidades comerciales, la gestión de contactos y sucursales, y la generación de cotizaciones.
+En Eco-Sales CRM, esta dimensión se materializa en el módulo de prospectos, que permite registrar empresas generadoras de residuos, capturar múltiples sucursales y contactos por cliente, asignar vendedores, cambiar estatus comerciales y documentar rechazos con motivo. La automatización de estos flujos reduce el tiempo que los ejecutivos de ventas dedican a tareas administrativas, permitiéndoles concentrarse en el cierre de tratos y en el fortalecimiento de relaciones comerciales.
+2.3.2 CRM Analítico e Inteligencia de Negocios
+El CRM analítico se define como la dimensión orientada al análisis matemático y estadístico de los datos históricos recolectados por el sistema. Su objetivo es transformar datos brutos en información útil para la dirección comercial y operativa. A través de dashboards, indicadores clave de rendimiento (KPIs) y reportes, la gerencia puede visualizar la tasa de conversión de prospectos a clientes, el origen de los prospectos, el cumplimiento de metas de ventas, la distribución geográfica de la cartera y el pipeline de oportunidades.
+El análisis preciso de la tasa de conversión, el origen geográfico de los prospectos y el cumplimiento de metas comerciales permite ajustar estrategias de prospección, identificar zonas de mayor potencial y asignar recursos de ventas de manera más eficiente. En el contexto del sector ambiental, este análisis también facilita la proyección de volumetría estimada de residuos y la planificación de flotas de recolección.
+2.3.3 CRM Colaborativo e Integración de Canales
+El CRM colaborativo es la dimensión que gestiona, centraliza y orquesta todos los canales de comunicación e interacción con el cliente, asegurando que la información fluya de manera homogénea entre los distintos actores de la organización. Adicionalmente, el CRM colaborativo fomenta la sincronización interna e interdepartamental entre áreas que tradicionalmente operan de forma aislada, como son ventas, operaciones, facturación y cumplimiento normativo.
+En la operación de Eco-Sales CRM, la colaboración se evidencia cuando un vendedor registra una cotización que, una vez autorizada, genera un contrato y posteriormente un manifiesto de recolección. Cada etapa del proceso está disponible para las áreas involucradas, eliminando la duplicidad de datos y reduciendo los tiempos de respuesta ante requerimientos del cliente o de organismos reguladores.
+2.3.4 Particularidad del CRM en el Sector Ambiental
+La adopción de modelos CRM dentro de sectores orientados a los servicios ambientales añade una capa de complejidad teórica y práctica que no suele presentarse en otros mercados. La gestión de residuos está regulada por la Ley General para la Prevención y Gestión Integral de los Residuos (LGPGIR) y por Normas Oficiales Mexicanas como la NOM-083-SEMARNAT-2003, que exigen documentación, trazabilidad y reportes específicos.
+La plataforma debe actuar como un repositorio digital forense y auditable que vincule de forma indiscutible el perfil comercial del cliente con sus obligaciones normativas. Esto incluye la documentación de servicios de recolección, transporte y disposición final de residuos sólidos urbanos, biológico-infecciosos y de manejo especial. La centralización de esta información en SQL Server resguarda la integridad referencial, la consistencia lógica y la seguridad de los datos, facilitando el cumplimiento normativo y la generación de reportes regulatorios.
+2.4 ARQUITECTURA DE BASES DE DATOS CENTRALIZADAS Y AUTOMATIZACIÓN
+Desde la perspectiva de la Teoría General de Sistemas, propuesta originalmente por el biólogo Ludwig von Bertalanffy, un sistema de información empresarial eficiente debe funcionar como un todo integrado cuyas partes interactúan para alcanzar un objetivo común. La fragmentación de la información comercial en silos aislados genera duplicidad de esfuerzos, pérdida de oportunidades y dificultades para la toma de decisiones gerenciales.
+Para garantizar que un sistema de información aporte un valor real, cuantificable y sostenible a la organización, la arquitectura de datos debe centralizarse en un único punto lógico. Una base de datos centralizada resguarda la integridad referencial, la consistencia lógica y la seguridad de la información comercial, operativa y normativa. Vargas Arábalo (2007) destaca la importancia de políticas y sistemas organizados para la gestión eficiente de recursos y clientes, lo que se traduce en mejores resultados comerciales y administrativos.
+La automatización de flujos administrativos complejos es una consecuencia directa y natural de la centralización de datos. Cuando toda la información de prospectos, cotizaciones, contratos y manifiestos reside en una misma base de datos relacional, los procesos de seguimiento, recordatorio, validación y reporteo pueden automatizarse, reduciendo la intervención manual y minimizando los errores humanos. La reducción de tareas administrativas mediante la automatización permite que los vendedores dediquen más tiempo a cerrar acuerdos y fortalecer relaciones con clientes.
+2.4.1 Arquitectura y Motor de SQL Server
+Microsoft SQL Server es un sistema de gestión de bases de datos relacionales (RDBMS) de grado corporativo basado en el lenguaje estándar SQL (Structured Query Language). La arquitectura interna de SQL Server se apoya en componentes computacionales avanzados que garantizan el procesamiento eficiente de transacciones, la ejecución de procedimientos almacenados, la creación de vistas, la administración de índices y la implementación de políticas de respaldo y recuperación.
+En el contexto de un CRM donde las relaciones de cardinalidad entre un prospecto, sus cotizaciones, los contratos resultantes y los servicios contratados son estructuradas y críticas para la facturación y la legalidad, una base de datos relacional como SQL Server resulta obligatoria. Las bases de datos relacionales garantizan propiedades ACID (Atomicidad, Consistencia, Aislamiento y Durabilidad) que aseguran la integridad de las transacciones comerciales y normativas.
+El modelo de datos del Eco-Sales CRM se implementa en SQL Server e incluye tablas fundamentales como empresas, crm_prospectos, crm_prospecto_sucursales, crm_prospecto_contactos, crm_prospecto_archivos, crm_tratos, crm_cotizaciones_borradores, crm_servicios_cotizados, crm_cotizaciones_validacion, crm_contratos_autorizados, crm_notificaciones_correo, usuarios y servicios_residuos. Sobre este modelo se definen llaves primarias, llaves foráneas, restricciones de integridad e índices, y se ejecutan Stored Procedures para las operaciones críticas.
+2.5 TECNOLOGÍAS DE DESARROLLO DE SOFTWARE EN EL ENTORNO EMPRESARIAL
+El desarrollo de software empresarial contemporáneo exige la selección rigurosa de lenguajes y arquitecturas de programación que garanticen alto rendimiento computacional, seguridad frente a ataques cibernéticos y capacidad de integración fluida con motores de bases de datos relacionales. El presente proyecto está construido sobre una arquitectura monolítica clásica y altamente estructurada, utilizando C# con ASP.NET MVC 5 para la lógica central del servidor, Vistas de Razor (.cshtml) renderizadas desde el backend como capa de interacción para el usuario, e interactividad en el cliente apoyada en Bootstrap, jQuery, Chart.js y SweetAlert2.
+La combinación de lenguajes compilados para la lógica de negocio del backend y lenguajes dinámicos e interpretados para la interactividad del frontend asegura la creación de una plataforma robusta, mantenible y con una experiencia de usuario óptima en entornos corporativos de alta demanda. Esta elección tecnológica responde a la necesidad de contar con un sistema estable, bien documentado y compatible con la infraestructura Microsoft existente en la organización.
+2.5.1 Lenguaje de Programación C# y .NET Framework 4.8
+C# es un lenguaje de programación de propósito general, moderno, orientado a objetos, de tipo fuertemente estático y desarrollado por Microsoft como piedra angular del ecosistema .NET. Este lenguaje, concebido por Anders Hejlsberg, combina la potencia de ejecución y control de lenguajes de bajo nivel como C++ con la productividad y seguridad de lenguajes de alto nivel como Java. C# opera sobre un entorno de ejecución administrado conocido como Common Language Runtime (CLR), el cual gestiona de forma automática la asignación y liberación de memoria mediante un recolector de basura (Garbage Collector).
+En el exigente ámbito del software empresarial, C# se consolida como una tecnología de facto preferida para el desarrollo de lógicas de negocio robustas, la creación de servicios web y la interconexión segura con servidores Microsoft SQL Server. En el CRM Ciclo Ambiental, la comunicación entre la aplicación y la base de datos se realiza mediante ADO.NET, ejecutando procedimientos almacenados (Stored Procedures) en SQL Server a través de comandos parametrizados. Esta aproximación brinda un control total sobre las consultas, optimiza el rendimiento en operaciones de lectura y escritura, y refuerza la seguridad al prevenir ataques de inyección SQL desde el núcleo del acceso a datos.
+El proyecto utiliza .NET Framework 4.8 como plataforma de ejecución. Las ventajas de esta elección son:
+Alto Rendimiento (Performance): .NET Framework 4.8, combinado con la ejecución optimizada JIT (Just-In-Time) del CLR, ofrece un rendimiento sólido y predecible para aplicaciones empresariales que procesan un alto volumen de transacciones comerciales y operaciones de base de datos de forma concurrente.
+Comprobación Estricta de Tipos (Fuertemente Tipado): C# detecta errores lógicos y de asignación en tiempo de compilación, previniendo que los errores lleguen a los entornos de producción y facilitando la depuración y el mantenimiento de bases de código que crecen con el tiempo.
+Ecosistema Empresarial Maduro: El soporte corporativo de Microsoft provee herramientas como Visual Studio, el gestor de paquetes NuGet y bibliotecas certificadas que ofrecen un entorno de desarrollo profesional y ampliamente documentado. Entre los paquetes relevantes para este proyecto se encuentran Microsoft.AspNet.Mvc 5.3.0, Microsoft.AspNet.WebPages 3.3.0, Microsoft.AspNet.Razor 3.3.0, Newtonsoft.Json 13.0.4, Bootstrap 5.3.8 y jQuery 3.7.1.
+Seguridad Integrada: El framework proporciona mecanismos nativos para el manejo de autorización basada en roles, protección contra ataques de falsificación de solicitudes entre sitios (CSRF), validación de modelos, sanitización de datos y parametrización automática de consultas SQL cuando se utiliza ADO.NET de forma correcta.
+2.5.2 Capa de Acceso a Datos: ADO.NET vs ORMs
+Dentro del desarrollo en C#, existen múltiples formas de conectarse a SQL Server. Aunque los ORMs (Object-Relational Mappers) como Entity Framework o Dapper ofrecen productividad al mapear automáticamente tablas a objetos, también introducen una capa de abstracción que puede dificultar el control granular de consultas, la optimización de rendimiento y la auditoría de procedimientos almacenados.
+Para garantizar un rendimiento absoluto y mantener el control granular de las transacciones, este proyecto utiliza ADO.NET de forma manual. La capa de acceso a datos se ubica en la carpeta DAL y se implementa con objetos SqlConnection, SqlCommand, SqlDataReader y SqlParameter. Cada operación crítica se ejecuta a través de Stored Procedures parametrizados, lo que evita la concatenación de cadenas SQL y reduce el riesgo de inyección SQL.
+El uso de ADO.NET manual también facilita la depuración directa de procedimientos almacenados desde SQL Server Management Studio, permite la reutilización de lógica de negocio en la base de datos y reduce la dependencia de paquetes de terceros. Esta decisión arquitectónica prioriza la transparencia, el control y la seguridad sobre la velocidad inicial de desarrollo.
+2.5.3 Arquitectura Modelo-Vista-Controlador (MVC) en ASP.NET
+ASP.NET MVC 5 es un framework arquitectónico de software clásico y comprobado que dicta la separación estricta de una aplicación en tres componentes lógicos interconectados: Modelo, Vista y Controlador. El objetivo es separar la representación interna de la información de las formas en que dicha información se presenta o se acepta del usuario.
+El Modelo (Model) maneja el comportamiento y los datos del dominio de la aplicación, encapsulando la compleja lógica de negocio de la empresa. La Vista (View) renderiza el modelo en una forma apta para la interacción. ASP.NET MVC delega esto a su motor Razor, el cual genera páginas HTML a partir de archivos .cshtml. El Controlador (Controller) intercepta las solicitudes HTTP entrantes, procesa la entrada del usuario, invoca las operaciones requeridas en el Modelo y selecciona la respuesta adecuada, típicamente una vista renderizada o un objeto JSON para llamadas asíncronas.
+Las ventajas estratégicas del patrón MVC en este proyecto son:
+Separación de Preocupaciones (Separation of Concerns - SoC): Cada capa tiene una responsabilidad única. Esto permite que un ingeniero backend optimice controladores y modelos mientras un desarrollador frontend ajusta vistas y estilos sin interferir entre sí.
+Alta Mantenibilidad y Escalabilidad Modular: Al tener el código organizado de manera predecible y lógica, agregar nuevos módulos (facturación electrónica, trazabilidad de camiones, reportes normativos) es un proceso ordenado que no contamina áreas ya operativas del sistema.
+Facilidad para Pruebas (Testability): Al estar la lógica de negocio aislada en Modelos y Controladores, es posible escribir pruebas unitarias e integrales que simulen escenarios comerciales complejos antes de desplegar actualizaciones a producción.
+Seguridad de Ciclo de Vida: Al procesar todas las solicitudes a través de Controladores en el servidor de IIS, la lógica de negocio sensible no se expone al navegador, reduciendo la superficie de ataque.
+2.5.4 El Motor de Vistas Razor y Server-Side Rendering (SSR)
+A diferencia de los enfoques donde el cliente (navegador web) debe descargar pesados archivos de JavaScript para construir la interfaz, el motor Razor de ASP.NET MVC genera el HTML completo en el servidor antes de enviarlo al navegador. Razor es un motor de marcado que permite incrustar código de servidor (C#) directamente en páginas HTML (archivos .cshtml), combinando la potencia de la lógica de negocio con la flexibilidad del diseño web.
+Las ventajas del renderizado del servidor con Razor en este CRM son:
+Velocidad de Carga Inicial: El navegador no necesita procesar lógica compleja para mostrar la página; simplemente renderiza el HTML recibido, lo que resulta especialmente útil en conexiones corporativas con latencia variable.
+SEO y Accesibilidad: Las páginas generadas son plenamente legibles por cualquier sistema indexador o herramienta de accesibilidad, sin depender de la ejecución de JavaScript.
+Reducción de Puntos de Falla: Al centralizar todo el procesamiento visual en el servidor, se evitan errores originados por incompatibilidades entre navegadores o versiones de librerías cliente.
+Integración Nativa con ASP.NET MVC: Razor permite utilizar helpers como @Html.ActionLink, @Html.AntiForgeryToken(), @Url.Action() y @RenderBody(), simplificando el desarrollo de aplicaciones empresariales seguras.
+2.5.5 Tecnologías Frontend Complementarias (Bootstrap y jQuery)
+Para dotar al sistema de una experiencia de usuario rica e interactiva sin romper la arquitectura SSR de Razor, el proyecto integra tecnologías frontend maduras y estables: Bootstrap 5 como framework de diseño responsivo, jQuery para la manipulación del DOM y llamadas AJAX, Chart.js para la visualización de gráficas, SweetAlert2 para notificaciones amigables, y DataTables para la presentación ordenada de información tabular.
+Bootstrap 5 proporciona una cuadrícula responsiva, componentes visuales consistentes (botones, modales, tablas, formularios) y utilidades CSS que garantizan que los módulos del CRM se adapten matemáticamente a cualquier dispositivo, desde monitores de escritorio hasta tablets y teléfonos móviles. jQuery y AJAX permiten actualizar secciones de la página sin recargarla completamente, mejorando la fluidez de la experiencia de usuario en operaciones como la asignación de vendedores, el cambio de estatus o la carga dinámica de sucursales y contactos.
+Chart.js se utiliza en el dashboard para renderizar gráficas de líneas (evolución comercial) y gráficas de pastel (distribución de estatus de prospectos). SweetAlert2 reemplaza las alertas nativas del navegador por mensajes visuales más atractivos para errores, advertencias y confirmaciones de éxito. DataTables mejora la navegación de tablas largas con paginación, búsqueda y ordenamiento.
+2.5.6 SQL (Base de Datos Relacional) y la Integridad de la Información
+SQL (Structured Query Language) no es solo un lenguaje, es el estándar matemático relacional concebido en la década de 1970 por Edgar F. Codd para gestionar, manipular y consultar volúmenes masivos de datos en Sistemas de Gestión de Bases de Datos Relacionales (RDBMS). SQL Server, como implementación corporativa de este estándar, ofrece ventajas decisivas para un CRM empresarial.
+Entre las ventajas más relevantes se encuentran:
+Cumplimiento Estricto de Integridad de Datos (ACID): Garantiza matemáticamente que transacciones complejas (como generar un contrato a partir de una cotización) se procesen de forma atómica, segura, confiable y sin pérdida de datos.
+Estructura y Rigidez Esquemática: Los esquemas rígidos dictan que la información no puede ingresarse de forma desordenada, asegurando que la información del CRM esté siempre estandarizada y normalizada.
+Motor de Consultas Complejas (JOINs): A través del álgebra relacional, permite cruzar y fusionar datos de múltiples tablas en fracciones de segundo para generar reportes cruzados, métricas financieras precisas y dashboards analíticos avanzados para la gerencia.
+Como desventaja, la escalabilidad horizontal distribuida de bases de datos relacionales es más compleja que en soluciones NoSQL. Sin embargo, para un CRM donde las relaciones de cardinalidad entre entidades son estructuradas y críticas para la facturación y la legalidad, SQL Server resulta la opción más adecuada.
+2.5.7 Por qué SQL Server es la mejor opción para este CRM
+Para un sistema CRM donde las relaciones de cardinalidad entre un Prospecto (Uno), sus Cotizaciones (Muchos), los Contratos resultantes (Muchos) y los Servicios (Muchos a Muchos) son estructuradas, lógicas y absolutamente críticas para la facturación y la legalidad, una base de datos relacional (SQL Server) es obligatoria. Las bases de datos NoSQL (como MongoDB o Cassandra), aunque excelentes para documentos aislados o logs masivos, no ofrecen la misma seguridad relacional (foreign keys, check constraints) necesaria para soportar sistemas contables, fiscales o de gestión empresarial rigurosa.
+SQL Server también se integra nativamente con el ecosistema Microsoft (.NET Framework, ASP.NET MVC, Visual Studio, IIS), simplificando el despliegue, la administración y el soporte técnico en entornos corporativos. La cadena de conexión EcoSal CRM Context configurada en el archivo Web.config apunta a una instancia local de SQL Server con la base de datos CRM_Base, utilizando autenticación integrada de Windows con el proveedor System.Data.SqlClient.
+2.5.8 Política Cero Papel (Desmaterialización) y Deuda Técnica
+Se adopta la arquitectura ASP.NET MVC con Razor porque representa un estándar probado en batalla para el desarrollo de aplicaciones empresariales. La inmensa mayoría de las instituciones financieras, entidades gubernamentales y corporaciones transnacionales utilizan este patrón porque garantiza que el software sobrevivirá al paso del tiempo y al inevitable recambio del personal de ingeniería, reduciendo la deuda técnica.
+Usar un patrón estandarizado como MVC con Razor significa que el código fuente del CRM está escrito bajo convenciones claras y predecibles. Esto asegura que si en el futuro se integra un nuevo grupo de desarrolladores al equipo, comprenderán casi instantáneamente la estructura de carpetas, los flujos de datos y la topología del proyecto sin requerir semanas de capacitación.
+Paralelamente, el sistema promueve una política de cero papel mediante la digitalización de contratos, cotizaciones, manifiestos de recolección, firmas de acuerdos, reportes operativos y evidencia fotográfica, almacenados directamente en la base de datos SQL Server. Esta desmaterialización reduce el consumo de papel, cartuchos de tinta y la huella energética de equipos de impresión, contribuyendo a los objetivos de sostenibilidad ambiental de la corporación.
+2.6 ARQUITECTURA DE INTERFAZ DE USUARIO (UI) Y EXPERIENCIA DE USUARIO (UX)
+El desarrollo de un sistema CRM de alta gama no se limita exclusivamente a la arquitectura de datos o al algoritmo del backend; la adopción tecnológica por parte del usuario final depende críticamente del diseño de la Interfaz de Usuario (UI) y la planificación de la Experiencia de Usuario (UX). El diseño de la interacción humano-computadora (HCI) combina psicología cognitiva, teoría del color y ergonomía digital para crear interfaces que sean eficientes, intuitivas y agradables de usar.
+2.6.1 Teoría de la Carga Cognitiva en Software Empresarial
+En el contexto de un CRM donde los agentes de ventas deben procesar docenas de cotizaciones diarias, la "Carga Cognitiva" se convierte en un factor limitante. La Ley de Hick-Hyman establece que el tiempo que tarda una persona en tomar una decisión aumenta de forma logarítmica a medida que se incrementa el número de opciones disponibles. Para mitigar la sobrecarga de información, el diseño de interfaces modernas para CRMs ecológicos adopta el paradigma del "Minimalismo Funcional".
+Se eliminan los elementos visuales superfluos y se agrupan las acciones de manera lógica, utilizando modales y flujos de trabajo guiados (wizards) que dividen tareas complejas, como la generación de una cotización o la captura de un prospecto con múltiples sucursales, en pasos secuenciales digeribles. Esto reduce el agotamiento mental del operador y minimiza los errores de captura de datos, mejorando la calidad de la información comercial y normativa.
+2.6.2 Psicología del Color y Respuesta Emocional en Sistemas Ecológicos
+El esquema cromático de una aplicación no es una elección puramente estética, sino una herramienta de comunicación no verbal. Para el sistema CRM Ciclo Ambiental, el uso de tonos terrosos (café, terracota) y verdes no es casualidad; responde a la psicología del color. Los tonos marrones y verdes evocan sensaciones de naturaleza, sostenibilidad, crecimiento y estabilidad. En contraste con los diseños corporativos tradicionales dominados por azules fríos o grises clínicos, un esquema de color orgánico refuerza constantemente la misión y visión de la empresa.
+Además, el contraste adecuado de los colores es mandatado por las pautas de accesibilidad web (WCAG) para prevenir la fatiga visual durante jornadas laborales de ocho horas frente al monitor. La paleta de colores del CRM está definida en el archivo Site.css mediante variables CSS como --brown-dark, --brown-pale, --bg2 y --border-light, asegurando consistencia visual en todos los módulos.
+2.7 ARQUITECTURA WEB BASADA EN CONTROLADORES Y VISTAS HTTP
+El sistema Eco-Sales CRM opera bajo una arquitectura clásica y segura de Cliente-Servidor web basada en el ciclo de Petición-Respuesta HTTP (Request-Response). En este modelo, el navegador web del usuario (Cliente) envía una solicitud HTTP a través de la red al servidor corporativo (IIS). El enrutador (Router) de ASP.NET MVC interpreta la URL solicitada y la dirige hacia el Controlador y la Acción correspondientes.
+El Controlador interpreta el verbo de la acción (si es un GET para leer información o un POST para guardar datos en un formulario). Tras procesar la lógica de negocio, invocar la capa DAL si es necesario y construir el modelo de datos, selecciona la Vista apropiada. El motor Razor renderiza la vista junto con el modelo y devuelve al cliente un documento HTML completo, junto con las referencias a CSS y JavaScript necesarias.
+Algunas acciones del controlador, como la eliminación de un prospecto, la asignación de un vendedor o la creación de un borrador de cotización, devuelven respuestas JSON en lugar de una vista completa. Estas respuestas son consumidas por el JavaScript de la propia página mediante llamadas AJAX, lo que permite actualizar la interfaz sin recargarla completamente. Sin embargo, estas llamadas son internas al mismo origen de la aplicación; no existe una API REST desacoplada ni un frontend de Single Page Application (SPA).
+2.8 SEGURIDAD DE LA INFORMACIÓN Y CIBERSEGURIDAD EN ENTORNOS CRM
+La acumulación masiva de datos de clientes, historiales de facturación, contratos legales y ubicaciones geográficas convierte a un CRM en un objetivo muy atractivo para los ciberataques. Por lo tanto, la arquitectura de seguridad debe implementarse en múltiples capas, aplicando el principio de "Defensa en Profundidad" (Defense in Depth). El desarrollo del backend del CRM Ciclo Ambiental en ASP.NET MVC 5 (.NET Framework 4.8) incorpora, de manera consciente y estructurada, mecanismos de mitigación contra las vulnerabilidades más críticas identificadas por OWASP.
+2.8.1 Autenticación y Autorización en ASP.NET (Sesiones)
+La seguridad del acceso al sistema confía en el sistema de Autenticación de Formularios (Forms Authentication) nativo de ASP.NET. A diferencia de las arquitecturas modernas desacopladas que utilizan tokens JWT almacenados en el navegador, este sistema mantiene la autenticación en el servidor mediante cookies encriptadas y variables de sesión.
+Cuando un usuario inicia sesión de forma correcta, el servidor emite una cookie encriptada criptográficamente (Auth Cookie). El navegador envía automáticamente esta cookie en cada solicitud subsiguiente, permitiendo al servidor identificar al usuario sin necesidad de revalidar credenciales. Paralelamente, el sistema almacena en la sesión ASP.NET variables como UsuarioNombre, UsuarioId y Rol, que se utilizan para personalizar la interfaz y controlar el acceso a ciertas funciones.
+Los controladores administrativos están decorados con el atributo [Authorize], que redirige a los usuarios no autenticados hacia la pantalla de login. En el archivo Web.config se configura <authentication mode="Forms"> con la URL de inicio de sesión y un tiempo de expiración de 2880 minutos. El modo de sesión es InProc con timeout de 60 minutos, lo cual es adecuado para un entorno de prototipo y pruebas, aunque en producción debería migrar a SQL Server para garantizar resiliencia.
+2.8.2 Mitigación de Vulnerabilidades Web (OWASP Top 10)
+El desarrollo del CRM en ASP.NET MVC 5 incorpora mecanismos de mitigación contra las vulnerabilidades más críticas identificadas por OWASP. A continuación se describen las principales contramedidas implementadas:
+Prevención de Inyección SQL (SQLi): El riesgo de inyección SQL se mitiga mediante el uso estricto de ADO.NET con consultas parametrizadas y la ejecución de procedimientos almacenados en SQL Server. En lugar de concatenar directamente los datos ingresados por el usuario dentro de cadenas de consulta, el sistema transmite cada valor como un parámetro tipado, aislado y seguro. La capa DAL utiliza objetos SqlCommand con CommandType.StoredProcedure y parámetros SqlParameter.
+Prevención de Cross-Site Scripting (XSS): Los ataques XSS, donde un atacante intenta inyectar scripts maliciosos en la página de otros usuarios, se previenen principalmente mediante el motor Razor, el cual escapa automáticamente el contenido dinámico renderizado en las vistas. Cuando se requiere insertar HTML confiable, se utiliza @Html.Raw() de manera controlada.
+Prevención de Falsificación de Peticiones entre Sitios (CSRF): Para prevenir que atacantes fuercen a un usuario autenticado a ejecutar acciones indeseadas, todas las formas de inserción y modificación de datos incluyen el token antiforgery mediante @Html.AntiForgeryToken() y el atributo [ValidateAntiForgeryToken] en las acciones POST de los controladores.
+Adicionalmente, el archivo Web.config configura límites de tamaño de solicitud (maxRequestLength="51200" y maxAllowedContentLength="52428800") para soportar la carga de archivos adjuntos e imágenes, y elimina handlers de WebDAV que podrían introducir vectores de ataque no deseados.
+2.9 PLANES DE CONTINUIDAD DE NEGOCIO Y ALTA DISPONIBILIDAD DE DATOS
+El mayor activo de una corporación moderna son sus datos históricos. La pérdida de la base de datos de un CRM, incluso de unas pocas horas, puede representar daños financieros catastróficos y afectar la continuidad operativa. La teoría de administración de bases de datos exige la creación de protocolos de recuperación ante desastres (Disaster Recovery Plan - DRP) que garanticen la disponibilidad y recuperabilidad de la información.
+2.9.1 Tolerancia a Fallos y Redundancia (RAID)
+A nivel de infraestructura de hardware, los discos duros que alojan las bases de datos de SQL Server deben operar bajo configuraciones RAID (Redundant Array of Independent Disks), específicamente RAID 1 (espejo) o RAID 10 (espejo y división). Esto significa que cada megabyte de información escrita en un disco duro se escribe simultáneamente en otro disco físico separado. Si un disco duro sufre un colapso mecánico repentino, el sistema operativo cambia instantáneamente al disco de respaldo, evitando interrupciones en el servicio y garantizando la preservación total de las cotizaciones y contratos.
+2.9.2 Modelos de Respaldo y Objetivos de Recuperación
+Para cumplir con las exigencias corporativas, la arquitectura de SQL Server implementa un modelo de recuperación "Completo" (Full Recovery Model). Esto implica la realización de respaldos completos (Full Backups) semanales, respaldos diferenciales diarios y respaldos del registro de transacciones (Transaction Log Backups) periódicos. Este ecosistema de respaldo automatizado permite que, en el peor escenario de un ataque de Ransomware o corrupción general del sistema, los ingenieros puedan realizar una restauración de la base de datos a un punto específico en el tiempo (Point-in-Time Recovery).
+El plan de contingencia corporativo se diseña en base a dos métricas fundamentales: el RTO (Recovery Time Objective), que define cuánto tiempo máximo puede estar caído el sistema antes de que las pérdidas sean inaceptables, y el RPO (Recovery Point Objective), que determina la cantidad máxima de datos que la empresa está dispuesta a perder en tiempo. Para un CRM comercial, un RTO de 4 horas y un RPO de 15 minutos representan objetivos razonables que guían la frecuencia de respaldos y la preparación de infraestructura de recuperación.
+2.10 BENEFICIOS AMBIENTALES Y OPTIMIZACIÓN: EL PROPÓSITO FUNDAMENTAL DE UN CRM ECOLÓGICO
+Para cerrar el marco teórico, es imperativo fundamentar el propósito del software más allá de las líneas de código. El "CRM Ciclo Ambiental" no es concebido simplemente como una herramienta administrativa de ventas; es una plataforma tecnológica diseñada a propósito para impulsar un impacto positivo directo, medible y auditable en el medio ambiente a través de la eficiencia operativa y la transformación digital.
+2.10.1 ¿Para qué sirve verdaderamente un CRM enfocado al sector ecológico?
+Mientras que un CRM tradicional en sectores como el retail se centra puramente en generar ventas, un CRM diseñado para el sector de servicios ecológicos tiene un doble propósito firme y obligatorio. En primer lugar, gestionar eficientemente el ciclo de vida del cliente corporativo: controlar analíticamente el viaje del prospecto hasta la firma legal del contrato cerrado y su consecuente ejecución recurrente. En segundo lugar, garantizar la trazabilidad del impacto ecológico: asegurar mediante bases de datos inmutables y de alta disponibilidad que los servicios de recolección, transporte y tratamiento final de los residuos se documenten, coticen y ejecuten cumpliendo las normativas ambientales más estrictas.
+2.10.2 Impacto Positivo Multidimensional (Green Computing)
+La implementación rigurosa de este sistema genera beneficios ecológicos directos e indirectos, alineándose con los pilares del desarrollo sostenible. Los principales beneficios son los siguientes:
+Política Cero Papel (Desmaterialización Sistemática): Al digitalizar y almacenar en bases de datos SQL todo el flujo de trabajo (cotizaciones, contratos, manifiestos electrónicos, firmas digitales y reportes en tiempo real), se elimina significativamente el consumo de toneladas de papel anuales, cartuchos de tinta tóxica y la huella energética de equipos de impresión.
+Optimización de Rutas Logísticas y Reducción de Emisiones: Al contar con un CRM centralizado y geolocalizado con las coordenadas exactas de las sucursales de los clientes, la empresa posee la inteligencia de datos para diseñar polígonos y agrupar recolecciones de residuos por zonas de alta densidad, reduciendo los kilómetros recorridos en vacío por los camiones recolectores.
+Eficiencia Energética en Servidores (Green IT): Utilizar tecnologías backend de alto rendimiento como C# compilado y optimizado con Stored Procedures requiere menos ciclos de CPU y menos memoria RAM para procesar el mismo volumen de datos que un sistema obsoleto o interpretado, reduciendo el consumo energético de los servidores.
+Reducción de Incidentes por Errores Humanos: Un sistema automatizado y fuertemente tipado reduce a su mínima expresión los errores tipográficos en cotizaciones y órdenes de servicio, previniendo incidentes ambientales por envío de camiones inadecuados o rutas incorrectas.
+Transparencia Regulatoria y Economía Circular: El CRM provee reportes históricos precisos en tiempo real que empoderan a los clientes corporativos con pruebas documentales irrefutables de que sus residuos fueron recolectados, tratados y dispuestos adecuadamente, fomentando su reinserción en esquemas de economía circular y facilitando auditorías gubernamentales y certificaciones como ISO 14001.
+2.10.3 Conclusión del Marco Teórico
+La adopción de paradigmas y tecnologías sólidas (C#, ASP.NET MVC 5, motor de vistas Razor, ADO.NET con procedimientos almacenados en SQL Server) no es un mero lujo tecnológico; asegura la robustez, la integridad inalterable de los datos y la escalabilidad técnica que un CRM empresarial exige. Aún más importante, esta arquitectura de software se alinea filosóficamente con los objetivos de sostenibilidad ecológica de la corporación. Al optimizar los procesos operativos mediante software eficiente, se suprimen desperdicios físicos, se minimizan las emisiones contaminantes de las flotas en la cadena logística y se maximiza el impacto ecológico positivo en la comunidad.
+CAPÍTULO III "METODOLOGÍA O PROPUESTA A IMPLEMENTAR"
+En este capítulo se documenta la aplicación práctica de los fundamentos teóricos presentados en el Capítulo II, específicamente en lo relativo a la gestión de relaciones con clientes, las tecnologías de desarrollo de software, la arquitectura cliente-servidor, los principios de experiencia de usuario y la seguridad de la información. El contenido se limita a describir lo que efectivamente existe en el proyecto ubicado en la carpeta C:\Users\Joel Pool\Downloads\CRMSistema, sin inventar actividades, reuniones o entregables que no estén respaldados por los archivos del repositorio.
+El sistema fue construido con una metodología ágil adaptada, organizando el trabajo en fases cronológicas. Las tecnologías principales que conforman la solución son el lenguaje C# con ASP.NET MVC 5 sobre .NET Framework 4.8, Microsoft SQL Server como único motor de base de datos, acceso a datos manual mediante ADO.NET y Stored Procedures, y un frontend basado en vistas Razor, jQuery, Bootstrap, Chart.js y SweetAlert2. A continuación se narra el proceso seguido para construir cada una de estas partes.
+La documentación de la metodología es especialmente relevante porque permite reproducir el proceso, evaluar la calidad del trabajo realizado y planificar mejoras futuras. Además, demuestra la aplicación del conocimiento académico en un contexto empresarial real, donde las decisiones técnicas deben equilibrar la teoría con las restricciones de tiempo, presupuesto e infraestructura.
+3.1 METODOLOGÍA DE DESARROLLO
+Para el desarrollo del Eco-Sales CRM se adoptó una metodología ágil basada en los fundamentos de Scrum, adaptada a las condiciones de un proyecto terminal académico y a la disponibilidad de recursos de la organización. Scrum es un marco de trabajo que promueve la entrega incremental de producto funcionando mediante iteraciones cortas llamadas sprints, la colaboración constante con los usuarios y la inspección continua del proceso.
+Scrum se fundamenta en tres pilares: transparencia, inspección y adaptación. La transparencia implica que los procesos y el progreso sean visibles para todos los involucrados. La inspección requiere revisar frecuentemente los artefactos y el avance para detectar desviaciones. La adaptación consiste en ajustar el proceso tan pronto como se detecte que se está desviando de los objetivos aceptables. Estos pilares se materializaron en el proyecto mediante reuniones periódicas de seguimiento, tableros de tareas y revisiones de avance con el asesor y los representantes de la empresa.
+En lugar de requerir equipos completos con roles altamente estratificados de Scrum corporativo, el trabajo se organizó alrededor de sprints cortos de dos a tres semanas, al final de los cuales se entregaba una versión funcional y demostrable del sistema. Cada sprint incluyó una lista de funcionalidades priorizadas, reuniones de seguimiento y una revisión del avance con el asesor del proyecto y los representantes de la empresa. Aunque no se utilizó una herramienta formal de gestión de proyectos, el control de versiones con Git sirvió como registro.
+La elección de una metodología iterativa respondió directamente a la naturaleza orgánica del sistema: un CRM ambiental con módulos interdependientes, reglas de negocio complejas y requisitos que se fueron descubriendo conforme se avanzaba en el conocimiento del dominio. Un enfoque puramente secuencial habría dificultado la corrección de la dirección del proyecto ante cambios en el alcance. Con la metodología ágil fue posible priorizar funcionalidades críticas desde el inicio, como la captura de prospectos y el panel de control, y dejar para iteraciones posteriores el refinamiento de módulos como contratos, manifiestos y notificaciones por correo electrónico.
+Un aspecto relevante de la metodología adoptada fue la inclusión de ciclos de retroalimentación continua. Al finalizar cada sprint, se revisaba la funcionalidad entregada con el asesor académico y cuando fue posible, con usuarios clave de la empresa. Esta retroalimentación permite ajustar prioridades, corregir malentendidos sobre los requerimientos y refinar la experiencia de usuario antes de avanzar a módulos dependientes. La adaptabilidad fue clave para mantener el proyecto alineado con las expectativas reales de los usuarios finales.
+3.2 FASES DEL DESARROLLO DEL SISTEMA
+El desarrollo del sistema Eco-sales CRM se organizó en siete fases principales y se organizó temporalmente en 
+sprins
+ de dos a tres semanas cada uno con su entregable definido aunque el cronograma exacto depende del cómo se inició de manera errónea porque fue primero con un modelo que no era y después se pasó al modelo correcto, pero esto cuenta como se está creando con el modelo correcto que requería el sistema su ejecución lógica y cronológica cada fase representa un conjunto de actividades técnicas que dejan como resultado un incremento funcional demostrable del sistema. Aunque las fases se presentan en orden secuencial, la metodología ágil permitió retroceder y refinar etapas anteriores cuando fue necesario
+A continuación, se resume la evidencia visual que debe incluirse en el capítulo como soporte demostrativo de que las fases descritas fueron efectivamente ejecutadas. El pie de foto de cada imagen debe indicar el número de imagen, la fase que documenta y una breve descripción de lo que se observa. La inclusión de capturas de pantalla reales fortalece la demostración empírica de la construcción del sistema.
+ 
+3.2.1 Fase 1. Diagnóstico y análisis de requerimientos
+El punto de partida del proyecto fue el reconocimiento corporativo de qué Sau Ecolsur Sana requería, con carácter de urgencia, una herramienta que centralizará la información comercial y operativa. Durante esta fase se identificaron las necesidades principales que el sistema debía cubrir: la captura y seguimiento de prospectos, la generación de cotizaciones de servicios ambientales, el registro de contratos, el control de manifiestos, la gestión de archivos y evidencia fotográfica, y la visualización de indicadores comerciales en un dashboard.
+El diagnóstico inicial reveló que la información comercial se encontraba dispersa en hojas de cálculo, correos electrónicos y documentos físicos. Esta dispersión generaba inconsistencias, pérdida de seguimiento y dificultades para generar reportes gerenciales. La centralización en un CRM se presentó como la solución estructural para estos problemas, permitiendo que toda la información comercial residiera en un único sistema de gestión.
+A partir de este diagnóstico exhaustivo se elaboró un documento de requerimientos que sirvió como piedra angular para el diseño de la arquitectura. Se definieron los perfiles de usuario (administrador, vendedor y cliente), los flujos de trabajo principales y los módulos que conforman el CRM aunque en el inicio me confundí en las configuraciones del programa utilizando una versión diferente de .NET Framework y era exactamente la versión de NET Framework 4.8 . Por lo que los resultados de esta fase se plasman en la estructura aunque funcional pero incorrecta pero después se pudo arreglar con un reinicio pero con la información ya obtenida solo transformarlo con lo que requería la empresa .
+Sprint 0 (Semanas 1-2): Revisión documental, levantamiento inicial de requerimientos y planificación del proyecto. Entregable: documento de requerimientos preliminar y propuesta de arquitectura.
+Figura 2: Estructura del proyecto en Visual Studio Community 
+3.2.2 Fase 2. Diseño de la arquitectura del software y el modelo de datos
+Con base en los requerimientos levantados, se procedió a cimentar la arquitectura del sistema, eligiendo el patrón Modelo-Vista-Controlador de ASP.NET MVC 5 como eje central del desarrollo. Se decidió utilizar Microsoft MySQL para las pruebas iniciales y posteriormente migrar a  SQL Server para su función de único motor de base de datos. La decisión se fundamentó en la necesidad de mantener un control directo sobre el rendimiento, la seguridad y la ejecución de Stored Procedures.
+La configuración esencial de conexión a la base de datos se estableció en el archivo Web.config mediante una única cadena de conexión denominada EcoSalesCRMContext. Esta cadena apunta a una instancia local de SQL Server con la base de datos CRM_Base y utiliza autenticación integrada de Windows con el proveedor System.Data.SqlClient. La centralización de la cadena de conexión facilita la administración del acceso a datos y asegura que toda la aplicación consuma un único punto de verdad.
+Simultáneamente, se diseñó un modelo de datos relacional robusto y normalizado que incluye las siguientes tablas fundamentales: empresas, crm_prospectos, crm_prospecto_sucursales, crm_prospecto_contactos, crm_prospecto_archivos, crm_tratos, crm_cotizaciones_borradores, crm_servicios_cotizados, crm_cotizaciones_validacion, crm_contratos_autorizados, crm_notificaciones_correo, usuarios y servicios_residuos.
+Sprint 1 (Semanas 3-4): Diseño del modelo de datos en MYSQL de prueba para su posterior migración a SQL Server de tablas iniciales. Entregable: esquema relacional funcional con datos de prueba.
+Figura 3: Cadena de conexión en Web.config
+3.2.3 Fase 3. Desarrollo del backend de Controladores en C#
+En esta fase se construyó el núcleo lógico y de enrutamiento del sistema (el Controlador en el patrón MVC) utilizando el lenguaje C# con el framework ASP.NET MVC 5 sobre .NET Framework 4.8. El proyecto se estructuró en carpetas organizadas por módulos de negocio, siguiendo una convención de nombres clara que facilita el mantenimiento y la escalabilidad.
+La organización de controladores es la siguiente:
+Controllers/Prospectos/: Contiene ProspectosController.cs, responsable de servir las vistas y orquestar las operaciones CRUD de prospectos, sucursales, contactos, archivos, notificaciones, rechazo y asignación de vendedores.
+Controllers/Cotizador/: Contiene CotizadorController.cs y TratosController.cs, encargados de procesar la lógica de cotizaciones, borradores, servicios cotizados y tratos comerciales.
+Controllers/Dashboard/: Contiene DashboardController.cs, el cual recupera y estructura los indicadores analíticos (KPIs) y las tendencias comerciales para el panel de control.
+Controllers/Contratos/: Contiene ContratosController.cs, que sirve la vista de gestión de contratos.
+Controllers/Manifiestos/: Contiene ManifiestosController.cs, destinado al registro de manifiestos ambientales.
+Controllers/ValidacionCotizaciones/: Contiene ValidacionCotizacionesController.cs, encargado del flujo de aprobación o rechazo de cotizaciones.
+Controllers/Acceso/: Contiene AccesoController.cs, responsable de la autenticación mediante Forms Authentication y sesión ASP.NET.
+Controllers/Base/: Contiene BaseController.cs, que centraliza utilidades comunes como conversión de tipos, serialización JSON y manejo de valores de sesión.
+A diferencia de las arquitecturas que separan completamente una API del cliente, todos estos controladores son parte del mismo proyecto ASP.NET MVC. Algunas acciones devuelven vistas Razor completas, mientras que otras devuelven objetos JSON para ser consumidos por el JavaScript de las propias vistas mediante llamadas AJAX del mismo origen.
+Para separar la lógica de presentación de la persistencia de datos, se construyó una Capa de Acceso a Datos independiente ubicada en la carpeta DAL. Esta capa utiliza ADO.NET manual con objetos SqlConnection, SqlCommand, SqlDataReader y SqlParameter, ejecutando principalmente Stored Procedures parametrizados para garantizar la seguridad y el control sobre las operaciones de base de datos.
+Como parte de una estrategia de desarrollo ágil que permitiera probar la Interfaz de Usuario sin depender de que la base de datos estuviera disponible en todo momento, se habilitó un modo de trabajo sin base de datos. Cuando los Stored Procedures no están disponibles, el controlador utiliza una lista de ejemplo almacenada en Session mediante el método GetSampleProspectos(). Esta configuración está pensada únicamente para desarrollo y debe desactivarse en producción mediante el flag ModoDesarrolloSinBD en el archivo Web.config.
+Durante las primeras etapas experimentales del backend se probaron integraciones externas para funcionalidades auxiliares (por ejemplo, asistentes de inteligencia artificial). Sin embargo, se determinó que dichas integraciones no planeado para su integración al flujo principal del CRM, por lo que fueron descartadas o comentadas para mantener el repositorio enfocado en los requerimientos comerciales prioritarios.
+Sprint 2 (Semanas 5): Desarrollo del módulo de prospectos: captura, edición, eliminación, sucursales, contactos y archivos. Entregable: CRUD de prospectos operativo.
+Figura 4: Controlador C# con acciones MVC y JSON (Fase 3).
+3.2.4 Fase 4. Desarrollo de la Interfaz de Usuario (Frontend con Razor)
+La presentación visual y la interacción del usuario final se resolvieron utilizando la tecnología nativa de ASP.NET MVC: el motor de vistas Razor (.cshtml). Esta decisión permitió mantener la arquitectura monolítica, reducir la complejidad del proyecto, acelerar el desarrollo y garantizar que toda la lógica de renderizado permaneciera bajo control del servidor IIS.
+El diseño del frontend se organizó en estructuras modulares que reflejan fielmente los controladores del sistema:
+Vistas Principales: Se crearon directorios específicos como Views/Prospectos/, Views/Dashboard/ y Views/Cotizador/. En ellos se implementaron vistas completas como Index.cshtml, Formulario.cshtml, Detalle.cshtml, Generar.cshtml y otras, cada una responsable de una pantalla funcional del sistema.
+Vistas Parciales: Para fomentar la reutilización de código (principio DRY - Don't Repeat Yourself), se desarrollaron vistas parciales como _FormularioProspecto.cshtml, _TablaProspectos.cshtml, _ModalContacto.cshtml, _ModalSucursal.cshtml y _BadgeEstatus.cshtml, que pueden ser renderizadas desde múltiples vistas principales.
+Plantilla Maestra (Layout): El andamiaje visual, los menús de navegación compartidos y la inclusión de bibliotecas globales se centralizaron en Views/Shared/_LayoutAdmin.cshtml. Desde este layout se cargan Bootstrap 5, jQuery, DataTables, SweetAlert2 y Chart.js mediante CDN.
+Para la maquetación responsiva, tipografía moderna y elementos de interacción fluida, se integró el framework de diseño Bootstrap 5.3.8, gestionado a través de NuGet y complementado con la versión 5.3.2 de CDN en el layout administrativo. A nivel de comportamiento en el navegador, se apoyó de forma estratégica en jQuery 3.7.1 para la manipulación del DOM, el manejo de modales, la adición dinámica de contactos y sucursales, y las llamadas AJAX a las acciones de los controladores.
+La visualización de datos analíticos se resolvió con Chart.js, utilizado en el dashboard para graficar la evolución comercial (gráfica de línea) y la distribución de estatus de prospectos (gráfica de pastel). Las notificaciones y modales interactivos se implementaron con SweetAlert2, mejorando la experiencia de usuario frente a las alertas nativas del navegador.
+Sprint 3 (Semanas 6-8): Desarrollo del Frontend y componentes interactivos. Entregable: Interfaz de usuario responsiva con Razor, Bootstrap y Chart.js.
+ 
+Figura 5:
+ Dashboard con gráficas Chart.js
+ 
+Figura 6:
+ Formulario de prospectos con carga de archivos 
+ 
+Figura 7:
+ Cotizador de servicios ambientales 
+ 
+Figura 8:
+ Módulo de cotizaciones por aprobar
+ 
+3.2.5 Fase 5. Seguridad, Validación y Control de Acceso
+Una vez que el flujo principal de información fue funcional, se dedicó una fase entera a blindar el sistema implementando mecanismos de autenticación, autorización, validación de modelos y defensa contra las vulnerabilidades más comunes identificadas por OWASP.
+Protección de Rutas y Autenticación: Se activó el mecanismo de Forms Authentication de ASP.NET. El archivo Web.config configura <authentication mode="Forms"> con la URL de login y un timeout de 2880 minutos. Los controladores administrativos llevan el atributo [Authorize], que redirige a los usuarios no autenticados al módulo de acceso. Cuando un usuario inicia sesión correctamente, el sistema emite una cookie encriptada y almacena en sesión variables como UsuarioId, UsuarioNombre y Rol.
+Validación de Modelos: Para asegurar la calidad de la información ingresada por los vendedores, se implementaron validaciones de modelo mediante Data Annotations en las clases del proyecto. Atributos como [Required], [EmailAddress], [StringLength] y [RegularExpression] permite validar correos, teléfonos, códigos postales y campos obligatorios tanto en el servidor como en el cliente a través de jQuery Validation.
+Defensa contra CSRF (Falsificación de Peticiones): Se protegió toda forma de inserción de datos invocando @Html.AntiForgeryToken() en las vistas y decorando las acciones POST con [ValidateAntiForgeryToken]. Esto asegura que las peticiones de modificación provengan exclusivamente de formularios legítimos generados por la aplicación.
+Defensa contra XSS (Inyección de Scripts): Al utilizar el motor Razor en lugar de manipular variables en cadena, la plataforma escapa automáticamente el contenido dinámico, evitando que scripts maliciosos se ejecuten en el navegador de otros usuarios. Cuando es necesario insertar HTML confiable, se utiliza @Html.Raw() de manera controlada.
+Prevención de Inyección SQL: A través de ADO.NET parametrizado y Stored Procedures, se aísla cada valor ingresado por el usuario, impidiendo que comandos delimitadores u operadores lógicos lleguen al motor de base de datos. Esta práctica protege la integridad de la información comercial, operativa y normativa.
+Sprint 4 (Semana 9): Implementación de seguridad, autenticación y validaciones. Entregable: Acceso controlado y formularios protegidos.
+ 
+Figura 9:
+ Pantalla de login del sistema
+ 
+3.2.6 Fase 6. Migración de consultas SQL a Stored Procedures
+Con el sistema funcionando de extremo a extremo, se inició un proceso de aseguramiento de calidad y arquitectura de datos que buscaba centralizar en SQL Server la mayor cantidad posible de lógica de acceso a datos. Se documentó y preparó la migración de consultas SQL embebidas hacia Stored Procedures, siguiendo el principio de que la capa de base de datos debe ser el único punto de verdad para las operaciones críticas.
+Para cumplir con el diseño propuesto de centralizar toda la lógica de datos en el servidor relacional, se diseñaron y, en muchos casos, implementaron Stored Procedures para las operaciones de prospectos, cotizaciones, tratos, dashboard y archivos. Entre los procedimientos más relevantes se encuentran: SP_Prospectos_GetAll, SP_Prospectos_Create, SP_Prospectos_Update, SP_Prospectos_Delete, SP_Prospectos_AsignarVendedor, SP_Prospectos_Rechazar, SP_Cotizaciones_GetServiciosResiduos, SP_Cotizaciones_CreateBorrador, SP_Cotizaciones_Enviar, SP_ServiciosCotizados_Insert, SP_Dashboard_GetKPIs, SP_Dashboard_GetPipeline, SP_CotizacionesValidacion_Insert y SP_ContratosAutorizados_Insert.
+Es importante señalar que, si bien la mayoría de las operaciones críticas ya consumen Stored Procedures, algunos métodos de fallback y consultas auxiliares aún utilizan SQL embebido parametrizado. Estas consultas, presentes principalmente en la capa de dashboard para cálculos de respaldo cuando los procedimientos no devuelven datos, están programadas para ser migradas progresivamente en iteraciones posteriores del proyecto.
+Sprint 5 (Semanas 10-11): Migración a Stored Procedures y optimización. Entregable: Capa de acceso a datos centralizada en SQL Server.
+ 
+3.2.7 Fase 7. Limpieza, estandarización y consolidación del repositorio
+Como cierre al desarrollo de la herramienta, se llevó a cabo una depuración minuciosa del repositorio de código, eliminando archivos de compilación obsoletos, carpetas de caché de Visual Studio y cualquier referencia duplicada que pudiera generar ambigüedad en el proyecto. Esta etapa buscó garantizar que el repositorio contuviera únicamente los archivos necesarios para compilar y ejecutar el sistema.
+Se estandarizó la arquitectura garantizando que toda la persistencia utilice en solitario la librería robusta de SQL Server (System.Data.SqlClient). Se eliminaron configuraciones experimentales, se unificó la nomenclatura de controladores y DAL por módulo de negocio, y se aseguró que la cadena de conexión EcoSalesCRMContext fuera la única fuente de acceso a datos en la aplicación.
+Finalmente, se redactó y almacenó la documentación técnica pertinente de cara a las entregas a la empresa; documentos esenciales como el manual de instalación, el diccionario de datos y la guía de despliegue en IIS fueron incorporados al repositorio para facilitar la adopción tecnológica del personal de la organización. El archivo sql/validacion_cotizaciones.sql contiene, por ejemplo, la definición de tablas y procedimientos almacenados para el módulo de validación de cotizaciones y contratos autorizados.
+Sprint 6 (Semana 12): Limpieza, estandarización y documentación final. Entregable: Repositorio consolidado y manuales técnicos terminados.
+ 
+3.3 RELACIÓN CON EL MARCO TEÓRICO
+La ejecución empírica de este proyecto demuestra la validez práctica de los fundamentos conceptuales abordados exhaustivamente en el Capítulo II. El concepto de CRM operacional, analítico y colaborativo se materializó en los módulos de prospectos, cotizaciones, validación de cotizaciones, contratos autorizados y dashboard. El módulo de prospectos cubre la operación diaria de captura y seguimiento. El dashboard cubre el componente analítico con indicadores y gráficas. La gestión de archivos, contactos, sucursales y notificaciones cubre el componente colaborativo entre áreas comercial, operativa y administrativa.
+Se corroboró de primera mano la teoría de Sistemas Gestores de Base de Datos y la necesidad del motor Relacional SQL Server como único punto de verdad. La centralización de la cadena de conexión en Web.config y el uso de Stored Procedures parametrizados refuerzan los principios de integridad, seguridad y control descritos en el marco teórico. Las relaciones de cardinalidad entre prospectos, cotizaciones, contratos y servicios quedan protegidas por llaves foráneas y restricciones de base de datos.
+Del mismo modo, la decisión de erigir la plataforma bajo el patrón de diseño clásico de Modelo-Vista-Controlador (MVC) evidenció su capacidad para separar responsabilidades, facilitar el mantenimiento y escalar el sistema de manera modular. El motor Razor y el renderizado server-side confirmaron sus ventajas en términos de velocidad de carga inicial, seguridad y compatibilidad con el ecosistema Microsoft. No fue necesario implementar arquitecturas más complejas como SPAs o APIs separadas para cumplir con los requerimientos.
+Los principios de UI/UX y carga cognitiva se aplicaron diseñando formularios secuenciales, estatus visuales diferenciados por color, iconografía consistente con Font Awesome, y una paleta de colores orgánica (tonos terrosos y verdes) que refuerza la identidad ambiental de la empresa. La seguridad OWASP se aplicó mitigando la inyección SQL mediante ADO.NET parametrizado, reduciendo el riesgo de XSS mediante el renderizado de Razor, y habilitando tokens antiforgery en los formularios.
+La metodología ágil adoptada también se alinea con los principios teóricos de gestión de proyectos iterativos, donde la entrega temprana de valor funcional y la retroalimentación continua permiten adaptarse a cambios. La experiencia práctica confirmó que un enfoque iterativo era más adecuado que un modelo en cascada para un proyecto con requerimientos que evolucionan con el entendimiento del dominio.
+3.4 LIMITACIONES DEL DESARROLLO ACTUAL Y TRABAJO PENDIENTE 
+El proyecto Eco-Sales CRM se encuentra finalizado en una versión prototipo consolidada, validada funcionalmente en entorno de desarrollo. Las siguientes actividades están identificadas como pendientes o como mejoras necesarias antes de un despliegue productivo definitivo. Reconocer estas limitaciones forma parte de una postura profesional y realista respecto al alcance alcanzado.
+Ejecución Definitiva de Procedimientos Almacenados en Producción: Si bien la refactorización y lógica de los Stored Procedures fue diseñada y parcialmente implementada, algunos métodos de fallback en la capa DAL aún calculan datos mediante SQL embebido. Debe completarse la migración de estas consultas a procedimientos almacenados en la instancia productiva de SQL Server, y asegurar que todos los procedimientos existan y respondan correctamente.
+Refinamiento de Roles de Autenticación: La estructura en ASP.NET incluye la directiva base de protección de acceso general mediante [Authorize], pero la administración granular de permisos por rol (administrador, vendedor, cliente, supervisor, operador) requiere una configuración más detallada y pruebas exhaustivas en producción. Actualmente, el layout administrativo muestra el rol de forma estática y el modo de desarrollo permite credenciales de prueba hardcodeadas, lo cual debe eliminarse antes del despliegue final.
+Generación de Documentos Digitales (PDF): Lograr la "Política Cero Papel" a su máxima expresión ambiental demanda incorporar una librería adecuada para .NET Framework 4.8 (como iTextSharp, PdfSharp o Rotativa) que genere cotizaciones, contratos y manifiestos en formato PDF de manera server-side. En la versión actual, el sistema genera resúmenes en HTML listos para imprimir a PDF desde el navegador.
+Envío Real de Notificaciones por Correo Electrónico: El sistema registra notificaciones en la tabla crm_notificaciones_correo, pero no envía correos electrónicos reales. Debe implementarse un servicio SMTP o una API de correo (SendGrid, Mailgun) para eventos clave como asignación de vendedor, envío de cotizaciones, recordatorios de seguimiento y notificación de rechazo o aprobación.
+Despliegue y Configuración de Red corporativa: El hito final de toda ingeniería recaerá en el departamento de Sistemas de la empresa, configurando Internet Information Services (IIS), los Application Pools, los certificados SSL, el dominio corporativo y el plan de respaldo y recuperación ante desastres en el ambiente productivo. Esta fase requiere coordinación con el personal de TI de Sau Ecolsur Sana.
+Capacitación a Usuarios Finales: Las sesiones de capacitación y los manuales de usuario forman parte del trabajo pendiente una vez que el sistema esté desplegado y validado. El objetivo es garantizar que el personal de ventas y operaciones adopte la herramienta y aproveche todas sus funcionalidades. Un sistema técnicamente correcto que no sea adoptado por los usuarios no generará el valor esperado.
+3.5 CONCLUSIÓN DEL CAPÍTULO
+El desarrollo del Eco-Sales CRM para la corporación Sau Ecolsur Sana se estructuró y ejecutó de manera metódica aprovechando una metodología ágil adaptada. Se demostró con éxito el potencial de utilizar el paradigma MVC puramente integrado en el ecosistema Microsoft: la interacción entre controladores C#, vistas Razor, capa DAL con ADO.NET y Stored Procedures en SQL Server permitió construir un sistema funcional, seguro y preparado para escalar.
+Las tecnologías aplicadas en el proyecto son C#, ASP.NET MVC 5 sobre .NET Framework 4.8, Microsoft SQL Server como único motor de base de datos, ADO.NET con Stored Procedures, y un frontend basado en Razor, jQuery, Bootstrap 5, Chart.js y SweetAlert2. La autenticación se resolvió mediante Forms Authentication y sesión ASP.NET. No existe una arquitectura desacoplada con React, ni JWT, ni CORS, ni un backend Node.js/Express, ya que estas opciones no responden a las necesidades de rapidez de desarrollo, mantenibilidad y compatibilidad con la infraestructura existente de la organización.
+El sistema en su versión actual permite capturar, consultar, editar y eliminar prospectos; gestionar sucursales, contactos y archivos; generar cotizaciones y borradores; enviar cotizaciones a validación; autorizar o rechazar cotizaciones generando contratos autorizados; consultar contratos y manifiestos; y visualizar indicadores comerciales en un dashboard. El trabajo pendiente se centra en completar la migración de consultas SQL a Stored Procedures, ejecutar los procedimientos en la base de datos real, implementar autenticación robusta con roles granulares, incorporar generación server-side de PDF, habilitar envío real de correos electrónicos, desplegar en producción y capacitar a los usuarios finales.
+3.6 HERRAMIENTAS Y AMBIENTES DE DESARROLLO UTILIZADOS 
+Durante la construcción del Eco-Sales CRM se emplearon diversas herramientas de software que facilitaron la codificación, el modelado, la gestión de dependencias, el control de versiones y las pruebas. A continuación se describe el conjunto de herramientas principales y el propósito de cada una dentro del ciclo de desarrollo.
+Microsoft Visual Studio: Entorno de desarrollo integrado (IDE) utilizado para crear, compilar, depurar y publicar la aplicación ASP.NET MVC 5. Visual Studio proporciona soporte nativo para proyectos .NET Framework, administración de paquetes NuGet, depuración de código y publicación en IIS.
+SQL Server Management Studio (SSMS): Herramienta gráfica utilizada para diseñar el modelo de datos, crear tablas, índices, llaves foráneas y Stored Procedures, y ejecutar consultas de validación. SSMS también permite programar respaldos y revisar planes de ejecución de consultas.
+Git: Sistema de control de versiones distribuido utilizado para registrar el historial de cambios del proyecto. Git permite revertir modificaciones, crear ramas experimentales y colaborar de manera ordenada. El repositorio del proyecto evidencia el uso de Git con múltiples commits de desarrollo.
+NuGet: Gestor de paquetes de .NET utilizado para agregar y mantener bibliotecas como Bootstrap, jQuery, Newtonsoft.Json y los componentes de ASP.NET MVC 5. NuGet simplifica la gestión de dependencias y versiones compatibles.
+Navegadores web (Chrome, Edge, Firefox): Utilizados para probar la interfaz de usuario, validar el diseño responsivo, inspeccionar peticiones AJAX y verificar el comportamiento de JavaScript en diferentes motores de renderizado.
+El ambiente de desarrollo se configuró en una estación de trabajo con Windows 11, utilizando IIS Express para ejecutar la aplicación de forma local durante las pruebas. La base de datos se alojó en una instancia local de SQL Server. Este ambiente homogéneo con el sistema operativo de producción facilitó la transición hacia el despliegue final en IIS.
+3.7 MATRIZ DE ACTORES Y RESPONSABILIDADES
+El éxito de un sistema CRM depende no solo de la tecnología, sino también de la claridad en los roles y responsabilidades de los actores involucrados. A continuación se presenta una matriz simplificada de los actores principales identificados durante el análisis de requerimientos y su relación con los módulos del sistema.
+Administrador del CRM: Configura catálogos, gestiona usuarios, supervisa la seguridad y accede a todos los módulos del sistema. Tiene visibilidad completa del dashboard y los reportes.
+Vendedor/Ejecutivo comercial: Captura prospectos, genera cotizaciones, da seguimiento a tratos y consulta su cartera asignada. Es el usuario principal de los módulos operacionales.
+Supervisor comercial: Asigna prospectos a vendedores, valida cotizaciones, autoriza contratos y monitorea el cumplimiento de metas. Utiliza el dashboard y la validación de cotizaciones.
+Operador/Coordinador de servicios: Programa recolecciones, registra manifiestos y consulta la información de clientes contratados. Interactúa con los módulos de contratos y manifiestos.
+Cliente corporativo: En una versión futura, podría acceder a un portal limitado para consultar el estado de sus cotizaciones, contratos y manifiestos. En la versión actual, el cliente no accede directamente al sistema.
+Departamento de Sistemas: Se encarga del despliegue en IIS, configuración de respaldos, administración de la base de datos y soporte técnico en producción.
+La definición de actores permite asignar permisos de acceso de manera coherente con las funciones reales de la organización. Aunque la versión actual implementa principalmente la distinción entre usuario autenticado y no autenticado, la arquitectura MVC facilita los roles mediante atributos de autorización y filtros de controladores.
+3.8 Lecciones aprendidas y recomendaciones
+La ejecución del proyecto dejó aprendizajes valiosos tanto en el ámbito técnico como en el de gestión de proyectos. Documentar estas lecciones contribuye a mejorar futuras iteraciones del CRM y a orientar a otros desarrolladores que enfrenten proyectos similares en el sector ambiental.
+Importancia de un modelo de datos sólido: Invertir tiempo en el diseño relacional desde el inicio evitó refactorizaciones costosas posteriores. Las relaciones correctamente definidas facilitaron la implementación de cotizaciones, validaciones y contratos.
+Ventajas de ADO.NET manual para consultas críticas: El control directo sobre Stored Procedures permitió optimizar el rendimiento y reforzar la seguridad, aunque requirió más código que un ORM. La documentación de los procedimientos fue esencial para mantener la trazabilidad técnica.
+Server-side rendering con Razor simplifica el desarrollo: Al no depender de un frontend SPA, el proyecto pudo avanzar rápidamente en la interfaz de usuario sin preocuparse por gestión de estado en el cliente, rutas de API o políticas CORS.
+La seguridad debe diseñarse desde el inicio: La implementación tardía de mecanismos de seguridad suele generar refactorizaciones costosas. En este proyecto, la autenticación, los tokens antiforgery y las validaciones se consideraron desde las primeras iteraciones.
+Documentación técnica como habilitador de adopción: La preparación de manuales de instalación, diccionarios de datos y guías de despliegue facilitará la transición del prototipo académico a un sistema productivo en la empresa.
+Como recomendación final, se sugiere que la empresa continúe invirtiendo en la capacitación del personal, el despliegue en un ambiente de pruebas controlado y la ejecución gradual de los Stored Procedures en la base de datos productiva. La evolución del CRM debe ser continua, incorporando retroalimentación de los usuarios finales y ajustando la plataforma a los cambios normativos del sector ambiental.
+CAPÍTULO IV “RESULTADOS Y EXPERIENCIAS”.
+En este capítulo se detallan los procedimientos exhaustivos llevados a cabo para asegurar que la aplicación web, desarrollada con la arquitectura ASP.NET MVC 5, cumpla con todos los requerimientos funcionales y no funcionales establecidos al inicio del proyecto.
+El enfoque principal de esta fase fue garantizar la estabilidad del sistema, la integridad de los datos en SQL Server y la correcta renderización de las vistas Razor (.cshtml) en múltiples dispositivos y navegadores. Además, se evaluó el rendimiento de las consultas y la usabilidad general del sistema para asegurar una adopción rápida y fluida por parte de los usuarios finales (equipo de ventas y administración).
+4.1 Entorno de Pruebas y Configuración de Despliegue
+Para simular un entorno de producción realista, se estableció un entorno de pruebas controlado o "Staging". Este entorno se diseñó para replicar las condiciones exactas en las que operará el sistema final.
+Servidor de Aplicaciones
+: Se configuró Internet Information Services (IIS) como servidor web principal, alojando el proyecto  de manera local y es compilado en .NET Framework 4.8. Se establecieron Application Pools dedicados para aislar el proceso del CRM y asegurar que cualquier fallo no afectará otras aplicaciones en el servidor en los inicios del alojamiento del programa se me dificulto la conexión de SQL server al VS community por no recordar la cadena de conexion del server hacia el proyecto y un compañero de equipo me explico como y me ayudó a cambiar mi contraseña y encontrar todo lo necesario para conectar el servidor al proyecto.
+Servidor de Base de Datos
+: Se utilizó Microsoft SQL Server  de manera local para alojar la base de datos CRM_Base. Durante las pruebas, se generó un volumen significativo de datos sintéticos (algunos prospectos, sucursales, contactos y cotizaciones) para tener a prueba la operacione CRUD (Crear, Leer, Actualizar, Eliminar) implementadas mediante ADO.NET y procedimientos almacenados (Stored Procedures).
+4.3 Pruebas de Funcionalidad y de Integración (Backend)
+Las pruebas de integración se centraron en validar que los diferentes módulos del sistema se comunicaran correctamente entre sí y con la base de datos.
+Módulo de Prospectos
+: Se probó constantemente el ProspectosController junto con la capa de acceso a datos (ProspectosDAL). Se verificó que al registrar un nuevo prospecto, la información general, junto con sus múltiples sucursales y contactos (información en cascada o maestro-detalle), se guardará íntegramente en las tablas relacionales correspondientes sin pérdida de datos ni violaciones de llaves foráneas aqui lo que aprendí fue el modelo MVC (Modelo, Vistas y Controladores) que hacia mas eficiente el trabajo y que no sea necesario editar todo y solo un pedazo.
+Módulo de Cotizaciones
+: Se realizaron pruebas de generación de PDF. Se comprobó que el sistema recaba correctamente los datos del cliente, los productos/servicios cotizados y los impuestos correspondientes para generar un documento PDF coherente y presentable. Se validó también el sistema de "Borradores", asegurando que un usuario pudiera guardar una cotización a medias y retomarla posteriormente.
+Manejo de Archivos
+: Uno de los retos técnicos era la subida y persistencia de archivos adjuntos (imágenes, documentos de identidad). Se comprobó que la transformación de archivos a Base64/VARBINARY(MAX) funcionara correctamente sin sobrecargar la memoria del servidor aqui aprendi el uso del byte que se le puede dar a los archivos (PDF, WORD, JPG y PNG) porque yo usaba supabase y ahi no hay problema en guardar las imagenes ahi es solo 
+consiste en leerlo en C# como una secuencia pura de ceros y unos mediante un arreglo de bytes
+ para luego enviarlo de forma segura con parámetros de comando hacia una columna, la cual actúa como un contenedor de almacenamiento masivo en la base de datos; para recuperarlo, simplemente realizas el proceso inverso leyendo esos mismos bytes desde SQL y escribiendolos en el disco con su extensión original (PDF, WORD, JPG y PNG) para que el sistema operativo pueda volver a abrirlo.
+4.4 Pruebas de Interfaz de Usuario y Usabilidad (Frontend)
+Dado que el sistema ya no utiliza React.js sino vistas Razor con HTML, CSS, Bootstrap y jQuery, las pruebas del cliente se enfocaron en la manipulación del DOM y las peticiones asíncronas (AJAX).
+Validación de Formularios
+: Se comprobó que las validaciones del lado del cliente funcionaran correctamente, evitando que formularios incompletos llegaran al servidor. Se utilizó SweetAlert2 para mostrar retroalimentación amigable (errores, advertencias, éxitos) en lugar de las tradicionales alertas nativas del navegador, lo que mejoró significativamente la experiencia de usuario (UX).
+Interactividad Dinámica
+: En las vistas de creación de prospectos, se probó exhaustivamente la adición y eliminación dinámica de filas de "Contactos" y "Sucursales" usando jQuery. Se validó que, al enviar el formulario, el sistema serializara correctamente esta información dinámica hacia el modelo de C#.
+Diseño Responsivo
+: Se ejecutaron pruebas en diferentes resoluciones (escritorio, tablet y teléfonos móviles) para certificar que el framework Bootstrap 4/5 ajustara correctamente las columnas, tablas (DataTables) y menús de navegación, garantizando un diseño "Mobile First".
+4.5 Análisis de Rendimiento y Seguridad
+Seguridad (Autenticación y Autorización)
+: Se corroboró que el acceso a las vistas administrativas estuviese estrictamente protegido mediante variables de sesión o cookies de autenticación estándar de .NET. Cualquier intento de acceder a un controlador restringido sin iniciar sesión fue redirigido exitosamente al módulo de Login (AccesoController).
+Prevención de Inyección SQL
+: Al utilizar parámetros estructurados de ADO.NET (SqlParameter) en toda la capa DAL, se demostró que el sistema es invulnerable a los ataques clásicos de inyección SQL.
+4.6 Resultados Obtenidos
+Tras la conclusión de la fase de pruebas, los resultados obtenidos fueron altamente satisfactorios:
+Reducción de Tiempos
+: El proceso de registrar un cliente y emitir una cotización, que anteriormente tomaba varios minutos de manera manual o en sistemas legados, se redujo a unos pocos clics gracias a la integración fluida del módulo de Prospectos con el de Cotizador.
+Estabilidad del Sistema
+: La arquitectura monolítica basada en MVC demostró ser extremadamente robusta. El uso de vistas renderizadas en el servidor redujo la carga de procesamiento en los dispositivos de los clientes, haciendo que la aplicación se sienta ligera y rápida.
+Consistencia de Datos
+: La implementación de llaves foráneas y transacciones en SQL Server erradicó el problema de registros huérfanos (por ejemplo, contactos sin un prospecto asignado).
+4.7 Discusión de Resultados
+Al contrastar los resultados obtenidos con los objetivos iniciales del proyecto, se evidencia un rotundo éxito. Si bien en fases teóricas o preliminares del diseño se pudo haber considerado arquitecturas basadas en APIs separadas y frameworks frontend (como React o Vite), la elección final y definitiva de utilizar ASP.NET MVC 5 nativo demostró ser la decisión más acertada para las necesidades específicas de la organización. Proporcionó un equilibrio perfecto entre velocidad de desarrollo, mantenibilidad, y rendimiento empresarial, consolidando todo el sistema en una única solución unificada y segura.
+ANEXOS
+Diccionario de Datos
+A continuación, se describen brevemente las tablas principales de la base de datos relacional del sistema:
+Tabla: Usuarios (dbo.Usuarios)
+UsuarioID (INT, PK): Identificador único del usuario del sistema.
+Nombre (VARCHAR): Nombre completo del empleado/agente.
+Correo (VARCHAR): Correo electrónico para acceso.
+PasswordHash (VARCHAR): Contraseña encriptada por seguridad.
+Rol (VARCHAR): Perfil del usuario (Administrador, Ventas, etc.).
+Tabla: Prospectos (dbo.Prospectos)
+ProspectoID (INT, PK): Identificador único del cliente potencial.
+RazonSocial (VARCHAR): Nombre de la empresa.
+RFC (VARCHAR): Registro Federal de Contribuyentes.
+FechaRegistro (DATETIME): Fecha de ingreso al sistema.
+Estatus (VARCHAR): Estado actual (Nuevo, En progreso, Rechazado).
+Tabla: Cotizaciones (dbo.Cotizaciones)
+CotizacionID (INT, PK): Identificador del documento.
+ProspectoID (INT, FK): Relación con el prospecto al que se le cotiza.
+MontoTotal (DECIMAL): Costo total calculado.
+RutaPDF (VARCHAR): Ubicación temporal o nombre del archivo generado.
+EsBorrador (BIT): Bandera booleana (1 o 0) que indica si está finalizada o es un borrador.
+Ejemplo de un Controlador en C# (CotizadorController.cs): Este fragmento demuestra cómo se reciben datos de la vista y se interactúa con la capa de acceso a datos de manera segura y estructurada. 
+Ejemplo de una Vista Razor con interactividad (Formulario.cshtml): Uso de HTML y clases de Bootstrap, combinado con sintaxis Razor para un ruteo seguro.  
+Figura x []
+Manual Práctico de Usuario (Guía Visual Básica)
+El sistema ha sido diseñado para requerir el mínimo entrenamiento posible, sin embargo, los flujos principales son:
+Ingreso al Sistema: El usuario debe acceder a la URL principal, donde se le presentará la pantalla de inicio de sesión (Login). Se debe ingresar el correo institucional y la contraseña asignada por el administrador.
+Tablero y Menú Principal: Una vez validado el acceso, el menú lateral izquierdo permitirá navegar entre los módulos principales: "Prospectos" y "Cotizador".
+Registro de Prospectos: Al hacer clic en "Nuevo Prospecto", el usuario deberá llenar la información fiscal de la empresa, y tendrá botones dinámicos de "+ Agregar Contacto" y "+ Agregar Sucursal" para enriquecer la ficha del cliente en una sola pantalla.
+Generación de Cotizaciones: Dentro del perfil de un prospecto, o en el menú Cotizar, el agente seleccionará los servicios de la tabla dinámica. El sistema calculará los totales automáticamente. El usuario podrá elegir "Guardar como Borrador" (para continuar después) o "Generar PDF" para cerrar el documento y exportarlo.
+Resumen
+El proyecto "Sistema CRM Ambiental (Eco-Sales CRM)" que me proporcionó la empresa Sana EcoSur surge de la necesidad de optimizar el ciclo de recolección y venta de servicios en el sector de manejo de residuos sólidos urbanos y manejo especial, mediante la felicitación y centralización de la gestión de prospectos, seguimiento y análisis de datos. Esta iniciativa responde a la creciente demanda de soluciones tecnológicas que permitan mejorar la eficiencia comercial y el cumplimiento normativo en un sector ambientalmente sensible.
+La automatización en la gestión de clientes potenciales y el seguimiento oportuno son fundamentales para evitar la pérdida de oportunidades comerciales. Según el Banco Interamericano de Desarrollo (BID), la implementación de sistemas que automatizan procesos dentro del ciclo de proyectos mejora la eficiencia y la efectividad en la gestión empresarial. Esto es especialmente relevante en sectores donde la rapidez y precisión en la comunicación con clientes es clave para el éxito comercial.
+Contar con una base de datos centralizada permite un acceso rápido y organizado a la información de prospectos, facilitando la personalización de ofertas y el cumplimiento de normativas específicas destaca la importancia de políticas y sistemas organizados para la gestión eficiente de recursos y clientes, lo que se traduce en mejores resultados comerciales y administrativos.
+La reducción de tareas administrativas mediante la automatización permite que los vendedores dediquen más tiempo a cerrar acuerdos y fortalecer relaciones con clientes. Esto contribuye a proyectar una imagen profesional y confiable, aspecto clave para la fidelización y posicionamiento en el mercado.
+El acceso a métricas actualizadas sobre la tasa de conversión, origen de prospectos y cumplimiento de metas facilita la toma de decisiones estratégicas basadas en datos reales, mejorando la planificación y pronóstico de ventas.
+CONCLUSIONES
+La culminación de este proyecto de desarrollo tecnológico ha dejado múltiples aprendizajes y ha resultado en la creación de una herramienta valiosa y tangible para la gestión de relaciones con los clientes (CRM). A lo largo de la planeación, diseño, codificación y pruebas, se lograron cumplir satisfactoriamente los objetivos planteados al inicio del documento.
+1. Cumplimiento del Objetivo General: Se logró desarrollar e implementar con éxito un Sistema CRM funcional, seguro y escalable. El sistema proporciona a la organización una plataforma centralizada para el seguimiento de prospectos, gestión de contactos, control de sucursales y generación automatizada de cotizaciones en formato PDF, centralizando la información y eliminando la redundancia de datos.
+2. Eficiencia de la Arquitectura ASP.NET MVC: La decisión de consolidar el desarrollo sobre el patrón Modelo-Vista-Controlador (MVC) del framework de .NET probó ser altamente efectiva. Separar la lógica de negocios (Controladores), la lógica de acceso a la base de datos (Modelos/DAL) y la interfaz de usuario (Vistas Razor) permitió mantener un código limpio, ordenado y fácil de depurar. Evitar la complejidad innecesaria de microservicios o arquitecturas SPA (Single Page Application) para este caso de uso particular resultó en un tiempo de despliegue más rápido y un mantenimiento mucho más sencillo para el equipo de TI.
+3. Mejora en la Experiencia de Usuario (UX): La integración de tecnologías frontend como Bootstrap y jQuery, combinadas con alertas dinámicas (SweetAlert), permitió ofrecer a los usuarios una interfaz moderna, limpia, intuitiva y 100% responsiva. Los usuarios ya no tienen que lidiar con sistemas lentos o pantallas recargadas; el diseño modular facilita el acceso a la información crucial en pocos clics.
+4. Impacto Operativo: Se concluye que la automatización de flujos, como el guardado de borradores de cotizaciones y la generación de documentos listos para enviar al cliente, impactará directamente y de manera positiva en la productividad del equipo de ventas, reduciendo los cuellos de botella administrativos y permitiéndoles enfocarse en el cierre de tratos.
+REFERENCIAS BIBLIOGRÁFICAS
+Cámara de Diputados.
+ (2026). 
+Ley General para la Prevención y Gestión Integral de los Residuos (LGPGIR)
+.
+ 
+https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf
+Fielding, R. T.
+ (2000). 
+Architectural Styles and the Design of Network-based Software Architectures
+ (Tesis doctoral). University of California, Irvine.
+Flores-Cerna, F., et al.
+ (2021). Metodologías ágiles: un análisis de los desafíos organizacionales para su implementación. 
+Redalyc
+.
+ 
+https://www.redalyc.org/journal/5043/504371975003/html/
+García et al.
+ (2022). Gestión de residuos sólidos urbanos en México: un caso de estudio desde la perspectiva organizacional. 
+Redalyc
+.
+ 
+https://www.redalyc.org/journal/1551/155171463003/html/
+García, J.
+ (2021). El impacto de la metodología ágil scrum implementado en el desarrollo de software empresarial. 
+IpsumTec
+.
+ 
+https://revistas.milpaalta.tecnm.mx/index.php/IPSUMTEC/article/view/68
+Grönroos, C.
+ (2007). 
+In search of a new logic for marketing: Foundations of contemporary theory
+. Chichester: John Wiley & Sons.
+Kotler, P., y Armstrong, G.
+ (2012). 
+Marketing
+. México: Pearson Educación.
+Llorens, F.
+ (2004). La integración total de procesos y la gestión basada en el cliente. 
+Universia Business Review
+, (3), 44-57.
+ 
+https://www.redalyc.org/pdf/433/43331899003.pdf
+Mendoza Martínez, Y. R.
+ (Moderador). (2021, 6 de octubre). 
+Descubriendo la innovación y sus áreas
+ [Podcast].
+ 
+https://www.youtube.com/watch?v=EBbH4gAqZTc
+Montoya, M. & Boyero, M.
+ (2013). Customer Relationship Management: factor clave en la gestión comercial. 
+IROCAMM
+.
+ 
+https://revistascientificas.us.es/index.php/IROCAMM/article/download/23066/23073/127035
+Ojeda, M., & Mul, J.
+ (2018). La gestión ambiental en la PYME de la Ciudad de México. 
+Revista de Ciencias Sociales
+, 24(2), 45-60.
+ 
+https://www.redalyc.org/journal/5116/511674246003/html/
+OWASP.
+ (2024). 
+OWASP Top 10: The Ten Most Critical Web Application Security Risks
+. Recuperado de:
+ 
+https://owasp.org/www-project-top-ten/
+Parvatiyar, A., & Sheth, J.
+ (2001). CRM: Estrategia y procesos para la creación de valor. 
+Investigaciones Europeas de Dirección y Economía de la Empresa
+, 7(3), 97-112.
+ 
+https://www.redalyc.org/pdf/2741/274119541006.pdf
+Sanca Vergara, M. N., et al.
+ (2021). Customer Relationship Management y captación de clientes en JMA Soluciones, San Isidro 2020. 
+Redalyc
+.
+ 
+https://www.redalyc.org/journal/5736/573666758005/html/
+Sánchez Carvajal, J. H.
+ (2011). Sistema de gestión de relación con los clientes (CRM). 
+Redalyc
+.
+ 
+https://www.redalyc.org/pdf/3579/357935480005.pdf
+Sánchez Carvajal, J. H.
+ (2018). El CRM como herramienta para el servicio al cliente en la organización. 
+Revista Universidad y Sociedad
+, 10(2), 123-130.
+ 
+https://www.redalyc.org/pdf/3579/357935480005.pdf
+Scielo.
+ (2023). Gestión de los residuos sólidos en México: análisis cualitativo de los diagnósticos básicos.
+ 
+https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2448-57052023000200215
+Scielo México.
+ (2023). Gestión de los residuos sólidos en México: análisis cualitativo de los diagnósticos básicos.
+ 
+https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2448-57052023000200215
+SEMARNAT.
+ Ley General para la Prevención y Gestión Integral de los Residuos (LGPGIR).
+ 
+https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf
+SEMARNAT.
+ (2024). 
+Boletín Estadístico y Geográfico de Residuos Sólidos Urbanos
+.
+ 
+https://gisviewer.semarnat.gob.mx/bol/09_2106/
+SEMARNAT.
+ (2026). 
+Diagnóstico Básico para la Gestión Integral de los Residuos (DBGIR 2026)
+.
+ 
+https://ntcd.mx/noticias-semarnat-dbgir-2026-diagnostico-gestion-residuos-economia-circular-mexico
+Tobón Quintero, J.
+ (2004). El CRM como herramienta para el servicio al cliente en la organización. 
+Scielo
+.
+ 
+https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1668-87082013000100005
+Vargas Arébalo, C.
+ (2007). Análisis de las políticas. 
+Perspectivas
+, (19), 127-136.
+ 
+https://www.redalyc.org/pdf/4259/425942453011.pdf

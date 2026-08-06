@@ -153,8 +153,7 @@ USING (VALUES
     (1, 'PRINCIPAL', NULL, 1, 1),
     (2, 'VENTAS', NULL, 2, 1),
     (3, 'OPERACIONES', NULL, 3, 1),
-    (4, 'INDICADORES', NULL, 4, 1),
-    (5, 'ADMINISTRACIÓN', NULL, 5, 1)
+    (4, 'ADMINISTRACIÓN', NULL, 4, 1)
 ) AS source (id, nombre, icono, orden, activo)
 ON target.id = source.id
 WHEN MATCHED THEN
@@ -179,9 +178,8 @@ USING (VALUES
     (7, 2, 'Contratos Autorizados', 'ContratosAutorizados', 'Index', NULL, 6, 1),
     (8, 3, 'Rutas Cotizadas', 'RutasCotizadas', 'Index', NULL, 1, 1),
     (9, 3, 'Manifiestos', 'Manifiestos', 'Index', NULL, 2, 1),
-    (10, 4, 'Reportes', 'Indicadores', 'Index', 'fa-chart-line', 1, 1),
-    (11, 5, 'Usuarios', 'Usuarios', 'Index', 'fa-users-cog', 1, 1),
-    (12, 5, 'Registrar usuario', 'Usuarios', 'Index', 'fa-user-plus', 2, 1)
+    (10, 4, 'Usuarios', 'Usuarios', 'Index', 'fa-users-cog', 1, 1),
+    (11, 4, 'Registrar usuario', 'Usuarios', 'Index', 'fa-user-plus', 2, 1)
 ) AS source (id, menu_id, nombre, controlador, accion, icono, orden, activo)
 ON target.id = source.id
 WHEN MATCHED THEN

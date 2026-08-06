@@ -10,6 +10,26 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .section-title-sm { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 6px; }
+    .form-input-error { border-color: #e74c3c !important; background-color: #fdf2f2 !important; }
+    .form-input-error:focus { box-shadow: 0 0 0 0.15rem rgba(231, 76, 60, 0.25) !important; }
+
+    /* Los botones de acción (Agregar Sucursal, Agregar Contacto) deben seguir con fondo marrón
+       aunque la validación les ponga la clase form-input-error. Se conserva el borde rojo como
+       indicador de error, pero no se pinta el fondo de rosa sobre el botón. */
+    button.form-input-error.btn-primary-custom,
+    button.form-input-error.btn-custom,
+    .btn-primary-custom.form-input-error,
+    .btn-custom.form-input-error {
+        background-color: var(--brown-dark) !important;
+        color: white !important;
+    }
+    button.form-input-error.btn-primary-custom:hover,
+    button.form-input-error.btn-custom:hover,
+    .btn-primary-custom.form-input-error:hover,
+    .btn-custom.form-input-error:hover {
+        background-color: var(--primary-hover) !important;
+        color: white !important;
+    }
 </style>
 
 <div id="modalFormularioProspecto" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1040;">
@@ -21,7 +41,7 @@
             <button type="button" class="btn btn-sm" data-cerrar="modalPrincipal" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; padding: 4px 12px; border: none; cursor: pointer;">Cerrar</button>
         </div>
 
-    @using (Html.BeginForm(accion, "Prospectos", FormMethod.Post, new { @enctype = "multipart/form-data", id = "frmProspecto", style = "display: flex; flex-direction: column; flex-grow: 1; overflow: hidden;" }))
+    @using (Html.BeginForm(accion, "Prospectos", FormMethod.Post, new { @enctype = "multipart/form-data", id = "frmProspecto", novalidate = "novalidate", style = "display: flex; flex-direction: column; flex-grow: 1; overflow: hidden;" }))
     {
         @Html.AntiForgeryToken()
         @Html.HiddenFor(m => m.Id)
@@ -35,7 +55,7 @@
 
         <div class="modal-body" style="background: var(--card); padding: 0; overflow-y: auto; flex-grow: 1;">
             <div style="display: flex; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--border-light); margin-bottom: 24px;">
-                <div class="tab-item active" onclick="showTab('datos', this)">Datos Personales</div>
+                <div class="tab-item active" onclick="showTab('datos', this)">Datos personales</div>
                 <div class="tab-item" onclick="showTab('direccion', this)">Direcci&oacute;n</div>
                 <div class="tab-item" onclick="showTab('fotos', this)">Fotos</div>
             </div>
@@ -48,7 +68,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label class="form-label" for="TipoPersona">Tipo de persona *</label>
-                            @Html.DropDownListFor(m => m.TipoPersona, new SelectList((string[])ViewBag.TiposPersona), new { @class = "form-input" })
+                            @Html.DropDownListFor(m => m.TipoPersona, new SelectList((string[])ViewBag.TiposPersona), "-- Seleccionar --", new { @class = "form-input" })
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="Nombre">Raz&oacute;n Social / Nombre completo *</label>
@@ -56,15 +76,16 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="Rfc">RFC *</label>
-                            @Html.TextBoxFor(m => m.Rfc, new { @class = "form-input", placeholder = "XAXX010101000" })
+                            @Html.TextBoxFor(m => m.Rfc, new { @class = "form-input", placeholder = "Seleccione tipo de persona", maxlength = "13", oninput = "this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')", @readonly = "readonly" })
+                            <span id="rfcHelp" style="font-size: 11px; color: var(--text3);">Seleccione el tipo de persona para habilitar el RFC.</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="NombreComercial">Nombre Comercial *</label>
                             @Html.TextBoxFor(m => m.NombreComercial, new { @class = "form-input", placeholder = "Ej. Empresa" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="TieneSucursales">&iquest;Tiene sucursales?</label>
-                            @Html.DropDownListFor(m => m.TieneSucursales, new SelectList((string[])ViewBag.SiNo), new { @class = "form-input" })
+                            <label class="form-label" for="TieneSucursales">&iquest;Tiene sucursales? *</label>
+                            @Html.DropDownListFor(m => m.TieneSucursales, new SelectList((string[])ViewBag.SiNo), "-- Seleccionar --", new { @class = "form-input" })
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nombre completo de contacto *</label>
@@ -72,23 +93,23 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="Telefono">Tel&eacute;fono de contacto *</label>
-                            @Html.TextBoxFor(m => m.Telefono, new { @class = "form-input", placeholder = "999 000 0000", type = "tel", oninput = "this.value=this.value.replace(/[^0-9]/g,'')", maxlength = "10" })
+                            @Html.TextBoxFor(m => m.Telefono, new { @class = "form-input", placeholder = "999 000 0000", type = "tel", oninput = "this.value=this.value.replace(/[^0-9]/g,'')", minlength = "10", maxlength = "10" })
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="Email">Correo electr&oacute;nico *</label>
-                            @Html.TextBoxFor(m => m.Email, new { @class = "form-input", placeholder = "correo@ejemplo.com" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-input", placeholder = "correo@ejemplo.com", type = "email" })
                         </div>
-                        @if (CRMSistema.Models.Usuarios.AppRoles.EsSupervisorOAdmin(ViewBag.RolActual as string ?? ""))
+                        @if (ViewBag.RequiereVendedor as bool? == true)
                         {
-                            <div class="form-group">
-                                <label class="form-label" for="VendedorId">Asignar vendedor</label>
+                            <div class="form-group" id="grupoVendedor">
+                                <label class="form-label" for="VendedorId">Asignar vendedor *</label>
                                 @Html.DropDownListFor(m => m.VendedorId, new SelectList((List<CRMSistema.Models.Usuarios.UsuarioDto>)ViewBag.Vendedores, "id", "nombre"), "-- Seleccionar --", new { @class = "form-input" })
                             </div>
                         }
                     </div>
 
                     <div class="section-title-sm" style="margin-top: 32px; display: flex; align-items: center; cursor: pointer;">
-                        <i class="fas fa-chevron-down me-2" style="font-size: 10px;"></i> DATOS DE CONTACTO
+                        <i class="fas fa-chevron-down me-2" style="font-size: 10px;"></i> Datos de contacto
                     </div>
                     
                     <!-- Aquí se renderizan los contactos -->
@@ -98,7 +119,7 @@
                     @if (accion != "Detalle")
                     {
                         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; border-top: 1px solid var(--border-light); padding-top: 16px;">
-                            <button type="button" id="btnAgregarContacto" class="btn-custom btn-primary-custom" style="padding: 6px 14px; font-size: 12px; border-radius: 6px;">+ Agregar Contacto</button>
+                            <button type="button" id="btnAgregarContacto" class="btn-custom" style="padding: 6px 14px; font-size: 12px; border-radius: 6px; background: #5C3819; color: white;">+ Agregar Contacto</button>
                         </div>
                     }
 
@@ -118,42 +139,22 @@
                         </div>
                         <div id="motivoRechazoDetalle" style="display: none; margin-top: 12px;">
                             <div style="font-size: 11px; font-weight: 600; color: var(--text3); margin-bottom: 4px; text-transform: uppercase;">Motivo de Rechazo</div>
-                            <div style="font-size: 13px; color: var(--text1); background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #FADBD8;">@Model.MotivoRechazo</div>
+                            <div id="motivoRechazoTexto" style="font-size: 13px; color: var(--text1); background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #FADBD8;">@(!string.IsNullOrWhiteSpace(Model.MotivoRechazo) ? Model.MotivoRechazo : Model.MotivoRechazoCotizacion)</div>
                         </div>
-                    </div>
-
-                    <!-- ESTADO DE LA COTIZACIÓN (SOLO DETALLE) -->
-                    <div id="seccionCotizacionDetalle" style="display: none; margin-top: 24px; padding: 16px; background: #F8F9FA; border-radius: 8px; border: 1px solid var(--border-light);">
-                        <div class="section-title-sm" style="margin-bottom: 12px;">COTIZACIÓN</div>
-                        <div id="badgeCotizacionDetalle" style="margin-bottom: 12px; padding: 6px; display: inline-block; border-radius: 8px;">
-                            @Html.Partial("~/Views/Prospectos/_BadgeEstatus.cshtml", Model.EstatusCotizacion ?? "Sin cotización")
-                        </div>
-                        @if (!string.IsNullOrWhiteSpace(Model.MotivoRechazoCotizacion))
-                        {
-                            <div style="margin-top: 12px;">
-                                <div style="font-size: 11px; font-weight: 600; color: var(--text3); margin-bottom: 4px; text-transform: uppercase;">Motivo de rechazo de cotización</div>
-                                <div style="font-size: 13px; color: var(--text1); background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #FADBD8;">@Model.MotivoRechazoCotizacion</div>
-                            </div>
-                        }
+                        <script>$(function(){ $('#seccionCotizacionDetalle').remove(); });</script>
                     </div>
                 </div>
 
                 <!-- TAB 2: DIRECCI&Oacute;N -->
                 <div id="tab-direccion" class="tab-content">
-                    <div style="margin-bottom: 16px; background: var(--bg2, #F8F9FA); padding: 12px; border-radius: 8px; border: 1px solid var(--border-light);">
-                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text1);">B&uacute;squeda r&aacute;pida en mapa</div>
-                        <input type="text" id="busquedaMapa" class="form-input" style="width: 100%;" placeholder="Pega todo junto aqu&iacute;. Ej: C. 60-A 322-por 57 y 59, Mulchechen, 97370 M&eacute;rida, Yuc." />
-                        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Si llenas este campo, el mapa lo usar&aacute; como primera opci&oacute;n para encontrar la ubicaci&oacute;n exacta.</div>
-                    </div>
-                    
-                    <div class="section-title-sm">DIRECCI&Oacute;N (MATRIZ)</div>
+                    <div class="section-title-sm">DIRECCIÓN (MATRIZ)</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
-                            <label class="form-label" for="Calle">Calle</label>
+                            <label class="form-label" for="Calle">Calle *</label>
                             @Html.TextBoxFor(m => m.Calle, new { @class = "form-input", placeholder = "Ej. Av. Paseo de Montejo" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="NumExt">Numero Exterior</label>
+                            <label class="form-label" for="NumExt">Numero Exterior *</label>
                             @Html.TextBoxFor(m => m.NumExt, new { @class = "form-input", placeholder = "Ej. 100" })
                         </div>
                         <div class="form-group">
@@ -161,19 +162,19 @@
                             @Html.TextBoxFor(m => m.NumInt, new { @class = "form-input", placeholder = "Ej. Depto 2" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Colonia">Colonia</label> 
+                            <label class="form-label" for="Colonia">Colonia *</label>
                             @Html.TextBoxFor(m => m.Colonia, new { @class = "form-input", placeholder = "Ej. Centro" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Municipio">Municipio</label>
+                            <label class="form-label" for="Municipio">Municipio *</label>
                             @Html.TextBoxFor(m => m.Municipio, new { @class = "form-input", placeholder = "Ej. Mérida" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Cp">Codigo Postal</label>
+                            <label class="form-label" for="Cp">Codigo Postal *</label>
                             @Html.TextBoxFor(m => m.Cp, new { @class = "form-input", placeholder = "Ej. 97000", onblur = "buscarCP(this.value, 'form')" })
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Estado">Estado</label>
+                            <label class="form-label" for="Estado">Estado *</label>
                             @Html.TextBoxFor(m => m.Estado, new { @class = "form-input", placeholder = "Ej. Yucatán" })
                         </div>
 
@@ -270,7 +271,7 @@
                                 </div>
                             </div>
                             <div style="text-align: right; margin-top: 12px;">
-                                <button type="button" id="btnAgregarSucursal" class="btn-custom" style="background: var(--brown-dark); color: white; padding: 6px 14px; font-size: 12px; border-radius: 6px;">+ Agregar Sucursal</button>
+                                <button type="button" id="btnAgregarSucursal" class="btn-custom btn-primary-custom" style="padding: 6px 14px; font-size: 12px; border-radius: 6px;">+ Agregar Sucursal</button>
                             </div>
                         }
                     </div>
@@ -300,9 +301,13 @@
     <script>
         window.contactosIniciales = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Contactos ?? new List<CRMSistema.Models.ViewModels.ProspectoContactoViewModel>()));
         window.sucursalesIniciales = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Sucursales ?? new List<CRMSistema.Models.ViewModels.ProspectoSucursalViewModel>()));
+        window.requiereVendedor = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.RequiereVendedor ?? false));
+        window.rolActual = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.RolActual ?? ""));
+        $(function () {
+            if (typeof actualizarMaxLengthRFC === 'function') actualizarMaxLengthRFC();
+        });
     </script>
 </div>
 
 @Html.Partial("~/Views/Prospectos/_ModalContacto.cshtml")
 @Html.Partial("~/Views/Prospectos/_ModalSucursal.cshtml")
-

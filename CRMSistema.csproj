@@ -116,9 +116,10 @@
     <Compile Include="Controllers\ValidacionCotizaciones\ValidacionCotizacionesController.cs" />
     <Compile Include="Controllers\Usuarios\UsuariosController.cs" />
     <Compile Include="Controllers\Cliente\ClienteController.cs" />
-    <Compile Include="Controllers\Indicadores\IndicadoresController.cs" />
     <Compile Include="DAL\Db.cs" />
     <Compile Include="DAL\AdoHelper.cs" />
+    <Compile Include="DAL\SimpleLog.cs" />
+    <Compile Include="DAL\SqlErrorHelper.cs" />
     <Compile Include="DAL\Prospectos\ApiProspectosDAL.cs" />
     <Compile Include="DAL\Cotizador\CotizacionesDAL.cs" />
     <Compile Include="DAL\Cotizador\TratosDAL.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="Models\Contratos\ContratoRechazoRequest.cs" />
     <Compile Include="Models\Contratos\GuardarServiciosRequest.cs" />
     <Compile Include="Models\Manifiestos\ManifiestoDto.cs" />
+    <Compile Include="Models\Manifiestos\ManifiestoFormModel.cs" />
     <Compile Include="Filters\AuthorizeRoleAttribute.cs" />
     <Compile Include="Filters\JsonExceptionFilter.cs" />
     <Compile Include="Global.asax.cs">
@@ -210,7 +212,6 @@
     <Content Include="Views\Cliente\Contratos.cshtml" />
     <Content Include="Views\Cliente\Manifiestos.cshtml" />
     <Content Include="Views\Usuarios\Index.cshtml" />
-    <Content Include="Views\Indicadores\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

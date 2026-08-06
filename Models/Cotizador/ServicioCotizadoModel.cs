@@ -20,6 +20,7 @@ namespace CRMSistema.Models.Cotizador
         public string tipo_cobro { get; set; }
         public int? recolectores { get; set; }
         public string turno { get; set; }
+        public string fecha_unica { get; set; }
         public string ruta { get; set; }
         public decimal? recorrido_km { get; set; }
         public decimal? costo_tonelada { get; set; }
